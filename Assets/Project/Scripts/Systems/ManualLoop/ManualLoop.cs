@@ -7,27 +7,30 @@ namespace BigProject.Systems
     /// Цикл ручного обновления на базе MonoBehaviour.Update
     /// </summary>
     public class ManualLoop : MonoBehaviour
-    {
-        public static float DeltaTime => Time.deltaTime;
-        public static float FixedDeltaTime => Time.fixedDeltaTime;
-        
+    {       
         private class TickQueue
         {
             public bool isActive = true;
             public List<ITickable> tickables = new();
             public List<IFixedTickable> fixedTickables = new();
             public List<ILateTickable> lateTickables = new();
+            public bool IsEmpty => tickables.Count == 0 && fixedTickables.Count == 0 && lateTickables.Count == 0;
         }
 
         private readonly Dictionary<int, TickQueue> _tickQueues = new();
         private readonly List<TickQueue> _activeQueues = new();
+
+        public static float DeltaTime => Time.deltaTime;
+        public static float FixedDeltaTime => Time.fixedDeltaTime;
 
         private void Update()
         {
             foreach (TickQueue queue in _activeQueues)
             {
                 foreach (ITickable tickable in queue.tickables)
+                {
                     tickable.Tick();
+                }
             }
         }
 
@@ -36,7 +39,9 @@ namespace BigProject.Systems
             foreach (TickQueue queue in _activeQueues)
             {
                 foreach (IFixedTickable tickable in queue.fixedTickables)
+                {
                     tickable.FixedTick();
+                }
             }
         }
 
@@ -45,7 +50,9 @@ namespace BigProject.Systems
             foreach (TickQueue queue in _activeQueues)
             {
                 foreach (ILateTickable tickable in queue.lateTickables)
+                {
                     tickable.LateTick();
+                }
             }
         }
 
@@ -64,9 +71,12 @@ namespace BigProject.Systems
             {
                 TickQueue newQueue = new();
                 AddTickableToQueue(newQueue, tickable);
-                _tickQueues.Add(queueId, newQueue);
-                _activeQueues.Add(newQueue);
-                
+
+                if (!newQueue.IsEmpty)
+                {
+                    _tickQueues.Add(queueId, newQueue);
+                    _activeQueues.Add(newQueue);
+                }           
             }
         }
 
@@ -78,7 +88,9 @@ namespace BigProject.Systems
         public void AddTickables(List<object> tickables, int queueId = 0)
         {
             foreach (object tickable in tickables)
+            {
                 AddTickable(tickable, queueId);
+            }
         }
 
         /// <summary>
@@ -108,10 +120,12 @@ namespace BigProject.Systems
         }
         
         /// <returns>True если очередь обновления активна.</returns>
-        public bool GetTickableQueueActive(int queueId)
+        public bool IsTickableQueueActive(int queueId)
         {
             if (!_tickQueues.TryGetValue(queueId, out TickQueue queue))
+            {
                 return false;
+            }
 
             return queue.isActive;
         }

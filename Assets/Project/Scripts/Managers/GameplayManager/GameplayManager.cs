@@ -1,7 +1,6 @@
 using UnityEngine;
 using BigProject.Systems;
 using System.Collections.Generic;
-using BigProject.Utilities;
 using UnityEngine.Assertions;
 
 namespace BigProject.Managers
@@ -48,8 +47,10 @@ namespace BigProject.Managers
                 _tickQueueIds.Add(state, new() { id });
             }
 
-            if (_manualLoop.GetTickableQueueActive(id))
+            if (_manualLoop.IsTickableQueueActive(id))
+            {
                 _activeQueueIds.Add(id);
+            }
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace BigProject.Managers
 
             if (!_tickQueueIds.TryGetValue(state, out var nextIds))
             {
-                Debug.LogWarning($"Gameplay Manager: can't find tickable queue for state {StringUtilities.GetEnumValueName(_state)}");
+                Debug.LogWarning($"Gameplay Manager: can't find tickable queue for state {_state}");
                 return;
             }
 
