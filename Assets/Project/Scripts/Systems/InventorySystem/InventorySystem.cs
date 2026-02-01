@@ -9,7 +9,7 @@ namespace BigProject.Systems
     public class InventorySystem : MonoBehaviour
     {
         [SerializeField] private ItemsDatabaseSO _itemsDatabase;
-        private static List<int> _heldItems = new List<int>();
+        private List<int> _heldItems = new List<int>();
 
         public static InventorySystem Instance;
         public Action OnInventoryUpdated;

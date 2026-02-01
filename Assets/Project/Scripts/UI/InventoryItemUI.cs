@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace BigProject.UI
 {
-    public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler ,IEndDragHandler, IPointerClickHandler
+    public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
     {
         [SerializeField] private Image _image;
 
