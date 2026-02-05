@@ -1,4 +1,5 @@
 using BigProject.Systems.DialogueSystem;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -10,10 +11,17 @@ namespace BigProject.Managers
     {
         public static DialogueManager Instance;
 
+        // Событие срабатывает во время фразы NPC, если указан Id
+        public static event Action<int> OnDialoguePhrase;
+
         [SerializeField]
         private GameObject _dialogueWindow;
         [SerializeField]
         private TextMeshProUGUI _dialogueText;
+        [SerializeField]
+        private Image _rightCharacterImage;
+        [SerializeField]
+        private Button _nextButton;
 
         [SerializeField]
         private List<Button> _answerOptionButtons = new List<Button>();
@@ -21,6 +29,7 @@ namespace BigProject.Managers
 
         private DialogueLine _currentDialogueLine;
         private int _currentDialoguePhraseIndex = 0;
+
         private void Awake()
         {
             if (Instance != null)
@@ -41,6 +50,7 @@ namespace BigProject.Managers
         {
             foreach (var answerOptionButton in _answerOptionButtons)
             {
+                // Инициализируем кнопки для взаимодействия
                 TextMeshProUGUI buttonText = answerOptionButton.GetComponentInChildren<TextMeshProUGUI>();
                 if (buttonText)
                 {
@@ -55,6 +65,7 @@ namespace BigProject.Managers
                 Debug.LogWarning("Не проинициализировали диалог");
                 return;
             }
+
             if (dialogueLine.DialogueNPCPhrases.Count == 0 && dialogueLine.DialogueAnswerOptions.Count == 0)
             {
                 Debug.LogWarning("Не проинициализировали диалог");
@@ -63,10 +74,10 @@ namespace BigProject.Managers
 
             _dialogueWindow.SetActive(true);
             _currentDialogueLine = dialogueLine;
-            ShowNextPhrase();
+            ShowNextStep();
         }
 
-        public void ShowNextPhrase()
+        public void ShowNextStep()
         {
             if (!_currentDialogueLine)
             {
@@ -78,10 +89,7 @@ namespace BigProject.Managers
             if (_currentDialogueLine.DialogueNPCPhrases.Count > _currentDialoguePhraseIndex)
             {
                 // NPC ещё не договорил - показываем следующую фразу
-                _dialogueText.gameObject.SetActive(true);
-                DialogueNPCPhrase dialogueNPCPhrase =
-                    _currentDialogueLine.DialogueNPCPhrases[_currentDialoguePhraseIndex++];
-                _dialogueText.text = dialogueNPCPhrase.Text;
+                ShowNextPhrase();
             }
             else if (_currentDialogueLine.DialogueAnswerOptions.Count > 0)
             {
@@ -95,13 +103,31 @@ namespace BigProject.Managers
             }
         }
 
+        private void ShowNextPhrase()
+        {
+            // Включаем отображение кнопки продолжить и текст NPC
+            _nextButton.gameObject.SetActive(true);
+            _dialogueText.gameObject.SetActive(true);
+
+            DialogueNPCPhrase dialogueNPCPhrase =
+                _currentDialogueLine.DialogueNPCPhrases[_currentDialoguePhraseIndex++];
+            _dialogueText.text = dialogueNPCPhrase.Text;
+            _rightCharacterImage.sprite = dialogueNPCPhrase.CharacterSprite;
+
+            if (dialogueNPCPhrase.Id > 0)
+            {
+                // Есть идентификатор фразы - уведомляем о том, что сейчас была сказана эта фраза
+                OnDialoguePhrase.Invoke(dialogueNPCPhrase.Id);
+            }
+        }
+
         public void SelectAnswerOption(int answerOptionIndex)
         {
             _currentDialogueLine =
                 _currentDialogueLine.DialogueAnswerOptions[answerOptionIndex].DialogueLine;
             _currentDialoguePhraseIndex = 0;
             HideAnswerOptions();
-            ShowNextPhrase();
+            ShowNextStep();
         }
 
         private void EndDialogue()
@@ -122,14 +148,16 @@ namespace BigProject.Managers
 
         private void ShowAnswerOptions()
         {
+            // Включаем отображение кнопки продолжить и текст NPC
+            _nextButton.gameObject.SetActive(false);
             _dialogueText.gameObject.SetActive(false);
             // Количество кнопок, которые нужно показать
-            int countButton = Mathf.Min(
+            int buttonCount = Mathf.Min(
                 _answerOptionButtons.Count, 
                 _currentDialogueLine.DialogueAnswerOptions.Count
                 );
 
-            for (int i = 0; i < countButton; i++)
+            for (int i = 0; i < buttonCount; i++)
             {
                 _answerOptionButtons[i].gameObject.SetActive(true);
                 _answerOptionButtonTexts[i].text = _currentDialogueLine.DialogueAnswerOptions[i].Text;
