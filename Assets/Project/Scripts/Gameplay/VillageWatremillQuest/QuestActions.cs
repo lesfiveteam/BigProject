@@ -26,7 +26,7 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         private GameObject _runeBar;
 
         private InventorySystem _inventory;
-       // private 
+        private RunesSystem _runes;
 
         private void Start()
         {
@@ -72,7 +72,7 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         public void GetRune()
         {
             _runeBar.SetActive(true);
-            RunesSystem.Instance.AddRune();
+            _runes.AddRune();
         }
     }
 }

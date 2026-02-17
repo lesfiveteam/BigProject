@@ -3,31 +3,16 @@ using UnityEngine;
 
 namespace BigProject.Systems
 {
-    [DefaultExecutionOrder(-1)]
-    public class RunesSystem : MonoBehaviour
+    public class RunesSystem
     {
-        public static RunesSystem Instance; // public на запись лучше не делать - внешний код может написать RunesSystem.Instance = some_val...
-        public Action<int> OnRuneAdded; // События обозначать как event, иначе внешний код может вызвать его, где захочет.
-
         private int _numberOfRunes;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
+        public event Action<int> OnRuneAdded;
 
         public void AddRune()
         {
             if (_numberOfRunes >= 3)
             {
-                Debug.LogError("Руна не добавлена - достигнуто максимальное количество");
+                Debug.LogError("Rune bar is already full, new rune wasn't added");
                 return;
             }
 
