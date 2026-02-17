@@ -51,7 +51,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(new SceneLoadManager(manualLoop));
             ServiceLocator.AddService(new ProgressManager(_config.PlayerProfileName, new QuestJsonLoader(_config.QuestsFolder), new SavesManager()));
             ServiceLocator.AddService(new HUD());
-            ServiceLocator.AddServiceResolver(() => InventorySystem.Instance);
+            //ServiceLocator.AddServiceResolver(() => InventorySystem.Instance);
 
             MusicManager musicManager = Instantiate(_musicManager);
             DontDestroyOnLoad(musicManager);

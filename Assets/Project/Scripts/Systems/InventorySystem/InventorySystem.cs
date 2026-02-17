@@ -6,30 +6,30 @@ using UnityEngine.SceneManagement;
 
 namespace BigProject.Systems
 {
-    [DefaultExecutionOrder(-1)]
-    public class InventorySystem : MonoBehaviour
+    public class InventorySystem : IDisposable
     {
-        [SerializeField] private ItemsDatabaseSO _itemsDatabase;
+        private ItemsDatabaseSO _itemsDatabase;
         private List<int> _heldItems = new List<int>();
+        public event Action OnInventoryUpdated;
 
-        public static InventorySystem Instance;
-        public Action OnInventoryUpdated;
-
-        private void Awake()
+        public InventorySystem(ItemsDatabaseSO itemsDatabase)
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-
             for (int i = 0; i < 5; i++)
-            { 
+            {
                 _heldItems.Add(-1);
             }
+            _itemsDatabase = itemsDatabase;
+            SceneManager.activeSceneChanged += OnSceneChanged;
+        }
+
+        public void Dispose()
+        {
+            SceneManager.activeSceneChanged -= OnSceneChanged;
+        }
+
+        private void OnSceneChanged(Scene _, Scene __)
+        {
+            OnInventoryUpdated?.Invoke();
         }
 
         private void AddToInventory(int value)
@@ -46,7 +46,7 @@ namespace BigProject.Systems
             OnInventoryUpdated?.Invoke();
         }
         
-        //здесь id - индекс элемента в инвентаре, не в БД
+        //here, id is not a database id but an inventory id
         private void RemoveFromInventory(int id)
         {
             for (int i = id; i < _heldItems.Count - 1; i++)
@@ -59,9 +59,8 @@ namespace BigProject.Systems
         }
 
         /// <summary>
-        /// Добалвяет предмет по его индексу в базе данных
+        /// Adds item by its id in database
         /// </summary>
-        /// <param name="itemID">Индекс добавляемого элемента в базе данных</param>
         public void AddItemByItemID(int itemID)
         {
             if (itemID >= _itemsDatabase._items.Count)
@@ -73,9 +72,6 @@ namespace BigProject.Systems
             AddToInventory(itemID);
         }
 
-        /// <summary>
-        /// Добавляет предмет по его имени
-        /// </summary>
         public void AddItemByName(string itemName)
         {
             if (_itemsDatabase._items.Where(x => x._name.Equals(itemName)).Count() == 0)
@@ -89,9 +85,8 @@ namespace BigProject.Systems
         }
 
         /// <summary>
-        /// Удаляет предмет по его индексу в БД предметов
+        /// Removes item by its id in database
         /// </summary>
-        /// <param name="itemID">Индекс предмета в базе данных</param>
         public void RemoveItemById(int itemID)
         {
             if (_heldItems.Count == 0)
@@ -110,9 +105,6 @@ namespace BigProject.Systems
             RemoveFromInventory(itemInventoryID);
         }
 
-        /// <summary>
-        /// Удаляет предмет по его имени
-        /// </summary>
         public void RemoveItemByName(string itemName)
         {
             if (_heldItems.Count == 0)
@@ -139,7 +131,7 @@ namespace BigProject.Systems
         }
 
         /// <summary>
-        /// Возвращает предмет по его имени. Для проверки наличия предмета в инвентаре используйте HasItemByName()
+        /// Returns an item by its name. Use HasItemByName() beforehand
         /// </summary>
         public Item GetItemByName(string itemName)
         {
@@ -147,16 +139,13 @@ namespace BigProject.Systems
         }
 
         /// <summary>
-        /// Возвращает предмет по его индексу в базе данных. Для проверки наличия предмета в инвентаре используйте HasItemById()
+        /// Returns an item by its id in database. Use HasItemById() beforehand 
         /// </summary>
         public Item GetItemById(int itemID)
         {
             return _itemsDatabase._items[itemID];
         }
 
-        /// <summary>
-        /// Проверяет по имени предмета, что он существует в инвентаре
-        /// </summary>
         public bool HasItemByName(string itemName)
         {
             if (_heldItems.Where((x) => x != -1 && _itemsDatabase._items[x]._name.Equals(itemName)).Count() == 0)
@@ -166,7 +155,7 @@ namespace BigProject.Systems
         }
 
         /// <summary>
-        /// Проверяет по индексу предмета в БД, что предмет существует в инвентаре
+        /// Checks if item exists by its database id
         /// </summary>
         public bool HasItemByID(int itemID)
         {
@@ -177,7 +166,7 @@ namespace BigProject.Systems
         }
 
         /// <summary>
-        /// Возвращает список предметов в инвентаре
+        /// Returns list of all held items
         /// </summary>
         public List<Item> GetAllHeldItems()
         {
@@ -189,21 +178,6 @@ namespace BigProject.Systems
                 items.Add(_itemsDatabase._items[id]);
             }
             return items;
-        }
-
-        private void OnSceneChanged(Scene _, Scene __)
-        {
-            OnInventoryUpdated?.Invoke();
-        }
-
-        private void OnEnable()
-        {
-            SceneManager.activeSceneChanged += OnSceneChanged;
-        }
-
-        private void OnDisable()
-        {
-            SceneManager.activeSceneChanged -= OnSceneChanged;
         }
     }
 }
