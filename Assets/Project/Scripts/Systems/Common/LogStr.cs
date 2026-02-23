@@ -23,12 +23,14 @@ namespace BigProject.Systems
         public const string WARNING_GAME_EXECUTION_INCORRECT_STAGE = "Game execution try move to incorrect stage: {0}.";
         public const string WARNING_GAME_EXECUTION_REWRITE_STAGE = "Game execution already at stage: {0}.";
         public const string WARNING_DUPLICATE_UNIQUE_ENTITY = "Try duplicate [{0}]. It should exist in one copy.";
+        public const string WARNING_QUEST = "Quest warning: {0}.";
 
         public const string ERROR_WRITE_FAILED = "Logger write failed: {0}.";
         public const string ERROR_FILE_DELETE_FAILED = "Failed to delete {0}: {1}.";
         public const string ERROR_CREATE_DIRECTORY = "Cannot create log dir: {0}." +
             "\n\n Will be created in Persistent Data Path: " +
             "\n\t %userprofile%\\AppData\\LocalLow\\{1}\\{2}\\";
+        public const string ERROR_QUEST = "Quest error: {0}.";
 
         public const string CRITICAL_UNABLE_GET_SERVICE = "{0}: can't get {1} service.";
         public const string CRITICAL_NOT_SERIALIZED_FIELD = "{0}: has not serialized field [{1}].";
