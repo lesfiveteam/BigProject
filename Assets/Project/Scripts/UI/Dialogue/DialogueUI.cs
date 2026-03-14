@@ -1,5 +1,6 @@
 using BigProject.Managers;
 using BigProject.Systems.DialogueSystem;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -12,7 +13,19 @@ namespace BigProject.UI.Dialogue
         [SerializeField]
         public GameObject _dialogueWindow;
         [SerializeField]
-        private TextMeshProUGUI _dialogueText;
+        public Animator _dialogueBackgroundAnimator;
+        [SerializeField]
+        public AnimationClip _dialogueBackgroundAnimationClip;
+        [SerializeField]
+        private TextMeshProUGUI _dialogueTextFront;
+        [SerializeField]
+        public Animator _dialogueMaskFrontAnimator;
+        [SerializeField]
+        private TextMeshProUGUI _dialogueTextBack;
+        [SerializeField]
+        public Animator _dialogueMaskBackAnimator;
+        [SerializeField]
+        public Animator _dialogueAnswersAnimator;
         [SerializeField]
         private Image _rightCharacterImage;
         [SerializeField]
@@ -36,15 +49,18 @@ namespace BigProject.UI.Dialogue
         private TextMeshProUGUI _leftNameTMPro;
         private TextMeshProUGUI _rightNameTMPro;
 
+        private string DIALOGUE_ANIM_TRIGGER = "Pressed";
+        private bool _answerWasShownPreviousFrame = false;
+        private bool _isFirstLine;
         public void Init(DialogueManager dialogueManager)
         {
             for (int i = 0; i < _answerOptionButtons.Count; i++)
             {
-                // Для замыкания
+                // Р”Р»СЏ Р·Р°РјС‹РєР°РЅРёСЏ
                 int index = i;
-                // Обработчик нажатия на вариант ответа
+                // РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РЅР° РІР°СЂРёР°РЅС‚ РѕС‚РІРµС‚Р°
                 _answerOptionButtons[i].onClick.AddListener(() => dialogueManager.SelectAnswerOption(index));
-                // Инициализируем кнопки для взаимодействия
+                // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РєРЅРѕРїРєРё РґР»СЏ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ
                 TextMeshProUGUI buttonText = _answerOptionButtons[i].GetComponentInChildren<TextMeshProUGUI>();
                 if (buttonText)
                 {
@@ -56,31 +72,32 @@ namespace BigProject.UI.Dialogue
             _leftNameTMPro = _leftCharacterNameField.GetComponentInChildren<TextMeshProUGUI>();
             _rightNameTMPro = _rightCharacterNameField.GetComponentInChildren<TextMeshProUGUI>();
 
-            // Обработчик нажатия на кнопку "Продолжить"
+            // РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РЅР° РєРЅРѕРїРєСѓ "РџСЂРѕРґРѕР»Р¶РёС‚СЊ"
             _nextButton.onClick.AddListener(() => dialogueManager.ShowNextStep());
         }
 
         public void HideAnswerOptions()
         {
-            foreach (Button answerOptionButton in _answerOptionButtons)
-            {
-                answerOptionButton.gameObject.SetActive(false);
-            }
+            _dialogueBackgroundAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER);
+            _dialogueAnswersAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER + "Bottom");
+            _answerWasShownPreviousFrame = true;
+            StartCoroutine(WaitForAnimationFinishedAnswers());
         }
 
         public void ShowAnswerOptions(DialogueLine dialogueLine)
         {
             SetImageAlpha(_rightCharacterImage, _speakerImageTone, _speakerImageAlpha);
             SetImageAlpha(_leftCharacterImage, 1f, 1f);
-            // Включаем отображение кнопки продолжить и текст NPC
+            // Р’РєР»СЋС‡Р°РµРј РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РєРЅРѕРїРєРё РїСЂРѕРґРѕР»Р¶РёС‚СЊ Рё С‚РµРєСЃС‚ NPC
             _nextButton.gameObject.SetActive(false);
-            _dialogueText.gameObject.SetActive(false);
+            _dialogueTextFront.gameObject.SetActive(false);
+            _dialogueTextBack.gameObject.SetActive(false);
 
             // Saying Player (left character)
             _leftCharacterNameField.SetActive(true);
             _rightCharacterNameField.SetActive(false);
 
-            // Количество кнопок, которые нужно показать
+            // РљРѕР»РёС‡РµСЃС‚РІРѕ РєРЅРѕРїРѕРє, РєРѕС‚РѕСЂС‹Рµ РЅСѓР¶РЅРѕ РїРѕРєР°Р·Р°С‚СЊ
             int buttonCount = Mathf.Min(
                 _answerOptionButtons.Count,
                 dialogueLine.DialogueAnswerOptions.Count
@@ -91,10 +108,15 @@ namespace BigProject.UI.Dialogue
                 _answerOptionButtons[i].gameObject.SetActive(true);
                 _answerOptionButtonTexts[i].text = dialogueLine.DialogueAnswerOptions[i].Text;
             }
+
+            _dialogueBackgroundAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER);
+            _dialogueAnswersAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER + "Top");
         }
 
         public void ShowDialogueWindow()
         {
+            _isFirstLine = true;
+            _dialogueTextFront.gameObject.SetActive(true);
             _dialogueWindow.SetActive(true);
         }
         public void HideDialogueWindow()
@@ -109,11 +131,49 @@ namespace BigProject.UI.Dialogue
             _leftCharacterNameField.SetActive(false);
             _rightCharacterNameField.SetActive(true);
             _rightNameTMPro.text = dialogueNPCPhrase.Name;
-            // Включаем отображение кнопки продолжить и текст NPC
+            // Р’РєР»СЋС‡Р°РµРј РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РєРЅРѕРїРєРё РїСЂРѕРґРѕР»Р¶РёС‚СЊ Рё С‚РµРєСЃС‚ NPC
             _nextButton.gameObject.SetActive(true);
-            _dialogueText.gameObject.SetActive(true);
-            _dialogueText.text = dialogueNPCPhrase.Text;
             _rightCharacterImage.sprite = dialogueNPCPhrase.CharacterSprite;
+
+            if (_isFirstLine)
+            {
+                _isFirstLine = false;
+                _dialogueTextFront.text = dialogueNPCPhrase.Text;
+                return;
+            }
+
+            //Playing animations
+            _dialogueMaskBackAnimator.gameObject.SetActive(true);
+            _dialogueTextBack.gameObject.SetActive(true);
+            _dialogueTextBack.text = dialogueNPCPhrase.Text;
+            _dialogueBackgroundAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER);
+            _dialogueMaskBackAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER);
+
+            if (!_answerWasShownPreviousFrame)
+            {
+                _dialogueTextFront.gameObject.SetActive(true);
+                _dialogueMaskFrontAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER);
+            }
+
+            StartCoroutine(WaitForAnimationFinished());
+        }
+
+        private IEnumerator WaitForAnimationFinished()
+        {
+            yield return new WaitForSeconds(_dialogueBackgroundAnimationClip.length);
+            _dialogueTextFront.text = _dialogueTextBack.text;
+            _dialogueTextFront.gameObject.SetActive(true);
+            _dialogueTextBack.gameObject.SetActive(false);
+        }
+
+        private IEnumerator WaitForAnimationFinishedAnswers()
+        {
+            yield return new WaitForSeconds(_dialogueBackgroundAnimationClip.length);
+            foreach (Button answerOptionButton in _answerOptionButtons)
+            {
+                answerOptionButton.gameObject.SetActive(false);
+            }
+            _answerWasShownPreviousFrame = false;
         }
 
         private void SetImageAlpha(Image image, float tone, float alpha)
