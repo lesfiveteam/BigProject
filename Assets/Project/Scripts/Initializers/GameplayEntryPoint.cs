@@ -43,6 +43,8 @@ namespace BigProject.Initializers
         [SerializeField]
         private GameObject _dialogueView;
         [SerializeField]
+        private GameObject _pauseView;
+        [SerializeField]
         private GameObject _replicaView;
         [SerializeField]
         private QuestSwitchConfig _questSwitchConfig;
@@ -62,6 +64,7 @@ namespace BigProject.Initializers
         private GameObject _hudObj;
         private GameObject _dialogueViewObj;
         private GameObject _replicaViewObj;
+        private GameObject _pauseMenuViewObj;
         private QuestJournal _questJournal;
         private InventorySystem _inventory;
         private RunesSystem _runesSystem;
@@ -127,6 +130,7 @@ namespace BigProject.Initializers
 
             InitDialogue();
             InitReplica();
+            InitPauseMenu();
 
             ServiceLocator.AddService(_questJournal);
             ServiceLocator.AddService(_runesSystem);
@@ -161,6 +165,13 @@ namespace BigProject.Initializers
             _replicaViewObj = Instantiate(_replicaView);
             _replicaManager = new ReplicaManager(_replicaViewObj.GetComponent<ReplicaView>());
             DontDestroyOnLoad(_replicaViewObj);
+        }
+
+        private void InitPauseMenu()
+        {
+            _pauseMenuViewObj = Instantiate(_pauseView);
+            _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput);
+            DontDestroyOnLoad(_pauseMenuViewObj);
         }
 
         private void InitHUD()
@@ -294,6 +305,7 @@ namespace BigProject.Initializers
             Destroy(_hudObj);
             Destroy(_dialogueViewObj);
             Destroy(_replicaViewObj);
+            Destroy(_pauseMenuViewObj);
 
             ServiceLocator.ReleaseService<QuestJournal>();
             ServiceLocator.ReleaseService<RunesSystem>();

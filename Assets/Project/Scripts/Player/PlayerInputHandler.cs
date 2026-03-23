@@ -11,12 +11,9 @@ namespace BigProject.Player
         //Player Actions
         public event Action Click;
         public event Action OpenMap;
-        public event Action OpenMenu;
+        public event Action PressPause;
         public event Action Cancel;
         public event Action Reset;
-
-        //UIActions
-        //...
 
         //Mini-game Actions
         public event Action MiniGameClick;
@@ -37,7 +34,7 @@ namespace BigProject.Player
 
             _inputActions.Player.Click.performed += OnClick;
             _inputActions.Player.OpenMap.performed += OnOpenedMap;
-            _inputActions.Player.OpenMenu.performed += OnOpenedMenu;
+            _inputActions.Player.OpenMenu.performed += OnPressedPause;
 
             _inputActions.MiniGame.Click.performed += OnMiniGameClick;
             _inputActions.MiniGame.RightClick.performed += OnMiniGameRightClick;
@@ -45,9 +42,9 @@ namespace BigProject.Player
             _inputActions.MiniGame.Click.canceled += OnMiniGameUnclick;
         }
 
-        private void OnOpenedMenu(InputAction.CallbackContext obj)
+        private void OnPressedPause(InputAction.CallbackContext obj)
         {
-            OpenMenu?.Invoke();
+            PressPause?.Invoke();
         }
 
         private void OnClick(InputAction.CallbackContext obj)
@@ -115,7 +112,7 @@ namespace BigProject.Player
 
             _inputActions.Player.Click.performed -= OnClick;
             _inputActions.Player.OpenMap.performed -= OnOpenedMap;
-            _inputActions.Player.OpenMenu.performed -= OnOpenedMenu;
+            _inputActions.Player.OpenMenu.performed -= OnPressedPause;
 
             _inputActions.MiniGame.Click.performed -= OnMiniGameClick;
             _inputActions.MiniGame.RightClick.performed -= OnMiniGameRightClick;
