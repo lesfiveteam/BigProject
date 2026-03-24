@@ -259,6 +259,7 @@ namespace BigProject.Initializers
         {
             GameObject cursorManagerObject = Instantiate(_cursorManagerPrefab, transform.parent);
             CursorManager cursorManager = cursorManagerObject.GetComponent<CursorManager>();
+            cursorManager.Init(_playerInput);
             ServiceLocator.AddService(cursorManager);
             InteractableObjectsHighlighter highlighter = cursorManagerObject.GetComponent<InteractableObjectsHighlighter>();
 
@@ -268,7 +269,7 @@ namespace BigProject.Initializers
                 return;
             }
 
-            highlighter.Init(sceneLoader, cursorManager);
+            highlighter.Init(sceneLoader, cursorManager, _playerInput);
             cursorManagerObject.SetActive(true);
 
             // For case when run from gameplay scene.
