@@ -34,6 +34,7 @@ namespace BigProject.Initializers
             InitDoors();
             InitDialogueNPCs();
             InitCursorChangingEffects();
+            InitNPCControllers(pm);
             GameLogManager.Info(LogStr.INFO_INITIALIZING_SCENE_SERVICES_COMPLETED);
             _initActions?.Invoke();
         }
@@ -103,6 +104,16 @@ namespace BigProject.Initializers
             foreach (CursorChangingEffect cursorChangingEffect in cursorChangingEffects)
             {
                 cursorChangingEffect.Init(cursorManager);
+            }
+        }
+
+        private void InitNPCControllers(ProgressManager progressManager)
+        {
+            NPCController[] controllers = FindObjectsByType<NPCController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            foreach (NPCController controller in controllers)
+            {
+                controller.Init(progressManager);
             }
         }
     }
