@@ -3,24 +3,42 @@ using System.Collections.Generic;
 
 namespace BigProject.Intercatable.HighlightedObjects
 {
-    //Требуется на любом подсвечиваемом предмете. Имеет список эффектов, которые накладывает при наведении на себя
+    //Is required on any highlighted object. Has a list of effects that are applied on mouse over or click
+    
     public class HighlightedObject : MonoBehaviour
     {
-        [SerializeField] private List<HighlightEffect> _highlightEffects;
+        [SerializeField] private List<MonoBehaviour> _highlightEffects;
 
         public void Highlight()
         {
-            foreach (HighlightEffect effect in _highlightEffects)
+            foreach (MonoBehaviour effect in _highlightEffects)
             {
-                effect.EnableEffect();
+                if (effect is IHighlightEffect highlightEffect)
+                {
+                    highlightEffect.EnableEffect();
+                }
             }
         }
 
         public void Unhighlight()
         {
-            foreach (HighlightEffect effect in _highlightEffects)
+            foreach (MonoBehaviour effect in _highlightEffects)
             {
-                effect.DisableEffect();
+                if (effect is IHighlightEffect highlightEffect)
+                {
+                    highlightEffect.DisableEffect();
+                }
+            }
+        }
+
+        public void PressHighlight()
+        {
+            foreach (MonoBehaviour effect in _highlightEffects)
+            {
+                if (effect is IPressableEffect pressableEffect)
+                {
+                    pressableEffect.SetPressableEffect();
+                }
             }
         }
     }
