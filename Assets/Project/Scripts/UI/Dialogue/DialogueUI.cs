@@ -12,7 +12,7 @@ namespace BigProject.UI.Dialogue
     {
         private const string BOY_NAME = "Эйрик";
         private const float ANIMATION_DURATION = 0.3f;
-        private string DIALOGUE_ANIM_TRIGGER = "Pressed";
+        private const string DIALOGUE_ANIM_TRIGGER = "Pressed";
         [SerializeField]
         public GameObject _dialogueWindow;
         [SerializeField]

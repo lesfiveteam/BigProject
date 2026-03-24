@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace BigProject.UI
 {
-    public class SettingsPanelUI : MainMenuPanel
+    public class SettingsPanelMenuUI : MainMenuPanel
     {
         [SerializeField] private Button _backButton;
 
