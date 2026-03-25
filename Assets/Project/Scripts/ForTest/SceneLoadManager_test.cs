@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.Managers.SceneLoader;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
