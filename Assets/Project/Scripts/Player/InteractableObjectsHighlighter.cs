@@ -1,4 +1,4 @@
-using BigProject.Managers;
+using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Managers.CursorManager;
 using BigProject.Player;
 using BigProject.Systems;
@@ -6,7 +6,7 @@ using BigProject.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;      
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace BigProject.Intercatable.HighlightedObjects

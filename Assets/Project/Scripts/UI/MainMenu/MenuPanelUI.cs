@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Initializers;
 using BigProject.Managers;
 using BigProject.Settings;
@@ -52,8 +53,7 @@ namespace BigProject.UI
             {
                 _savesManager.DeleteSave(_globalConfig.PlayerProfileName);
                 _savesManager.DeleteSave($"{_globalConfig.PlayerProfileName}_{ProgressManager.ADDITIONAL_DATA_NAME}");
-                Bootstrapper.SetStage(GameExecutionStage.Gameplay);
-                _sceneLoader.LoadScene(Scenes.Village);
+                _sceneLoader.LoadScene(Scenes.Intro);
             });
 
             _continueButton.onClick.AddListener(() =>

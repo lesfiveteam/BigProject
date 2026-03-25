@@ -1,5 +1,5 @@
+using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Gameplay.Common;
-using BigProject.Managers;
 using BigProject.Systems;
 using System;
 using UnityEngine;

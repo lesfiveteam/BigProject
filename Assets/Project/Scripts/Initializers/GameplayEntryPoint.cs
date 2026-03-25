@@ -22,6 +22,7 @@ using UnityEngine.AI;
 using UnityEngine.Assertions;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
+using Assets.Project.Scripts.Managers.SceneLoader;
 
 namespace BigProject.Initializers
 {
