@@ -97,6 +97,9 @@ namespace BigProject.UI.Dialogue
 
         public void ShowAnswerOptions(DialogueLine dialogueLine)
         {
+            _rightCharacterImage.enabled = true;
+            _leftCharacterImage.enabled = true;
+
             SetDarkenCharacter(_rightCharacterImage, _speakerImageTone);
             SetDarkenCharacter(_leftCharacterImage, 1f);
             // Включаем отображение кнопки продолжить и текст NPC
@@ -164,8 +167,29 @@ namespace BigProject.UI.Dialogue
                 _leftNameTMPro.text = dialogueNPCPhrase.Name;
             }
 
-            _rightCharacterImage.sprite = dialogueNPCPhrase.RightCharacterSprite;
-            _leftCharacterImage.sprite = dialogueNPCPhrase.LeftCharacterSprite;
+            // 2026-03-25 Саня попросил скрывать картинку целиком в случае, когда не проставляем спрайт в SO
+            if (dialogueNPCPhrase.RightCharacterSprite)
+            {
+                // Show new sprite
+                _rightCharacterImage.sprite = dialogueNPCPhrase.RightCharacterSprite;
+                _rightCharacterImage.enabled = true;
+            }
+            else
+            {
+                _rightCharacterImage.enabled = false;
+            }
+
+            if (dialogueNPCPhrase.LeftCharacterSprite)
+            {
+                // Show new sprite
+                _leftCharacterImage.sprite = dialogueNPCPhrase.LeftCharacterSprite;
+                _leftCharacterImage.enabled = true;
+            }
+            else
+            {
+                _leftCharacterImage.enabled = false;
+            }
+
 
             _leftCharacterNameField.SetActive(!dialogueNPCPhrase.IsRightSpeaker);
             _rightCharacterNameField.SetActive(dialogueNPCPhrase.IsRightSpeaker);
