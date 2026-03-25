@@ -11,7 +11,6 @@ namespace BigProject.UI.Dialogue
     public class DialogueUI : MonoBehaviour
     {
         private const string BOY_NAME = "Эйрик";
-        private const float ANIMATION_DURATION = 0.3f;
         private const string DIALOGUE_ANIM_TRIGGER = "Pressed";
         [SerializeField]
         public GameObject _dialogueWindow;
@@ -77,17 +76,14 @@ namespace BigProject.UI.Dialogue
 
             _dialogueManager = dialogueManager;
             // Обработчик нажатия на кнопку "Продолжить"
-            _nextButton.onClick.AddListener(() => StartCoroutine(WaitAnimationEndAndShowNextStep()));
+            _nextButton.onClick.AddListener(ShowNextStep);
         }
 
-        private IEnumerator WaitAnimationEndAndShowNextStep()
+        private void ShowNextStep()
         {
             if (!_isAnimating)
             {
-                _isAnimating = true;
                 _dialogueManager.ShowNextStep();
-                yield return new WaitForSeconds(ANIMATION_DURATION);
-                _isAnimating = false;
             }
         }
 
@@ -203,10 +199,12 @@ namespace BigProject.UI.Dialogue
 
         private IEnumerator WaitForAnimationFinished()
         {
+            _isAnimating = true;
             yield return new WaitForSeconds(_dialogueBackgroundAnimationClip.length);
             _dialogueTextFront.text = _dialogueTextBack.text;
             _dialogueTextFront.gameObject.SetActive(true);
             _dialogueTextBack.gameObject.SetActive(false);
+            _isAnimating = false;
         }
 
         private IEnumerator WaitForAnimationFinishedAnswers()
