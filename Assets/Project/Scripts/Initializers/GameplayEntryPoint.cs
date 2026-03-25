@@ -250,7 +250,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_playerSpawner);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 _playerSpawner.PositionPlayer(0);
             }
@@ -274,7 +274,7 @@ namespace BigProject.Initializers
             cursorManagerObject.SetActive(true);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 highlighter.RestartChecking();
             }
@@ -289,7 +289,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_cutsceneManager);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 _cutsceneManager.FindActors();
             }
@@ -333,6 +333,12 @@ namespace BigProject.Initializers
             _playerSpawner?.Dispose();
             _cutsceneManager?.Dispose();
             Destroy(transform.parent.gameObject);
+        }
+
+        private bool IsGameplayScene()
+        {
+            string actualSceneName = SceneManager.GetActiveScene().name;
+            return !(string.Equals(Scenes.MainMenu.ToString(), actualSceneName) || string.Equals(Scenes.Intro.ToString(), actualSceneName));
         }
     }
 }
