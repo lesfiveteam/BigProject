@@ -9,6 +9,7 @@ namespace BigProject.Player
         private InputSystemActions _inputActions;
         
         //Player Actions
+        public event Action ClickRelease;
         public event Action Click;
         public event Action OpenMap;
         public event Action PressPause;
@@ -32,6 +33,7 @@ namespace BigProject.Player
             _inputActions.UI.Cancel.performed += OnCancel;
             _inputActions.UI.Reset.performed += OnReset;
 
+            _inputActions.Player.Click.canceled += OnClickRelease;
             _inputActions.Player.Click.performed += OnClick;
             _inputActions.Player.OpenMap.performed += OnOpenedMap;
             _inputActions.Player.OpenMenu.performed += OnPressedPause;
@@ -47,6 +49,10 @@ namespace BigProject.Player
             PressPause?.Invoke();
         }
 
+        private void OnClickRelease(InputAction.CallbackContext obj)
+        {
+            ClickRelease?.Invoke();
+        }
         private void OnClick(InputAction.CallbackContext obj)
         {
             Click?.Invoke();

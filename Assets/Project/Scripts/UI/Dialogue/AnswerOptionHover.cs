@@ -11,7 +11,7 @@ namespace BigProject.UI.Dialogue
         [SerializeField]
         private GameObject _rightArrow;
 
-        private void Start()
+        private void OnEnable()
         {
             _leftArrow.GetComponent<Image>().enabled = false;
             _rightArrow.GetComponent<Image>().enabled = false;

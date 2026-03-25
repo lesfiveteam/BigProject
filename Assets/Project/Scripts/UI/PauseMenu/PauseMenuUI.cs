@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using BigProject.Managers;
+using Assets.Project.Scripts.Managers.SceneLoader;
 
 namespace BigProject.UI
 {

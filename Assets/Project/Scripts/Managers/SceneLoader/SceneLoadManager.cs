@@ -1,14 +1,16 @@
+using BigProject.Managers;
 using BigProject.Systems;
 using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace BigProject.Managers
+namespace Assets.Project.Scripts.Managers.SceneLoader
 {
     public enum Scenes
     {
         MainMenu,
+        Intro,
         Village,
         TownHall,
         Watermill
