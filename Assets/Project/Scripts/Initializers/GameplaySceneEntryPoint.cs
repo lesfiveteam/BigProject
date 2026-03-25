@@ -8,6 +8,7 @@ using BigProject.Gameplay.Common;
 using BigProject.Player;
 using BigProject.Intercatable.HighlightedObjects;
 using BigProject.Managers.CursorManager;
+using Assets.Project.Scripts.Managers.SceneLoader;
 
 namespace BigProject.Initializers
 {

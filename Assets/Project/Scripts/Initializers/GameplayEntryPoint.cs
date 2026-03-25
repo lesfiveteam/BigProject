@@ -22,6 +22,7 @@ using UnityEngine.AI;
 using UnityEngine.Assertions;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
+using Assets.Project.Scripts.Managers.SceneLoader;
 
 namespace BigProject.Initializers
 {
@@ -43,6 +44,8 @@ namespace BigProject.Initializers
         [SerializeField]
         private GameObject _dialogueView;
         [SerializeField]
+        private GameObject _pauseView;
+        [SerializeField]
         private GameObject _replicaView;
         [SerializeField]
         private QuestSwitchConfig _questSwitchConfig;
@@ -62,6 +65,7 @@ namespace BigProject.Initializers
         private GameObject _hudObj;
         private GameObject _dialogueViewObj;
         private GameObject _replicaViewObj;
+        private GameObject _pauseMenuViewObj;
         private QuestJournal _questJournal;
         private InventorySystem _inventory;
         private RunesSystem _runesSystem;
@@ -127,6 +131,7 @@ namespace BigProject.Initializers
 
             InitDialogue();
             InitReplica();
+            InitPauseMenu();
 
             ServiceLocator.AddService(_questJournal);
             ServiceLocator.AddService(_runesSystem);
@@ -161,6 +166,13 @@ namespace BigProject.Initializers
             _replicaViewObj = Instantiate(_replicaView);
             _replicaManager = new ReplicaManager(_replicaViewObj.GetComponent<ReplicaView>());
             DontDestroyOnLoad(_replicaViewObj);
+        }
+
+        private void InitPauseMenu()
+        {
+            _pauseMenuViewObj = Instantiate(_pauseView);
+            _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput);
+            DontDestroyOnLoad(_pauseMenuViewObj);
         }
 
         private void InitHUD()
@@ -238,7 +250,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_playerSpawner);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 _playerSpawner.PositionPlayer(0);
             }
@@ -248,6 +260,7 @@ namespace BigProject.Initializers
         {
             GameObject cursorManagerObject = Instantiate(_cursorManagerPrefab, transform.parent);
             CursorManager cursorManager = cursorManagerObject.GetComponent<CursorManager>();
+            cursorManager.Init(_playerInput);
             ServiceLocator.AddService(cursorManager);
             InteractableObjectsHighlighter highlighter = cursorManagerObject.GetComponent<InteractableObjectsHighlighter>();
 
@@ -257,11 +270,11 @@ namespace BigProject.Initializers
                 return;
             }
 
-            highlighter.Init(sceneLoader, cursorManager);
+            highlighter.Init(sceneLoader, cursorManager, _playerInput);
             cursorManagerObject.SetActive(true);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 highlighter.RestartChecking();
             }
@@ -276,7 +289,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_cutsceneManager);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 _cutsceneManager.FindActors();
             }
@@ -294,6 +307,7 @@ namespace BigProject.Initializers
             Destroy(_hudObj);
             Destroy(_dialogueViewObj);
             Destroy(_replicaViewObj);
+            Destroy(_pauseMenuViewObj);
 
             ServiceLocator.ReleaseService<QuestJournal>();
             ServiceLocator.ReleaseService<RunesSystem>();
@@ -319,6 +333,12 @@ namespace BigProject.Initializers
             _playerSpawner?.Dispose();
             _cutsceneManager?.Dispose();
             Destroy(transform.parent.gameObject);
+        }
+
+        private bool IsGameplayScene()
+        {
+            string actualSceneName = SceneManager.GetActiveScene().name;
+            return !(string.Equals(Scenes.MainMenu.ToString(), actualSceneName) || string.Equals(Scenes.Intro.ToString(), actualSceneName));
         }
     }
 }
