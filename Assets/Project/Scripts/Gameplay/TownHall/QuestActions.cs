@@ -161,7 +161,9 @@ namespace BigProject.Gameplay.TownHall
 
         public void GetRune()
         {
-            _runesSystem.AddRune();
+            _runesSystem.AddRune(1);
+            _runesSystem.AddRune(3);
+            _runesSystem.ChangeRunebarBackgroundBasedOnQuest(1);
         }
 
 
