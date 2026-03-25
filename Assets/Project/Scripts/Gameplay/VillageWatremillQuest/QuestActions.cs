@@ -85,7 +85,8 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         public void GetRune()
         {
             _hud.ShowWidget(_hudConfig.HUDRunesWidgetId);
-            _runes.AddRune();
+            _runes.AddRune(0);
+            _runes.AddRune(4);
         }
     }
 }
