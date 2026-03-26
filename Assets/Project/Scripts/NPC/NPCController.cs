@@ -19,7 +19,7 @@ namespace BigProject.NPC
         [SerializeField]
         private NPCState _initialState = NPCState.Idle;
         [HideInInspector, SerializeField]
-        private Vector3 _agentPosition;
+        private AgentDTO _agentDTO;
 
         private ProgressManager _progressManager;
         private INPCState _state;
@@ -37,12 +37,18 @@ namespace BigProject.NPC
         public NPCState State => _state != null ? _state.State : NPCState.Idle;
         public NPCState StateBeforeDistracted { get; private set; }
 
+        [Serializable]
+        private class AgentDTO
+        {
+            public Vector3 position;
+        }
+
         public object SavingData
         {
             get
             {
-                _agentPosition = Agent.nextPosition;
-                return _agentPosition;
+                _agentDTO.position = Agent.nextPosition;
+                return _agentDTO;
             }
         }
 
@@ -55,10 +61,11 @@ namespace BigProject.NPC
             ChangeState(_initialState);
         }
 
-        private void Start() => _progressManager.LoadAdditionalData(this);
+        private void Start() => _progressManager.LoadAdditionalData(this, silent: true);
 
         private void OnDestroy()
         {
+            _progressManager.SaveAdditionalData(this);
             _state?.Dispose();
 
             foreach (INPCState state in _hashedStates.Values)
@@ -123,7 +130,7 @@ namespace BigProject.NPC
 
         public void OnLoad()
         {
-            Agent.Warp(_agentPosition);
+            Agent.Warp(_agentDTO.position);
         }
 
         public void AgentOn()

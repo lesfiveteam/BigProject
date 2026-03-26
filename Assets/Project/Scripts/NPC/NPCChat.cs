@@ -82,11 +82,6 @@ namespace BigProject.NPC
                 {
                     await Awaitable.WaitForSecondsAsync(_chatConfig.GetSpeachTime(tableEntry.LocalizedValue), ct);
                 }
-                catch (OperationCanceledException)
-                {
-                    ChatCompleted?.Invoke();
-                    throw;
-                }
                 finally
                 {
                     speaker.ShutUp();
