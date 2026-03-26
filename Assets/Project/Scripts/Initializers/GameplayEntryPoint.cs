@@ -46,8 +46,6 @@ namespace BigProject.Initializers
         [SerializeField]
         private GameObject _pauseView;
         [SerializeField]
-        private GameObject _replicaView;
-        [SerializeField]
         private QuestSwitchConfig _questSwitchConfig;
         [SerializeField]
         private QuestTrackerConfig _questTrackerConfig;
@@ -64,7 +62,6 @@ namespace BigProject.Initializers
         private HUD _hud;
         private GameObject _hudObj;
         private GameObject _dialogueViewObj;
-        private GameObject _replicaViewObj;
         private GameObject _pauseMenuViewObj;
         private QuestJournal _questJournal;
         private InventorySystem _inventory;
@@ -128,9 +125,12 @@ namespace BigProject.Initializers
             GameplayManager gameplayManager = new(ServiceLocator.GetService<ManualLoop>());
             _statesHandler = new(_hudConfig, gameplayManager, _playerInput, _hud);
             _questsTracker = new(progressManager, _questTrackerConfig.QuestsIds.ToList());
+            SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
+            PlayerController playerController = Instantiate(_playerControllerPrefab);
+            CreatePlayer(playerController, sceneLoader);
 
             InitDialogue();
-            InitReplica();
+            InitReplica(playerController);
             InitPauseMenu();
 
             ServiceLocator.AddService(_questJournal);
@@ -146,8 +146,6 @@ namespace BigProject.Initializers
             InitHUD();
             _questJournal.Init();
             AddQuestsSwitches(progressManager);
-            SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
-            CreatePlayer(sceneLoader);
             CreateCursorManager(sceneLoader);
             CreateCutsceneManager(sceneLoader);
             GameLogManager.Info(LogStr.INFO_INITIALIZING_GAMEPLAY_SERVICES_COMPLETED);
@@ -161,11 +159,11 @@ namespace BigProject.Initializers
             DontDestroyOnLoad(_dialogueViewObj);
         }
 
-        private void InitReplica()
+        private void InitReplica(PlayerController player)
         {
-            _replicaViewObj = Instantiate(_replicaView);
-            _replicaManager = new ReplicaManager(_replicaViewObj.GetComponent<ReplicaView>());
-            DontDestroyOnLoad(_replicaViewObj);
+            ReplicaView replicaView = player.GetComponentInChildren<ReplicaView>();
+            ExceptionUtilities.ThrowIfNull(replicaView, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "GameplayEntryPoint", "ReplicaView"));
+            _replicaManager = new ReplicaManager(replicaView);
         }
 
         private void InitPauseMenu()
@@ -239,9 +237,8 @@ namespace BigProject.Initializers
             }
         }
 
-        private void CreatePlayer(SceneLoadManager sceneLoader)
+        private void CreatePlayer(PlayerController playerController, SceneLoadManager sceneLoader)
         {
-            PlayerController playerController = Instantiate(_playerControllerPrefab);
             playerController.Init(_playerInput, sceneLoader);
             playerController.transform.parent = transform.parent;
             ServiceLocator.AddService(playerController);
@@ -306,7 +303,6 @@ namespace BigProject.Initializers
 
             Destroy(_hudObj);
             Destroy(_dialogueViewObj);
-            Destroy(_replicaViewObj);
             Destroy(_pauseMenuViewObj);
 
             ServiceLocator.ReleaseService<QuestJournal>();
