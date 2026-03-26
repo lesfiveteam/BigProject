@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BigProject.UI.Replica
+namespace BigProject.UI.Chat
 {
     public class ChatPanelController : MonoBehaviour
     {
@@ -21,6 +21,8 @@ namespace BigProject.UI.Replica
         [SerializeField]
         private float _maxWidth = 700f;
         [SerializeField]
+        private bool _isWorldPanel = true;
+        [SerializeField]
         private bool _isMovable;
 
         private void Awake()
@@ -33,7 +35,7 @@ namespace BigProject.UI.Replica
 
         private void LateUpdate()
         {
-            if (_isMovable)
+            if (_isWorldPanel && _isMovable)
             {
                 transform.LookAt(transform.position + Camera.main.transform.forward);
             }
@@ -59,7 +61,11 @@ namespace BigProject.UI.Replica
 
         private void OnEnable()
         {
-            transform.LookAt(transform.position + Camera.main.transform.forward);
+            if (_isWorldPanel)
+            {
+                transform.LookAt(transform.position + Camera.main.transform.forward);
+            }
+
             _text.RegisterDirtyVerticesCallback(Resize);
             Resize();
         }

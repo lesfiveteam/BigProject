@@ -12,7 +12,7 @@ using BigProject.Systems.QuestSystem;
 using BigProject.UI;
 using BigProject.UI.Common;
 using BigProject.UI.Dialogue;
-using BigProject.UI.Replica;
+using BigProject.UI.Chat;
 using BigProject.Utilities;
 using System;
 using System.Collections.Generic;
@@ -23,6 +23,7 @@ using UnityEngine.Assertions;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 using Assets.Project.Scripts.Managers.SceneLoader;
+using TMPro;
 
 namespace BigProject.Initializers
 {
@@ -122,16 +123,14 @@ namespace BigProject.Initializers
             _playerInput = new();
             _questJournal = new QuestJournal(progressManager, _journalConfig);
             _runesSystem = new();
+            ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
             GameplayManager gameplayManager = new(ServiceLocator.GetService<ManualLoop>());
             _statesHandler = new(_hudConfig, gameplayManager, _playerInput, _hud);
             _questsTracker = new(progressManager, _questTrackerConfig.QuestsIds.ToList());
             SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
             PlayerController playerController = Instantiate(_playerControllerPrefab);
             CreatePlayer(playerController, sceneLoader);
-
             InitDialogue();
-            InitReplica(playerController);
-            InitPauseMenu();
 
             ServiceLocator.AddService(_questJournal);
             ServiceLocator.AddService(_runesSystem);
@@ -139,11 +138,18 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_hud);
             ServiceLocator.AddService(_playerInput);
             ServiceLocator.AddService(_dialogueManager);
-            ServiceLocator.AddService(_replicaManager);
             ServiceLocator.AddService(gameplayManager);
             ServiceLocator.AddService(_questsTracker);
 
             InitHUD();
+            ChatPanelController playerChatWorld = playerController.GetComponentInChildren<ChatPanelController>(true);
+            ExceptionUtilities.ThrowIfNull(playerChatWorld, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "GameplayEntryPoint", "Player ChatPanelController"));
+            playerChatWorld.GetComponentInChildren<TMP_Text>();
+            InitReplica(playerChatWorld.gameObject, playerChatWorld.GetComponentInChildren<TMP_Text>(),
+                _hudObj.GetComponentInChildren<PlayerChatUI>(true), gameplayManager, manualLoop);
+            ServiceLocator.AddService(_replicaManager);
+            InitPauseMenu();
+
             _questJournal.Init();
             AddQuestsSwitches(progressManager);
             CreateCursorManager(sceneLoader);
@@ -159,11 +165,11 @@ namespace BigProject.Initializers
             DontDestroyOnLoad(_dialogueViewObj);
         }
 
-        private void InitReplica(PlayerController player)
+        private void InitReplica(GameObject playerWorldChat, TMP_Text playerWorldText, PlayerChatUI chatWidget,
+            GameplayManager gameplayManager, ManualLoop manualLoop)
         {
-            ReplicaView replicaView = player.GetComponentInChildren<ReplicaView>();
-            ExceptionUtilities.ThrowIfNull(replicaView, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "GameplayEntryPoint", "ReplicaView"));
-            _replicaManager = new ReplicaManager(replicaView);
+            PlayerChatController _chatController = new(playerWorldChat, playerWorldText, chatWidget, gameplayManager);
+            _replicaManager = new ReplicaManager(_chatController, manualLoop);
         }
 
         private void InitPauseMenu()
