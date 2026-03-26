@@ -9,11 +9,11 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
 {
     public enum Scenes
     {
-        MainMenu,
-        Intro,
-        Village,
-        TownHall,
-        Watermill
+        MainMenu = 100,
+        Intro = 200,
+        Village = 300,
+        TownHall = 400,
+        Watermill = 500,
     }
 
     public class SceneLoadManager : IDisposable
