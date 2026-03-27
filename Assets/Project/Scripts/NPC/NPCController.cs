@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.NPC.NPCWalkSystem;
 using BigProject.Managers;
 using BigProject.NPC.States;
 using BigProject.Systems;
@@ -13,7 +14,7 @@ namespace BigProject.NPC
     public class NPCController : MonoBehaviour, ISavable
     {
         [SerializeField]
-        private NPCBehaviourController _behaviourController;
+        private NPCWalkController _walkController;
         [SerializeField]
         private NavMeshObstacle _obstacle;
         [SerializeField]
@@ -54,7 +55,7 @@ namespace BigProject.NPC
 
         private void Awake()
         {
-            Assert.IsNotNull(_behaviourController, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, $"{name}", "NPCBehaviourController"));
+            Assert.IsNotNull(_walkController, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, $"{name}", "NPCBehaviourController"));
             Assert.IsNotNull(_obstacle, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, $"{name}", "NavMeshObstacle"));
             CreateHashedStates();
             StateBeforeDistracted = _initialState;
@@ -153,9 +154,9 @@ namespace BigProject.NPC
         private void CreateHashedStates()
         {
             _hashedStates.Add(NPCState.Idle, new NPCStateIdle(this));
-            NPCStatePatrolling statePatrolling = new(this, _behaviourController);
+            NPCStatePatrolling statePatrolling = new(this, _walkController);
             _hashedStates.Add(NPCState.Patrolling, statePatrolling);
-            _hashedStates.Add(NPCState.Wandering, new NPCStateWandering(statePatrolling, _behaviourController));
+            _hashedStates.Add(NPCState.Wandering, new NPCStateWandering(statePatrolling, _walkController));
         }
 
         private bool IsDistractedState(NPCState state) => state > NPCState.Wandering;
