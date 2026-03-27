@@ -10,5 +10,9 @@ namespace Assets.Project.Scripts.NPC
         Work,
         Walk1,
         Walk2,
+        WomanIdle,
+        WomanTalk1,
+        WomanTalk2,
+        WomanWalk
     }
 }
