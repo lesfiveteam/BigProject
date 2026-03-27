@@ -2,13 +2,15 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using BigProject.UI;
 
 namespace BigProject.Systems.Inventory
 {
-    public class RuneShardsSystem
+    public class RuneShardsSystem : MonoBehaviour
     {
         [SerializeField] private RuneShardsDatabaseSO _runeShardsDatabase;
         [SerializeField] private RuneSegmentsDatabaseSO _runeSegmentsDatabase;
+        [SerializeField] private RunesJigsawUI _runesJigsawUI;
 
         private List<int> _foundShardsIDs = new List<int>();
         private List<int> _unlockedSegmentsIDs = new List<int>();
@@ -51,6 +53,8 @@ namespace BigProject.Systems.Inventory
         public List<int> GetFilledSegmentsIDs() => _filledSegmentsIDs;
         public List<int> GetUnlockedSegmentsIDs() => _unlockedSegmentsIDs;
 
+        public List<int> GetFreeShardsIDs() => _foundShardsIDs.Except(_placedShardsIDs).ToList();
+
         public List<int> GetShardsLeftToFinishSegments()
         {
             List<int> shardsLeftToFinishSegments = new List<int>();
@@ -86,6 +90,22 @@ namespace BigProject.Systems.Inventory
             }
 
             return shardsLeftToFinishSegments;
+        }
+
+        public RuneShard GetShardByID(int id)
+        {
+            return _runeShardsDatabase.Shards.FirstOrDefault(shard => shard.Id == id);
+        }
+
+        private void Awake()
+        {
+            for (int i = 0; i < 4; ++i)
+                _unlockedSegmentsIDs.Add(i);
+
+            for (int i = 0; i < 22; ++i)
+                _foundShardsIDs.Add(i);
+
+            _runesJigsawUI.Init(this);
         }
     }
 }

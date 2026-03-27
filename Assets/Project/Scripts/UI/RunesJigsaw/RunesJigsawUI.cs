@@ -2,6 +2,7 @@ using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +24,7 @@ namespace BigProject.UI
         [SerializeField] private List<BackingImage> _backingImages;
         [SerializeField] private Image _backingImage;
         [SerializeField] private List<Image> _segmentImages;
+        [SerializeField] private Transform shardHolder;
 
         private RuneShardsSystem _runeShardsSystem;
         private List<ShardUI> _freeShards = new List<ShardUI>();
@@ -33,7 +35,7 @@ namespace BigProject.UI
         {
             _runeShardsSystem = runeShardsSystem;
 
-            _runeShardsSystem.OnShardAdded += AddShard;
+            _runeShardsSystem.OnShardAdded += AddNewShard;
             _runeShardsSystem.OnSegmentUnlocked += UpdateBackingVisual;
 
             UpdateBackingVisual(_runeShardsSystem.GetUnlockedSegmentsNum());
@@ -44,30 +46,69 @@ namespace BigProject.UI
             {
                 ShowSegmentFilled(segmentID);
             }
+
+            var placedShardsIDs = _runeShardsSystem.GetPlacedShardsIDs();
+            var freeShardsIDs = _runeShardsSystem.GetFreeShardsIDs();
+
+            foreach (var shardID in placedShardsIDs)
+            {
+                SpawnShard(_runeShardsSystem.GetShardByID(shardID), isPlaced: true);
+            }
+
+            foreach (var shardID in freeShardsIDs)
+            {
+                SpawnShard(_runeShardsSystem.GetShardByID(shardID), isPlaced: false);
+            }
+
+            foreach (var segmentID in _runeShardsSystem.GetFilledSegmentsIDs())
+            {
+                ShowSegmentFilled(segmentID);
+            }
+
+            for (int i = 0; i < _shardsLeftToFinishSegments.Count; i++)
+            {
+                if (_shardsLeftToFinishSegments[i] == 0) ShowSegmentFilled(i);
+            }
         }
 
         private void OnDestroy()
         {
             if (_runeShardsSystem != null)
             {
-                _runeShardsSystem.OnShardAdded -= AddShard;
+                _runeShardsSystem.OnShardAdded -= AddNewShard;
                 _runeShardsSystem.OnSegmentUnlocked -= UpdateBackingVisual;
             }
         }
+        private void AddNewShard(RuneShard shard)
+        {
+            SpawnShard(shard, isPlaced: false);
+        }
 
-        private void AddShard(RuneShard shard)
+        private void SpawnShard(RuneShard shard, bool isPlaced)
         {
             int id = shard.Id;
             GameObject startShard = _startShards[id];
             GameObject goalShard = _goalShards[id];
 
-            GameObject spawnedShard = Instantiate(_shardPrefab, startShard.transform.position, Quaternion.identity);
+            Vector3 spawnPos = isPlaced ? goalShard.transform.position : startShard.transform.position;
+            GameObject spawnedShard = Instantiate(_shardPrefab, spawnPos, Quaternion.identity, shardHolder);
+
             ShardUI shardUI = spawnedShard.GetComponent<ShardUI>();
 
-            shardUI.Init(startShard.transform, goalShard.transform, shard.Sprite, _boardBorders, id, shard.SegmentId);
+            RectTransform transform = goalShard.GetComponent<RectTransform>();
+            Vector2 imgSize = new Vector2(transform.sizeDelta.x, transform.sizeDelta.y);
+
+            shardUI.Init(startShard.transform, goalShard.transform, shard.Sprite, _boardBorders, id, shard.SegmentId, imgSize, isPlaced);
             shardUI.OnShardPlacedCorrectly += HandleShardPlacedCorrectly;
 
-            _freeShards.Add(shardUI);
+            if (isPlaced)
+            {
+                _placedShards.Add(shardUI);
+            }
+            else
+            {
+                _freeShards.Add(shardUI);
+            }
         }
 
         private void HandleShardPlacedCorrectly(int id)
@@ -107,6 +148,10 @@ namespace BigProject.UI
             if (segmentID >= 0 && segmentID < _segmentImages.Count)
             {
                 _segmentImages[segmentID].gameObject.SetActive(true);
+                foreach (var shard in _placedShards)
+                {
+                    if (shard.SegmentID == segmentID) Destroy(shard.gameObject);
+                }
             }
         }
     }

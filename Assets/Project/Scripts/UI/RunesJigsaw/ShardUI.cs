@@ -28,7 +28,7 @@ namespace BigProject.UI
         public int ID => _id;
         public int SegmentID => _segmentID;
 
-        public void Init(Transform startPos, Transform goalPos, Sprite sprite, Image boardBorders, int id, int segmentID)
+        public void Init(Transform startPos, Transform goalPos, Sprite sprite, Image boardBorders, int id, int segmentID, Vector2 imgSize, bool isPlaced = false)
         {
             _startPos = startPos;
             _goalPos = goalPos;
@@ -36,6 +36,11 @@ namespace BigProject.UI
             _boardBorders = boardBorders;
             _id = id;
             _segmentID = segmentID;
+
+            _isOnRightPlace = isPlaced;
+            transform.position = isPlaced ? _goalPos.position : _startPos.position;
+
+            _image.rectTransform.sizeDelta = imgSize;
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -45,6 +50,7 @@ namespace BigProject.UI
             _isMoving = true;
             Vector3 mousePos = Mouse.current.position.ReadValue();
             _offset = transform.position - mousePos;
+            transform.SetAsLastSibling();
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -68,6 +74,7 @@ namespace BigProject.UI
             {
                 transform.position = _goalPos.position;
                 _isOnRightPlace = true;
+                transform.SetAsLastSibling();
                 OnShardPlacedCorrectly?.Invoke(_id);
             }
         }
