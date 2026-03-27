@@ -5,6 +5,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
     public class NPCAttractionPoint : NPCRootPoint
     {
         [field: SerializeField] public float DelayModificator { get; private set; } = 1f;
+        [field: SerializeField, Range(1, 10)] public int Weight { get; private set; } = 5;
         [field: SerializeField] public NPCAnimationAction TargetAnimation { get; private set; } = NPCAnimationAction.Idle;
 
         public string Id => $"{transform.position.x}_{transform.position.y}_{transform.position.z}";
