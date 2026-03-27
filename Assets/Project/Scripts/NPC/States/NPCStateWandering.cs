@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.NPC.NPCWalkSystem;
 using BigProject.Systems;
 using BigProject.Utilities;
 using UnityEngine;
@@ -7,16 +8,16 @@ namespace BigProject.NPC.States
     public class NPCStateWandering : INPCState
     {
         private NPCStatePatrolling _statePatrolling;
-        private NPCBehaviourController _behaviourController;
+        private NPCWalkController _walkController;
 
         public NPCState State => NPCState.Wandering;
 
-        public NPCStateWandering(NPCStatePatrolling statePatrolling, NPCBehaviourController behaviourController)
+        public NPCStateWandering(NPCStatePatrolling statePatrolling, NPCWalkController behaviourController)
         {
             _statePatrolling = statePatrolling;
-            _behaviourController = behaviourController;
+            _walkController = behaviourController;
             ExceptionUtilities.ThrowIfNull(_statePatrolling, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWandering", "NPCStatePatrolling"));
-            ExceptionUtilities.ThrowIfNull(_behaviourController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWandering", "NPCBehaviourController"));
+            ExceptionUtilities.ThrowIfNull(_walkController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWandering", "NPCWalkController"));
         }
 
         public void Start()

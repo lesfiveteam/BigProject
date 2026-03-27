@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.NPC.NPCWalkSystem;
 using BigProject.Systems;
 using BigProject.Utilities;
 using UnityEngine;
@@ -7,27 +8,27 @@ namespace BigProject.NPC.States
     public class NPCStatePatrolling : INPCState
     {
         private NPCController _controller;
-        private NPCBehaviourController _behaviourController;
+        private NPCWalkController _walkController;
 
         public NPCState State => NPCState.Patrolling;
 
-        public NPCStatePatrolling(NPCController controller, NPCBehaviourController behaviourController)
+        public NPCStatePatrolling(NPCController controller, NPCWalkController walkController)
         {
             _controller = controller;
-            _behaviourController = behaviourController;
+            _walkController = walkController;
             ExceptionUtilities.ThrowIfNull(_controller, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStatePatrolling", "NPCController"));
-            ExceptionUtilities.ThrowIfNull(_behaviourController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStatePatrolling", "NPCBehaviourController"));
+            ExceptionUtilities.ThrowIfNull(_walkController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStatePatrolling", "NPCWalkController"));
         }
 
         public void Start()
         {
             _controller.AgentOn();
-            _behaviourController.enabled = true;
+            _walkController.StartWalk();
         }
 
         public void Stop()
         {
-            _behaviourController.enabled = false;
+            _walkController.StopWalk();
         }
 
         public void OnTriggerEnter(Collider other)
