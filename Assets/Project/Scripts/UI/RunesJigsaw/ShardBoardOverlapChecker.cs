@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
 
 namespace BigProject.UI
 {
@@ -24,10 +23,18 @@ namespace BigProject.UI
             Vector3[] corners = new Vector3[4];
             rectTransform.GetWorldCorners(corners);
 
-            float xMin = corners.Min(c => c.x);
-            float xMax = corners.Max(c => c.x);
-            float yMin = corners.Min(d => d.y);
-            float yMax = corners.Max(d => d.y);
+            float xMin = corners[0].x;
+            float xMax = corners[0].x;
+            float yMin = corners[0].y;
+            float yMax = corners[0].y;
+
+            for (int i = 1; i < 4; i++)
+            {
+                if (corners[i].x < xMin) xMin = corners[i].x;
+                if (corners[i].x > xMax) xMax = corners[i].x;
+                if (corners[i].y < yMin) yMin = corners[i].y;
+                if (corners[i].y > yMax) yMax = corners[i].y;
+            }
 
             return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
         }

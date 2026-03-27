@@ -7,13 +7,13 @@ namespace BigProject.Systems.Inventory
     [Serializable]
     public struct RuneSegment
     {
-        public int _id;
-        public Sprite _sprite;
+        public int Id;
+        public Sprite Sprite;
     }
 
     [CreateAssetMenu(menuName = "Inventory/RuneSegmentsDatabase")]
     public class RuneSegmentsDatabaseSO : ScriptableObject
     {
-        public List<RuneSegment> _segments;
+        public List<RuneSegment> Segments;
     }
 }

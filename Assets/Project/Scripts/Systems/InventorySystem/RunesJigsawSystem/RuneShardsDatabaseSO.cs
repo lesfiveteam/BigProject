@@ -1,21 +1,20 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BigProject.Systems.Inventory
 {
     [Serializable]
     public struct RuneShard
     {
-        public int _id;
-        public int _segmentId;
-        public Sprite _sprite;
+        public int Id;
+        public int SegmentId;
+        public Sprite Sprite;
     }
 
     [CreateAssetMenu(menuName = "Inventory/RuneShardsDatabase")]
     public class RuneShardsDatabaseSO : ScriptableObject
     {
-        public List<RuneShard> _shards;
+        public List<RuneShard> Shards;
     }
 }

@@ -1,9 +1,9 @@
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
-using UnityEngine;
-using System.Collections.Generic;
-using UnityEngine.UI;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace BigProject.UI
 {
@@ -25,15 +25,16 @@ namespace BigProject.UI
         [SerializeField] private List<Image> _segmentImages;
 
         private RuneShardsSystem _runeShardsSystem;
-        private List<ShardUI> _freeShards;
-        private List<ShardUI> _placedShards;
+        private List<ShardUI> _freeShards = new List<ShardUI>();
+        private List<ShardUI> _placedShards = new List<ShardUI>();
         private List<int> _shardsLeftToFinishSegments;
 
         public void Init(RuneShardsSystem runeShardsSystem)
         {
             _runeShardsSystem = runeShardsSystem;
-            _runeShardsSystem.OnShardAdded += this.AddShard;
-            _runeShardsSystem.OnSegmentUnlocked += this.UpdateBackingVisual;
+
+            _runeShardsSystem.OnShardAdded += AddShard;
+            _runeShardsSystem.OnSegmentUnlocked += UpdateBackingVisual;
 
             UpdateBackingVisual(_runeShardsSystem.GetUnlockedSegmentsNum());
 
@@ -45,40 +46,50 @@ namespace BigProject.UI
             }
         }
 
+        private void OnDestroy()
+        {
+            if (_runeShardsSystem != null)
+            {
+                _runeShardsSystem.OnShardAdded -= AddShard;
+                _runeShardsSystem.OnSegmentUnlocked -= UpdateBackingVisual;
+            }
+        }
+
         private void AddShard(RuneShard shard)
         {
-            int id = shard._id;
+            int id = shard.Id;
             GameObject startShard = _startShards[id];
+            GameObject goalShard = _goalShards[id];
+
             GameObject spawnedShard = Instantiate(_shardPrefab, startShard.transform.position, Quaternion.identity);
             ShardUI shardUI = spawnedShard.GetComponent<ShardUI>();
-            GameObject goalShard = _goalShards[id];
-            shardUI.Init(startShard.transform, goalShard.transform, shard._sprite, _boardBorders, id, shard._segmentId);
+
+            shardUI.Init(startShard.transform, goalShard.transform, shard.Sprite, _boardBorders, id, shard.SegmentId);
+            shardUI.OnShardPlacedCorrectly += HandleShardPlacedCorrectly;
+
             _freeShards.Add(shardUI);
-            shardUI.OnShardPlacedCorrectly += this.HandleShardPlacedCorrectly;
         }
 
         private void HandleShardPlacedCorrectly(int id)
         {
-            foreach (var shard in _freeShards)
+            ShardUI placedShard = _freeShards.Find(shard => shard.ID == id);
+            if (placedShard == null) return;
+
+            _placedShards.Add(placedShard);
+            _freeShards.Remove(placedShard);
+
+            int segmentID = placedShard.SegmentID;
+            _shardsLeftToFinishSegments[segmentID]--;
+
+            if (_shardsLeftToFinishSegments[segmentID] == 0)
             {
-                if (shard.GetID() == id)
-                {
-                    _placedShards.Add(shard);
-                    _freeShards.Remove(shard);
-                    var segmentID = shard.GetSegmentID();
-                    _shardsLeftToFinishSegments[segmentID]--;
-                    if (_shardsLeftToFinishSegments[segmentID] == 0)
-                    {
-                        ShowSegmentFilled(segmentID);
-                    }
-                    break;
-                }
+                ShowSegmentFilled(segmentID);
             }
         }
 
         private void UpdateBackingVisual(int unlockedSegmentsNum)
         {
-            foreach (var backingImage in  _backingImages)
+            foreach (var backingImage in _backingImages)
             {
                 if (unlockedSegmentsNum >= backingImage.unlockedSegmentsThreshold)
                 {
@@ -93,7 +104,10 @@ namespace BigProject.UI
 
         private void ShowSegmentFilled(int segmentID)
         {
-            _segmentImages[segmentID].gameObject.SetActive(true);
+            if (segmentID >= 0 && segmentID < _segmentImages.Count)
+            {
+                _segmentImages[segmentID].gameObject.SetActive(true);
+            }
         }
     }
 }
