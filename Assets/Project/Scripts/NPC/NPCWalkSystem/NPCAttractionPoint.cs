@@ -5,9 +5,9 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
     public class NPCAttractionPoint : NPCRootPoint
     {
         [field: SerializeField] public float DelayModificator { get; private set; } = 1f;
-        [field: SerializeField] public NPCAnimation TargetAnimation { get; private set; } = NPCAnimation.Idle;
+        [field: SerializeField] public NPCAnimationAction TargetAnimation { get; private set; } = NPCAnimationAction.Idle;
 
-        public string Id => $"{transform.position.x:F1}_{transform.position.y:F1}_{transform.position.z:F1}";
+        public string Id => $"{transform.position.x}_{transform.position.y}_{transform.position.z}";
 
 #if UNITY_EDITOR
         private readonly Color SPHERE_COLOR = Color.blue;
@@ -16,12 +16,13 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         private const float LABEL_OFFSET_Y = 3f;
         private const int LABEL_FONT_SIZE = 12;
 
-        protected override void OnDrawGizmos()
+        protected override void DrawSphere()
         {
-            base.OnDrawGizmos();
-
-            DrawLabel();
+            Gizmos.color = SPHERE_COLOR;
+            Gizmos.DrawSphere(transform.position, SPHERE_RADIUS);
         }
+
+        protected override void AdditionalDraw() => DrawLabel();
 
         private void DrawLabel()
         {
@@ -33,12 +34,6 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
             Vector3 labelPos = transform.position + Vector3.up * LABEL_OFFSET_Y;
             UnityEditor.Handles.Label(labelPos, Id, style);
-        }
-
-        protected override void DrawSphere()
-        {
-            Gizmos.color = SPHERE_COLOR;
-            Gizmos.DrawSphere(transform.position, SPHERE_RADIUS);
         }
 #endif
     }
