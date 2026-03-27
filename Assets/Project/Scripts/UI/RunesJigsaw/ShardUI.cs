@@ -17,21 +17,26 @@ namespace BigProject.UI
         private bool _isOnRightPlace;
         private Vector3 _offset;
         private int _id;
+        private int _segmentID;
 
-        private const float EPSILON = 10.0f; // max distance from shard to goal position for it to be sticked
+        // Maximum distance from shard to goal position for it to be sticked
+        private const float EPSILON = 10.0f;
 
         public event Action<int> OnShardPlacedCorrectly;
 
-        public void Init(Transform startPos, Transform goalPos, Image image, Image boardBorders, int id)
+        public void Init(Transform startPos, Transform goalPos, Sprite sprite, Image boardBorders, int id, int segmentID)
         {
             _startPos = startPos;
             _goalPos = goalPos;
-            _image = image;
+            _image.sprite = sprite;
             _boardBorders = boardBorders;
             _id = id;
+            _segmentID = segmentID;
         }
 
         public int GetID() => _id;
+
+        public int GetSegmentID() => _segmentID;
 
         public void OnDrag(PointerEventData eventData)
         {

@@ -10,7 +10,7 @@ namespace BigProject.Systems.Inventory
     {
         public int _id;
         public int _segmentId;
-        public Image _image;
+        public Sprite _sprite;
     }
 
     [CreateAssetMenu(menuName = "Inventory/RuneShardsDatabase")]
