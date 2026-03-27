@@ -13,6 +13,8 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         [SerializeField] private NavMeshAgent _agent;
         [SerializeField] private Animator _animator;
 
+        [SerializeField] private NPCAnimationMovement _movementAnimation;
+
         [SerializeField] private float _moveSpeed = 3f;
         [SerializeField] private float _minDelayTimeInPoint = 1f;
         [SerializeField] private float _maxDelayTimeInPoint = 5f;
@@ -81,15 +83,15 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
             _walkCoroutine = StartCoroutine(FollowRoute());
         }
 
-        private void PlayAnimation(NPCAnimation animation)
+        private void PlayAnimation(string animation)
         {
-            _animator.SetTrigger(animation.ToString());
+            _animator.SetTrigger(animation);
         }
 
         private IEnumerator GoTo()
         {
             _agent.SetDestination(_nextPoint.Position);
-            PlayAnimation(NPCAnimation.Walk1);
+            PlayAnimation(_movementAnimation.ToString());
 
             yield return new WaitUntil(() =>
                 !_agent.pathPending &&
@@ -107,7 +109,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
                 _nextPoint = _currentRoute.Dequeue();
 
                 _agent.SetDestination(_nextPoint.Position);
-                PlayAnimation(NPCAnimation.Walk1);
+                PlayAnimation(_movementAnimation.ToString());
 
                 yield return new WaitUntil(() =>
                     !_agent.pathPending &&
@@ -122,7 +124,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         private IEnumerator OnDestinationReached()
         {
-            PlayAnimation(_lastAttractionPoint.TargetAnimation);
+            PlayAnimation(_lastAttractionPoint.TargetAnimation.ToString());
             yield return new WaitForSeconds(Random.Range(_minDelayTimeInPoint, _maxDelayTimeInPoint) * _lastAttractionPoint.DelayModificator);
 
             GoToNextAttractionPoint();
