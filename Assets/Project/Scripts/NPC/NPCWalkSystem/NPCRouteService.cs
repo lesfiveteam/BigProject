@@ -16,7 +16,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         // AttractionPoint.Id, ways 
         private Dictionary<string, List<NPCWay>> _confirmedWays = new();
-        private List<NPCAttractionPoint> _allAttractionPoints;
+        private List<NPCAttractionPoint> _allAttractionPoints = new();
         private List<NPCAttractionPoint> AllAttractionPoints
         {
             get
