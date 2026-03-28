@@ -30,8 +30,6 @@ namespace BigProject.Player
         private SceneLoadManager _sceneLoader;
 
         private const string MOVING_ANIM_BOOL = "IsMoving";
-        //private readonly int CLIMB_UP_ANIM_BOOL = Animator.StringToHash("IsClimbUp");
-        //private readonly int CLIMB_DOWN_ANIM_BOOL = Animator.StringToHash("IsClimbDown");
 
         public bool IsMoving => _isMoving;
 
@@ -172,9 +170,6 @@ namespace BigProject.Player
             moveDirection.y = 0;
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
 
-            //int climbAnimation = startPosition.y < endPosition.y ? CLIMB_UP_ANIM_BOOL : CLIMB_DOWN_ANIM_BOOL;
-            //_animatorController.SetBool(climbAnimation, true);
-
             _climbDuration = Vector3.Distance(startPosition, endPosition) / _climbSpeed;
 
             float progress = 0;
@@ -194,7 +189,6 @@ namespace BigProject.Player
                 yield return null;
             }
 
-            //_animatorController.SetBool(climbAnimation, false);
             _navMeshAgent.CompleteOffMeshLink();
             _climbProcess = null;
         }
