@@ -72,6 +72,13 @@ namespace BigProject.Initializers
             {
                 interactableHandler.Init(progressManager);
             }
+
+            HighlightSwitchByTrigger[] switchesByTriggers = FindObjectsByType<HighlightSwitchByTrigger>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            foreach (HighlightSwitchByTrigger switchByTrigger in switchesByTriggers)
+            {
+                switchByTrigger.Init(progressManager);
+            }
         }
 
         private void InitDoors()

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Localization;
 
 namespace BigProject.Gameplay.TownHall
 {
@@ -51,6 +52,10 @@ namespace BigProject.Gameplay.TownHall
         private float _timeBeforeClue;
         [SerializeField]
         private HUDConfig _hudConfig;
+
+        [Header("Player remarks")]
+        [SerializeField]
+        private LocalizedString _puzzleRemark;
 
         private InventorySystem _inventory;
         private InventoryUI _inventoryUI;
@@ -102,6 +107,7 @@ namespace BigProject.Gameplay.TownHall
             ExceptionUtilities.ThrowIfNull(_progressManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Progress Manager"));
             ExceptionUtilities.ThrowIfNull(_hud, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "HUD"));
             ExceptionUtilities.ThrowIfNull(_inputHandler, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Input Handler"));
+            ExceptionUtilities.ThrowIfNull(_puzzleRemark, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "LocalizedString puzzle remark"));
         }
 
         private void Awake()
@@ -344,7 +350,7 @@ namespace BigProject.Gameplay.TownHall
 
             if (_activator.IsActivated)
             {
-                ReplicaManager.ShowReplica("Связь есть");
+                ReplicaManager.ShowReplica(_puzzleRemark);
             }
         }
 

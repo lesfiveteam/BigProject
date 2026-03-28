@@ -8,6 +8,7 @@ using BigProject.Utilities;
 using System;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Localization;
 
 namespace BigProject.Gameplay.VillageWatermillQuest
 {
@@ -29,6 +30,10 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         private GearsHandler _millWheelHandler;
         [SerializeField]
         private HUDConfig _hudConfig;
+
+        [Header("Player remarks")]
+        [SerializeField]
+        private LocalizedString _runeRemark;
 
         private InventorySystem _inventory;
         private RunesSystem _runes;
@@ -87,6 +92,7 @@ namespace BigProject.Gameplay.VillageWatermillQuest
             _hud.ShowWidget(_hudConfig.HUDRunesWidgetId);
             _runes.AddRune(0);
             _runes.AddRune(4);
+            ReplicaManager.ShowReplica(_runeRemark);
         }
     }
 }

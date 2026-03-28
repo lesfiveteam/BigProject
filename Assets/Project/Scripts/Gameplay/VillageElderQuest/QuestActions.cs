@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Localization;
 
 namespace BigProject.Gameplay.VillageElderQuest
 {
@@ -22,6 +23,14 @@ namespace BigProject.Gameplay.VillageElderQuest
         private List<string> _keysItemsNames;
         [SerializeField]
         private GameObject _enterVillageTrigger;
+
+        [Header("Player remarks")]
+        [SerializeField]
+        private LocalizedString _townhallRemark;
+        [SerializeField]
+        private LocalizedString _needFatherRemark;
+        [SerializeField]
+        private LocalizedString _watermillRemark;
 
         private InventorySystem _inventory;
         private InventoryUI _inventoryUI;
@@ -51,14 +60,15 @@ namespace BigProject.Gameplay.VillageElderQuest
         public void GetBag()
         {
             _inventory.AddItemByName(_bagItemName);
-            ReplicaManager.ShowReplica("Bag");
+            ReplicaManager.ShowReplica(_townhallRemark, 1f);
         }
 
         public void RemoveBag()
         {
             RemoveAmbassador();
             _inventory.RemoveItemByName(_bagItemName);
-            GameplayUtilities.DoAfterConditionRoutine(() => _gameplayManager.State == GameplayState.Play, () => ReplicaManager.ShowReplica("К кузнецу надо!"));
+            GameplayUtilities.DoAfterConditionRoutine(() => _gameplayManager.State == GameplayState.Play, () =>
+            ReplicaManager.ShowReplica(_needFatherRemark, 1f));
         }
 
         public void AmbassadorAppearance()
@@ -86,6 +96,11 @@ namespace BigProject.Gameplay.VillageElderQuest
         public void EnterVillage()
         {
             _enterVillageTrigger.SetActive(true);
+        }
+
+        public void CheckWatermill()
+        {
+            ReplicaManager.ShowReplica(_watermillRemark);
         }
     }
 }

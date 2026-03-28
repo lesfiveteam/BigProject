@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 {
@@ -15,7 +16,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         private const float SNAP_OFFSET = 0.1f;
         private const int TERRAIN_LAYER = 1 << 0;
 
-        protected virtual void OnDrawGizmos()
+        private void OnDrawGizmos()
         {
             if (!IsVisible)
                 return;
@@ -25,6 +26,16 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
                 SnapToTerrain();
 
             DrawSphere();
+
+            AdditionalDraw();
+        }
+
+        protected virtual void AdditionalDraw() { }
+
+        protected virtual void DrawSphere()
+        {
+            Gizmos.color = SPHERE_COLOR;
+            Gizmos.DrawSphere(transform.position, SPHERE_RADIUS);
         }
 
         private void SnapToTerrain()
@@ -38,12 +49,6 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
                 pos.y = hit.point.y + SNAP_OFFSET;
                 transform.position = pos;
             }
-        }
-
-        protected virtual void DrawSphere()
-        {
-            Gizmos.color = SPHERE_COLOR;
-            Gizmos.DrawSphere(transform.position, SPHERE_RADIUS);
         }
 #endif
     }
