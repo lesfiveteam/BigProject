@@ -3,6 +3,7 @@ using BigProject.Intercatable;
 using BigProject.Systems;
 using BigProject.Utilities;
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -15,11 +16,15 @@ namespace BigProject.Player
 
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
+        [SerializeField] private float _climbSpeed = 0.2f;
 
         private PlayerInputHandler _inputHandler;
         private IInteractable _interactable = null;
         private Vector3 _destination;
         private bool _isMoving;
+
+        private Coroutine _climbProcess;
+        private float _climbDuration;
 
         private Camera _camera;
         private SceneLoadManager _sceneLoader;
@@ -75,8 +80,7 @@ namespace BigProject.Player
             Vector2 mousePosition = _inputHandler.GetMousePosition();
             Ray ray = _camera.ScreenPointToRay(mousePosition);
 
-            if (Physics.Raycast(ray, out RaycastHit hit) 
-                )
+            if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, _navMeshHitPointDistance, NavMesh.AllAreas))
                 {
@@ -92,6 +96,9 @@ namespace BigProject.Player
 
         private void Update()
         {
+            if (TryClimb())
+                return;
+
             if (_isMoving)
             {
                 RotateTowardsMovement();
@@ -136,6 +143,54 @@ namespace BigProject.Player
             _isMoving = true;
             _animatorController.SetBool(MOVING_ANIM_BOOL, true);
             _navMeshAgent.SetDestination(_destination);
+        }
+
+        private bool TryClimb()
+        {
+            if (_navMeshAgent.isOnOffMeshLink)
+            {
+                
+                if (_climbProcess == null)
+                {
+                    _climbProcess = StartCoroutine(ClimbProcess(_navMeshAgent.currentOffMeshLinkData));
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private IEnumerator ClimbProcess(OffMeshLinkData offMeshLinkData)
+        {
+            Vector3 startPosition = offMeshLinkData.startPos;
+            Vector3 endPosition = offMeshLinkData.endPos;
+
+            Vector3 moveDirection = (endPosition - startPosition).normalized;
+            moveDirection.y = 0;
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+
+            _climbDuration = Vector3.Distance(startPosition, endPosition) / _climbSpeed;
+
+            float progress = 0;
+
+            while (progress < _climbDuration)
+            {
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    _rotationSpeed * Time.deltaTime
+                );
+
+                _navMeshAgent.transform.position = Vector3.Lerp(startPosition, endPosition, progress / _climbDuration);
+
+                progress += Time.deltaTime;
+
+                yield return null;
+            }
+
+            _navMeshAgent.CompleteOffMeshLink();
+            _climbProcess = null;
         }
 
         private void Interact()
