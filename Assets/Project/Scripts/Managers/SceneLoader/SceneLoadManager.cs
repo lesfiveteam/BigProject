@@ -1,17 +1,19 @@
+using BigProject.Managers;
 using BigProject.Systems;
 using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace BigProject.Managers
+namespace Assets.Project.Scripts.Managers.SceneLoader
 {
     public enum Scenes
     {
-        MainMenu,
-        Village,
-        TownHall,
-        Watermill
+        MainMenu = 100,
+        Intro = 200,
+        Village = 300,
+        TownHall = 400,
+        Watermill = 500,
     }
 
     public class SceneLoadManager : IDisposable

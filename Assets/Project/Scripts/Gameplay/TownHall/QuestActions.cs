@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Localization;
 namespace BigProject.Gameplay.TownHall
 {
     public class QuestActions : MonoBehaviour
@@ -27,6 +28,20 @@ namespace BigProject.Gameplay.TownHall
         private float _checkTownhallClueTime;
         [SerializeField]
         private GameObject _rune;
+
+        [Header("Player remarks")]
+        [SerializeField]
+        private LocalizedString _firstEnterRemark;
+        [SerializeField]
+        private LocalizedString _brokenKeyRemark;
+        [SerializeField]
+        private LocalizedString _examineRoomRemark;
+        [SerializeField]
+        private LocalizedString _examinePillarsRemark;
+        [SerializeField]
+        private LocalizedString _needFatherRemark;
+        [SerializeField]
+        private LocalizedString _openChestRemark;
 
         private InventorySystem _inventory;
         private InventoryUI _inventoryUI;
@@ -70,12 +85,12 @@ namespace BigProject.Gameplay.TownHall
 
         public void AllRecordsCollected()
         {
-            ReplicaManager.ShowReplica("Все собрану яхуу");
+            ReplicaManager.ShowReplica(_needFatherRemark);// "Узоры схожи с бородками на ключах. Такие только отец в кузне сможет выточить...");
         }
 
         public void FirstTownHallMeeting()
         {
-            ReplicaManager.ShowReplica("Так, тут есть опоры");
+            ReplicaManager.ShowReplica(_firstEnterRemark);// "Время не пощадило это место. Интересно, что за сундук виднеется в конце зала?");
         }
 
         public void FirstInteraction(bool isCompleted)
@@ -89,7 +104,7 @@ namespace BigProject.Gameplay.TownHall
 
                 if (_firstTouchChestTrigger != null)
                 {
-                    ReplicaManager.ShowReplica("Теперь сундук");
+                   // ReplicaManager.ShowReplica("Теперь сундук");
                     Destroy(_firstTouchChestTrigger);
                 }
             }
@@ -107,7 +122,7 @@ namespace BigProject.Gameplay.TownHall
 
         public void FirstTouchChest()
         {
-            ReplicaManager.ShowReplica("Надо ключи чекать");
+            ReplicaManager.ShowReplica(_brokenKeyRemark);// "Быть может, один из этой кучи ключей подойдёт к замку?");
         }
 
         public void ReadyToInsertKey()
@@ -126,7 +141,7 @@ namespace BigProject.Gameplay.TownHall
             () =>
             {
                 _chestCollider.enabled = false;
-                ReplicaManager.ShowReplica("Посмотрим что еще тут есть");
+                ReplicaManager.ShowReplica(_examineRoomRemark);// "Всё бестолку! Надо осмотреться, может удастся найти что-то интересное...");
             }
             ));
         }
@@ -149,7 +164,7 @@ namespace BigProject.Gameplay.TownHall
                 () =>
                 {
                     _chestCollider.enabled = false;
-                    ReplicaManager.ShowReplica("Ура, что же там.");
+                    ReplicaManager.ShowReplica(_openChestRemark);// "Да! Получилось! Что же скрывал этот сундук за такими хитрыми замками?");
                 }
                 ));
         }
@@ -161,20 +176,21 @@ namespace BigProject.Gameplay.TownHall
 
         public void GetRune()
         {
-            _runesSystem.AddRune();
+            _runesSystem.AddRune(1);
+            _runesSystem.AddRune(3);
+            _runesSystem.ChangeRunebarBackgroundBasedOnQuest(1);
         }
-
 
         private IEnumerator InteractionClueRoutune()
         {
             yield return new WaitForSeconds(_firstInteractionClueTime);
-            ReplicaManager.ShowReplica("Надо подергать что-то");
+            //ReplicaManager.ShowReplica("Надо подергать что-то");
         }
 
         private IEnumerator CheckPillarsRoutine()
         {
             yield return new WaitForSeconds(_checkPillarsClueTime);
-            ReplicaManager.ShowReplica("Колонны!");
+            ReplicaManager.ShowReplica(_examinePillarsRemark);// "На колоннах видны странные символы, стоит посмотреть поближе...");
         }
     }
 }

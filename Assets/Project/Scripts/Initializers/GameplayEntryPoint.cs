@@ -12,7 +12,7 @@ using BigProject.Systems.QuestSystem;
 using BigProject.UI;
 using BigProject.UI.Common;
 using BigProject.UI.Dialogue;
-using BigProject.UI.Replica;
+using BigProject.UI.Chat;
 using BigProject.Utilities;
 using System;
 using System.Collections.Generic;
@@ -22,6 +22,8 @@ using UnityEngine.AI;
 using UnityEngine.Assertions;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
+using Assets.Project.Scripts.Managers.SceneLoader;
+using TMPro;
 
 namespace BigProject.Initializers
 {
@@ -45,8 +47,6 @@ namespace BigProject.Initializers
         [SerializeField]
         private GameObject _pauseView;
         [SerializeField]
-        private GameObject _replicaView;
-        [SerializeField]
         private QuestSwitchConfig _questSwitchConfig;
         [SerializeField]
         private QuestTrackerConfig _questTrackerConfig;
@@ -63,7 +63,6 @@ namespace BigProject.Initializers
         private HUD _hud;
         private GameObject _hudObj;
         private GameObject _dialogueViewObj;
-        private GameObject _replicaViewObj;
         private GameObject _pauseMenuViewObj;
         private QuestJournal _questJournal;
         private InventorySystem _inventory;
@@ -124,13 +123,14 @@ namespace BigProject.Initializers
             _playerInput = new();
             _questJournal = new QuestJournal(progressManager, _journalConfig);
             _runesSystem = new();
+            ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
             GameplayManager gameplayManager = new(ServiceLocator.GetService<ManualLoop>());
             _statesHandler = new(_hudConfig, gameplayManager, _playerInput, _hud);
             _questsTracker = new(progressManager, _questTrackerConfig.QuestsIds.ToList());
-
+            SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
+            PlayerController playerController = Instantiate(_playerControllerPrefab);
+            CreatePlayer(playerController, sceneLoader);
             InitDialogue();
-            InitReplica();
-            InitPauseMenu();
 
             ServiceLocator.AddService(_questJournal);
             ServiceLocator.AddService(_runesSystem);
@@ -138,15 +138,20 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_hud);
             ServiceLocator.AddService(_playerInput);
             ServiceLocator.AddService(_dialogueManager);
-            ServiceLocator.AddService(_replicaManager);
             ServiceLocator.AddService(gameplayManager);
             ServiceLocator.AddService(_questsTracker);
 
             InitHUD();
+            ChatPanelController playerChatWorld = playerController.GetComponentInChildren<ChatPanelController>(true);
+            ExceptionUtilities.ThrowIfNull(playerChatWorld, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "GameplayEntryPoint", "Player ChatPanelController"));
+            playerChatWorld.GetComponentInChildren<TMP_Text>();
+            InitReplica(playerChatWorld.gameObject, playerChatWorld.GetComponentInChildren<TMP_Text>(),
+                _hudObj.GetComponentInChildren<PlayerChatUI>(true), gameplayManager, manualLoop);
+            ServiceLocator.AddService(_replicaManager);
+            InitPauseMenu();
+
             _questJournal.Init();
             AddQuestsSwitches(progressManager);
-            SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
-            CreatePlayer(sceneLoader);
             CreateCursorManager(sceneLoader);
             CreateCutsceneManager(sceneLoader);
             GameLogManager.Info(LogStr.INFO_INITIALIZING_GAMEPLAY_SERVICES_COMPLETED);
@@ -160,11 +165,11 @@ namespace BigProject.Initializers
             DontDestroyOnLoad(_dialogueViewObj);
         }
 
-        private void InitReplica()
+        private void InitReplica(GameObject playerWorldChat, TMP_Text playerWorldText, PlayerChatUI chatWidget,
+            GameplayManager gameplayManager, ManualLoop manualLoop)
         {
-            _replicaViewObj = Instantiate(_replicaView);
-            _replicaManager = new ReplicaManager(_replicaViewObj.GetComponent<ReplicaView>());
-            DontDestroyOnLoad(_replicaViewObj);
+            PlayerChatController _chatController = new(playerWorldChat, playerWorldText, chatWidget, gameplayManager);
+            _replicaManager = new ReplicaManager(_chatController, manualLoop);
         }
 
         private void InitPauseMenu()
@@ -238,9 +243,8 @@ namespace BigProject.Initializers
             }
         }
 
-        private void CreatePlayer(SceneLoadManager sceneLoader)
+        private void CreatePlayer(PlayerController playerController, SceneLoadManager sceneLoader)
         {
-            PlayerController playerController = Instantiate(_playerControllerPrefab);
             playerController.Init(_playerInput, sceneLoader);
             playerController.transform.parent = transform.parent;
             ServiceLocator.AddService(playerController);
@@ -249,7 +253,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_playerSpawner);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 _playerSpawner.PositionPlayer(0);
             }
@@ -259,6 +263,7 @@ namespace BigProject.Initializers
         {
             GameObject cursorManagerObject = Instantiate(_cursorManagerPrefab, transform.parent);
             CursorManager cursorManager = cursorManagerObject.GetComponent<CursorManager>();
+            cursorManager.Init(_playerInput);
             ServiceLocator.AddService(cursorManager);
             InteractableObjectsHighlighter highlighter = cursorManagerObject.GetComponent<InteractableObjectsHighlighter>();
 
@@ -268,11 +273,11 @@ namespace BigProject.Initializers
                 return;
             }
 
-            highlighter.Init(sceneLoader, cursorManager);
+            highlighter.Init(sceneLoader, cursorManager, _playerInput);
             cursorManagerObject.SetActive(true);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 highlighter.RestartChecking();
             }
@@ -287,7 +292,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_cutsceneManager);
 
             // For case when run from gameplay scene.
-            if (!string.Equals(Scenes.MainMenu.ToString(), SceneManager.GetActiveScene().name))
+            if (IsGameplayScene())
             {
                 _cutsceneManager.FindActors();
             }
@@ -304,7 +309,6 @@ namespace BigProject.Initializers
 
             Destroy(_hudObj);
             Destroy(_dialogueViewObj);
-            Destroy(_replicaViewObj);
             Destroy(_pauseMenuViewObj);
 
             ServiceLocator.ReleaseService<QuestJournal>();
@@ -331,6 +335,12 @@ namespace BigProject.Initializers
             _playerSpawner?.Dispose();
             _cutsceneManager?.Dispose();
             Destroy(transform.parent.gameObject);
+        }
+
+        private bool IsGameplayScene()
+        {
+            string actualSceneName = SceneManager.GetActiveScene().name;
+            return !(string.Equals(Scenes.MainMenu.ToString(), actualSceneName) || string.Equals(Scenes.Intro.ToString(), actualSceneName));
         }
     }
 }

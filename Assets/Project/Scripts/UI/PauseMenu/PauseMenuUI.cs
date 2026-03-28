@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using BigProject.Managers;
+using Assets.Project.Scripts.Managers.SceneLoader;
+using BigProject.Initializers;
 
 namespace BigProject.UI
 {
@@ -43,6 +45,7 @@ namespace BigProject.UI
         {
             if (ServiceLocator.TryGetService(out SceneLoadManager sceneLoader))
             {
+                Bootstrapper.SetStage(GameExecutionStage.Launch);
                 sceneLoader.LoadScene(Scenes.MainMenu);
                 _pauseMenuManager.UnpauseGame();
                 //Destroy(_pauseMenuManager.gameObject);

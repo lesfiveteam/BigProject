@@ -8,6 +8,7 @@ using BigProject.Gameplay.Common;
 using BigProject.Player;
 using BigProject.Intercatable.HighlightedObjects;
 using BigProject.Managers.CursorManager;
+using Assets.Project.Scripts.Managers.SceneLoader;
 
 namespace BigProject.Initializers
 {
@@ -34,6 +35,7 @@ namespace BigProject.Initializers
             InitDoors();
             InitDialogueNPCs();
             InitCursorChangingEffects();
+            InitNPCControllers(pm);
             GameLogManager.Info(LogStr.INFO_INITIALIZING_SCENE_SERVICES_COMPLETED);
             _initActions?.Invoke();
         }
@@ -70,6 +72,13 @@ namespace BigProject.Initializers
             {
                 interactableHandler.Init(progressManager);
             }
+
+            HighlightSwitchByTrigger[] switchesByTriggers = FindObjectsByType<HighlightSwitchByTrigger>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            foreach (HighlightSwitchByTrigger switchByTrigger in switchesByTriggers)
+            {
+                switchByTrigger.Init(progressManager);
+            }
         }
 
         private void InitDoors()
@@ -103,6 +112,16 @@ namespace BigProject.Initializers
             foreach (CursorChangingEffect cursorChangingEffect in cursorChangingEffects)
             {
                 cursorChangingEffect.Init(cursorManager);
+            }
+        }
+
+        private void InitNPCControllers(ProgressManager progressManager)
+        {
+            NPCController[] controllers = FindObjectsByType<NPCController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            foreach (NPCController controller in controllers)
+            {
+                controller.Init(progressManager);
             }
         }
     }

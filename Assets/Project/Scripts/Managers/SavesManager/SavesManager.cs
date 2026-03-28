@@ -126,7 +126,7 @@ namespace BigProject.Managers
 
             Dictionary<string, string> jsonRecs;
 
-            if (GetJsonRecords(out jsonRecs, summaryData, saveName) && jsonRecs.ContainsKey(savable.Key))
+            if (GetJsonRecords(out jsonRecs, summaryData, saveName))
             {
                 string record = JsonUtility.ToJson(savable.SavingData);
 
@@ -172,7 +172,6 @@ namespace BigProject.Managers
                 jsonRecs.TryGetValue(savable.Key, out string data))
             {
                 JsonUtility.FromJsonOverwrite(data, savable.SavingData);
-                savable.OnLoad();
 
                 if (removeAfterLoad)
                 {
@@ -180,7 +179,7 @@ namespace BigProject.Managers
                     SaveStringsList(saveName, jsonRecs.Select(x => $"[{x.Key}]{x.Value}").ToList());
                 }
 
-                Debug.Log(String.Format(LogStr.INFO_SYSTEM, "SavesManager", $"{savable.Key} loaded from {saveName}"));
+                Log(Debug.Log, String.Format(LogStr.INFO_SYSTEM, "SavesManager", $"{savable.Key} loaded from {saveName}"), silent);
                 savable.OnLoad();
                 return true;
             }
@@ -268,10 +267,12 @@ namespace BigProject.Managers
 
         private void Log(Action<object> logger, string msg, bool silent = false)
         {
-            if (!silent)
+            if (silent)
             {
-                logger(string.Format(LogStr.INFO_SYSTEM, "SavesManager", msg));
+                logger = x => GameLogManager.Info(x.ToString());
             }
+           
+            logger(string.Format(LogStr.INFO_SYSTEM, "SavesManager", msg));
         }
     }
 }

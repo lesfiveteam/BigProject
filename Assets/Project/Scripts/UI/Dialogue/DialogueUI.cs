@@ -11,7 +11,6 @@ namespace BigProject.UI.Dialogue
     public class DialogueUI : MonoBehaviour
     {
         private const string BOY_NAME = "Эйрик";
-        private const float ANIMATION_DURATION = 0.3f;
         private const string DIALOGUE_ANIM_TRIGGER = "Pressed";
         [SerializeField]
         public GameObject _dialogueWindow;
@@ -77,17 +76,14 @@ namespace BigProject.UI.Dialogue
 
             _dialogueManager = dialogueManager;
             // Обработчик нажатия на кнопку "Продолжить"
-            _nextButton.onClick.AddListener(() => StartCoroutine(WaitAnimationEndAndShowNextStep()));
+            _nextButton.onClick.AddListener(ShowNextStep);
         }
 
-        private IEnumerator WaitAnimationEndAndShowNextStep()
+        private void ShowNextStep()
         {
             if (!_isAnimating)
             {
-                _isAnimating = true;
                 _dialogueManager.ShowNextStep();
-                yield return new WaitForSeconds(ANIMATION_DURATION);
-                _isAnimating = false;
             }
         }
 
@@ -101,6 +97,9 @@ namespace BigProject.UI.Dialogue
 
         public void ShowAnswerOptions(DialogueLine dialogueLine)
         {
+            _rightCharacterImage.enabled = true;
+            _leftCharacterImage.enabled = true;
+
             SetDarkenCharacter(_rightCharacterImage, _speakerImageTone);
             SetDarkenCharacter(_leftCharacterImage, 1f);
             // Включаем отображение кнопки продолжить и текст NPC
@@ -168,8 +167,29 @@ namespace BigProject.UI.Dialogue
                 _leftNameTMPro.text = dialogueNPCPhrase.Name;
             }
 
-            _rightCharacterImage.sprite = dialogueNPCPhrase.RightCharacterSprite;
-            _leftCharacterImage.sprite = dialogueNPCPhrase.LeftCharacterSprite;
+            // 2026-03-25 Саня попросил скрывать картинку целиком в случае, когда не проставляем спрайт в SO
+            if (dialogueNPCPhrase.RightCharacterSprite)
+            {
+                // Show new sprite
+                _rightCharacterImage.sprite = dialogueNPCPhrase.RightCharacterSprite;
+                _rightCharacterImage.enabled = true;
+            }
+            else
+            {
+                _rightCharacterImage.enabled = false;
+            }
+
+            if (dialogueNPCPhrase.LeftCharacterSprite)
+            {
+                // Show new sprite
+                _leftCharacterImage.sprite = dialogueNPCPhrase.LeftCharacterSprite;
+                _leftCharacterImage.enabled = true;
+            }
+            else
+            {
+                _leftCharacterImage.enabled = false;
+            }
+
 
             _leftCharacterNameField.SetActive(!dialogueNPCPhrase.IsRightSpeaker);
             _rightCharacterNameField.SetActive(dialogueNPCPhrase.IsRightSpeaker);
@@ -203,10 +223,12 @@ namespace BigProject.UI.Dialogue
 
         private IEnumerator WaitForAnimationFinished()
         {
+            _isAnimating = true;
             yield return new WaitForSeconds(_dialogueBackgroundAnimationClip.length);
             _dialogueTextFront.text = _dialogueTextBack.text;
             _dialogueTextFront.gameObject.SetActive(true);
             _dialogueTextBack.gameObject.SetActive(false);
+            _isAnimating = false;
         }
 
         private IEnumerator WaitForAnimationFinishedAnswers()
