@@ -25,7 +25,7 @@ namespace BigProject.Gameplay.TownHall
         [SerializeField]
         private MiniGameActivator _activator;
         [SerializeField]
-        private List<Transform> _keysHolders;
+        private List<Collider> _keysHolders;
         [SerializeField]
         private List<GameObject> _keysPrefabs;
         [SerializeField]
@@ -235,7 +235,8 @@ namespace BigProject.Gameplay.TownHall
 
         private bool SetKeyToHolder(string itemName, int keyHolderId, int keyPrefabId)
         {
-            Transform keyHolder = _keysHolders.ElementAtOrDefault(keyHolderId);
+            Collider keyCollider = _keysHolders.ElementAtOrDefault(keyHolderId);
+            Transform keyHolder = keyCollider != null ? keyCollider.transform : null;
 
             if (keyHolder == null)
             {
@@ -338,6 +339,11 @@ namespace BigProject.Gameplay.TownHall
 
         private void OnActivated(bool isActivated)
         {
+            foreach (Collider keyHolder in _keysHolders)
+            {
+                keyHolder.enabled = isActivated;
+            }
+
             if (!isActivated && _actionHandlers[_actionOpenName].CurrentState != QuestActionState.Completed)
             {
                 ResetKeys();
