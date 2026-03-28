@@ -33,6 +33,12 @@ namespace BigProject.UI
 
         public void Init(RuneShardsSystem runeShardsSystem)
         {
+            if (runeShardsSystem == null)
+            {
+                Debug.LogError("RuneShardsSystem is null.");
+                return;
+            }
+
             _runeShardsSystem = runeShardsSystem;
 
             _runeShardsSystem.OnShardAdded += AddNewShard;
@@ -41,6 +47,12 @@ namespace BigProject.UI
             UpdateBackingVisual(_runeShardsSystem.GetUnlockedSegmentsNum());
 
             _shardsLeftToFinishSegments = _runeShardsSystem.GetShardsLeftToFinishSegments();
+
+            if (_shardsLeftToFinishSegments == null)
+            {
+                Debug.LogError("ShardsLeftToFinishSegments is null.");
+                return;
+            }
 
             foreach (var segmentID in _runeShardsSystem.GetFilledSegmentsIDs())
             {
@@ -90,13 +102,31 @@ namespace BigProject.UI
             GameObject startShard = _startShards[id];
             GameObject goalShard = _goalShards[id];
 
+            if (startShard == null || goalShard == null)
+            {
+                Debug.LogError($"SpawnShard: Missing start/goal shard for ID {id}");
+                return;
+            }
+
             Vector3 spawnPos = isPlaced ? goalShard.transform.position : startShard.transform.position;
             GameObject spawnedShard = Instantiate(_shardPrefab, spawnPos, Quaternion.identity, shardHolder);
 
             ShardUI shardUI = spawnedShard.GetComponent<ShardUI>();
 
-            RectTransform transform = goalShard.GetComponent<RectTransform>();
-            Vector2 imgSize = new Vector2(transform.sizeDelta.x, transform.sizeDelta.y);
+            if (shardUI == null)
+            {
+                Debug.LogError("Spawned shard prefab has no ShardUI component!");
+                return;
+            }
+
+            RectTransform rect = goalShard.GetComponent<RectTransform>();
+            if (rect == null)
+            {
+                Debug.LogError($"Goal shard {id} has no RectTransform.");
+                return;
+            }
+
+            Vector2 imgSize = new Vector2(rect.sizeDelta.x, rect.sizeDelta.y);
 
             shardUI.Init(startShard.transform, goalShard.transform, shard.Sprite, _boardBorders, id, shard.SegmentId, imgSize, isPlaced);
             shardUI.OnShardPlacedCorrectly += HandleShardPlacedCorrectly;
@@ -114,30 +144,58 @@ namespace BigProject.UI
         private void HandleShardPlacedCorrectly(int id)
         {
             ShardUI placedShard = _freeShards.Find(shard => shard.ID == id);
-            if (placedShard == null) return;
+
+            if (placedShard == null)
+            {
+                Debug.LogError($"HandleShardPlacedCorrectly: shard {id} not found in free list.");
+                return;
+            }
+
+            int segmentID = placedShard.SegmentID;
+
+            if (segmentID < 0 || segmentID >= _shardsLeftToFinishSegments.Count)
+            {
+                Debug.LogError($"Invalid segmentID {segmentID} for shard {id}.");
+                return;
+            }
 
             _placedShards.Add(placedShard);
             _freeShards.Remove(placedShard);
 
-            int segmentID = placedShard.SegmentID;
             _shardsLeftToFinishSegments[segmentID]--;
+
+            if (_shardsLeftToFinishSegments[segmentID] < 0)
+            {
+                Debug.LogError($"Segment {segmentID} went below zero.");
+            }
+
+            _runeShardsSystem.AddPlacedShardID(id);
 
             if (_shardsLeftToFinishSegments[segmentID] == 0)
             {
                 ShowSegmentFilled(segmentID);
+                _runeShardsSystem.AddFilledSegmentID(segmentID);
             }
         }
 
         private void UpdateBackingVisual(int unlockedSegmentsNum)
         {
-            foreach (var backingImage in _backingImages)
+            if (_backingImages == null || _backingImages.Count == 0)
+            {
+                Debug.LogError("BackingImages not set.");
+                return;
+            }
+
+            foreach (var backingImage in _backingImages.OrderByDescending(b => b.unlockedSegmentsThreshold))
             {
                 if (unlockedSegmentsNum >= backingImage.unlockedSegmentsThreshold)
                 {
                     _backingImage.sprite = backingImage.sprite;
-                    break;
+                    return;
                 }
             }
+
+            Debug.LogWarning("No suitable backing image found.");
         }
 
         public void Hide() => gameObject.SetActive(false);
@@ -145,13 +203,20 @@ namespace BigProject.UI
 
         private void ShowSegmentFilled(int segmentID)
         {
-            if (segmentID >= 0 && segmentID < _segmentImages.Count)
+            if (segmentID < 0 || segmentID >= _segmentImages.Count)
             {
-                _segmentImages[segmentID].gameObject.SetActive(true);
-                foreach (var shard in _placedShards)
-                {
-                    if (shard.SegmentID == segmentID) Destroy(shard.gameObject);
-                }
+                Debug.LogError($"Invalid segmentID {segmentID} in ShowSegmentFilled");
+                return;
+            }
+
+            _segmentImages[segmentID].gameObject.SetActive(true);
+
+            var shardsToRemove = _placedShards.Where(s => s.SegmentID == segmentID).ToList();
+
+            foreach (var shard in shardsToRemove)
+            {
+                _placedShards.Remove(shard);
+                Destroy(shard.gameObject);
             }
         }
     }

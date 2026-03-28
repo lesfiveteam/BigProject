@@ -30,6 +30,23 @@ namespace BigProject.UI
 
         public void Init(Transform startPos, Transform goalPos, Sprite sprite, Image boardBorders, int id, int segmentID, Vector2 imgSize, bool isPlaced = false)
         {
+            if (startPos == null || goalPos == null)
+            {
+                Debug.LogError("ShardUI.Init: startPos or goalPos is NULL!");
+                return;
+            }
+
+            if (_image == null)
+            {
+                Debug.LogError("ShardUI.Init: Image component is NULL!");
+                return;
+            }
+
+            if (sprite == null)
+            {
+                Debug.LogWarning($"Shard {id} has no sprite!");
+            }
+
             _startPos = startPos;
             _goalPos = goalPos;
             _image.sprite = sprite;
@@ -65,6 +82,19 @@ namespace BigProject.UI
         public void OnPointerUp(PointerEventData eventData)
         {
             _isMoving = false;
+
+            if (_startPos == null || _goalPos == null)
+            {
+                Debug.LogError($"Shard {_id}: startPos or goalPos is NULL!");
+                return;
+            }
+
+            if (_boardBorders == null)
+            {
+                Debug.LogError($"Shard {_id}: boardBorders is NULL!");
+                return;
+            }
+
             if (!ShardBoardOverlapChecker.IsShardInsideBoard(_image, _boardBorders))
             {
                 transform.position = _startPos.position;
@@ -72,6 +102,12 @@ namespace BigProject.UI
 
             if (Vector3.Distance(transform.position, _goalPos.position) <= EPSILON)
             {
+                if (_isOnRightPlace)
+                {
+                    Debug.LogWarning($"Shard {_id} already placed but triggered again!");
+                    return;
+                }
+
                 transform.position = _goalPos.position;
                 _isOnRightPlace = true;
                 transform.SetAsLastSibling();

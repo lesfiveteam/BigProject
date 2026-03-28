@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using BigProject.UI;
+using Unity.VisualScripting;
 
 namespace BigProject.Systems.Inventory
 {
@@ -26,24 +27,32 @@ namespace BigProject.Systems.Inventory
             {
                 _foundShardsIDs.Add(id);
             }
-
-            foreach (var shard in _runeShardsDatabase.Shards)
+            else
             {
-                if (shard.Id == id)
-                {
-                    OnShardAdded?.Invoke(shard);
-                    return;
-                }
+                Debug.LogWarning($"Shard with ID {id} already added.");
             }
+
+            var shard = _runeShardsDatabase.Shards.FirstOrDefault(s => s.Id == id);
+
+            OnShardAdded?.Invoke(shard);
         }
 
         public void UnlockSegment(int id)
         {
-            if (!_unlockedSegmentsIDs.Contains(id))
+            if (_unlockedSegmentsIDs.Contains(id))
             {
-                _unlockedSegmentsIDs.Add(id);
-                OnSegmentUnlocked?.Invoke(_unlockedSegmentsIDs.Count);
+                Debug.LogWarning($"Segment {id} already unlocked.");
+                return;
             }
+
+            if (!_runeSegmentsDatabase.Segments.Any(s => s.Id == id))
+            {
+                Debug.LogError($"Segment ID {id} not found in database.");
+                return;
+            }
+
+            _unlockedSegmentsIDs.Add(id);
+            OnSegmentUnlocked?.Invoke(_unlockedSegmentsIDs.Count);
         }
 
         public int GetUnlockedSegmentsNum() => _unlockedSegmentsIDs.Count;
@@ -95,6 +104,16 @@ namespace BigProject.Systems.Inventory
         public RuneShard GetShardByID(int id)
         {
             return _runeShardsDatabase.Shards.FirstOrDefault(shard => shard.Id == id);
+        }
+
+        public void AddPlacedShardID(int id)
+        {
+            _placedShardsIDs.Add(id);
+        }
+
+        public void AddFilledSegmentID(int id)
+        {
+            _filledSegmentsIDs.Add(id);
         }
 
         private void Awake()
