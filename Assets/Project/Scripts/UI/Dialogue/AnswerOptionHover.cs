@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -11,22 +12,29 @@ namespace BigProject.UI.Dialogue
         [SerializeField]
         private GameObject _rightArrow;
 
+        private Image _leftArrowImage = null;
+        private Image _rightArrowImage = null;
+
         private void OnEnable()
         {
-            _leftArrow.GetComponent<Image>().enabled = false;
-            _rightArrow.GetComponent<Image>().enabled = false;
+            _leftArrowImage = _leftArrow.GetComponent<Image>();
+            _rightArrowImage = _rightArrow.GetComponent<Image>();
+            _leftArrowImage.enabled = false;
+            _rightArrowImage.enabled = false;
+
+            Canvas.ForceUpdateCanvases();
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            _leftArrow.GetComponent<Image>().enabled = true;
-            _rightArrow.GetComponent<Image>().enabled = true;
+            _leftArrowImage.enabled = true;
+            _rightArrowImage.enabled = true;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            _leftArrow.GetComponent<Image>().enabled = false;
-            _rightArrow.GetComponent<Image>().enabled = false;
+            _leftArrowImage.enabled = false;
+            _rightArrowImage.enabled = false;
         }
     }
 
