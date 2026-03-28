@@ -8,7 +8,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         [field: SerializeField, Range(1, 10)] public int Weight { get; private set; } = 5;
         [field: SerializeField] public NPCAnimationAction TargetAnimation { get; private set; } = NPCAnimationAction.Idle;
 
-        public string Id => $"{transform.position.x}_{transform.position.y}_{transform.position.z}";
+        public string Id => $"{transform.position.x:F0}_{transform.position.y:F0}_{transform.position.z:F0}";
 
 #if UNITY_EDITOR
         private readonly Color SPHERE_COLOR = Color.blue;
