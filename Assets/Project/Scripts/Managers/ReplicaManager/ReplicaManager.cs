@@ -18,7 +18,7 @@ namespace BigProject.Managers
         private static AsyncOperationHandle<string> _currentHandle;
         private static Action<AsyncOperationHandle<string>> _entryLoadedHandler;
 
-        private static bool _isInitialized;
+        private static bool _isInitialized = false;
 
         public ReplicaManager(PlayerChatController chatController, ManualLoop manualLoop)
         {
