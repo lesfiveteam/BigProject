@@ -1,6 +1,7 @@
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Gameplay.Common;
 using BigProject.Managers;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Settings;
 using BigProject.Systems;

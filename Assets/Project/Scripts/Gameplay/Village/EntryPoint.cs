@@ -16,6 +16,8 @@ namespace BigProject.Gameplay.Village
         private AudioClip _music;
         [SerializeField]
         private List<MonoBehaviour> _questsControllers;
+        [SerializeField]
+        private ChestSound _chestSound;
 
         private QuestsBoundariesTracker _questsTracker;
 
@@ -32,6 +34,8 @@ namespace BigProject.Gameplay.Village
             }
 
             _questsTracker.OnSceneEntry();
+
+            _chestSound.Init(ServiceLocator.GetService<SoundsManager>());
         }
 
         private void OnDestroy()
