@@ -22,6 +22,8 @@ namespace BigProject.NPC
         [SerializeField]
         private List<DialogueCondition> _conditions;
 
+        private DialogueLine _defaultLine;
+
         [Serializable]
         private class DialogueCondition
         {
@@ -56,7 +58,7 @@ namespace BigProject.NPC
             }
 
             _conditions.RemoveAll(x => conditionsToRemove.Contains(x));
-
+            _defaultLine = _dialogue.StartDialogLine;
 
             if (pm.GetQuestState(_questId) > QuestState.Active)
             {
@@ -100,7 +102,7 @@ namespace BigProject.NPC
                 }
             }
 
-            _dialogue.StartDialogLine = null;
+            _dialogue.StartDialogLine = _defaultLine;
         }
 
         private void OnDialoguePhrase(int phraseId)
