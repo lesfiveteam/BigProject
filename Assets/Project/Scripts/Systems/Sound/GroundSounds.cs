@@ -7,11 +7,19 @@ namespace BigProject.Systems.Sound
     
     public class GroundSounds : MonoBehaviour
     {
-        [SerializeField] private AudioClip[] _stepSounds;
+        [SerializeField] 
+        private AudioClip[] _stepSounds;
 
+        [SerializeField]
+        private float _volume = 0.2f;
         public AudioClip GetStepSound()
         {
             return _stepSounds[Random.Range(0, _stepSounds.Length)];
+        }
+
+        public float GetSoundVolume()
+        {
+            return _volume;
         }
     }
 }
