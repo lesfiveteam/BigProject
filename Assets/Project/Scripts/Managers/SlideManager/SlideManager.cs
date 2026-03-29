@@ -15,7 +15,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         [SerializeField] private Image _fader;
 
         [SerializeField] private float _slideDuration = 7f;
-        [SerializeField] private float _spriteDuration = 0;
+        [SerializeField] private float _hideDuration = 5f;
 
         [SerializeField] private float _fadeDuration = 0.3f;
         [SerializeField] private float _fadeInterval = 0.3f;
@@ -47,11 +47,15 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         {
             for (int i = 0; i < _slides.Count; i++)
             {
-                _slides[i].Play(_spriteDuration);
+                _slides[i].Play();
 
                 yield return Fade(1f, 0f, _fadeDuration);
 
                 yield return WaitForSlide();
+
+                _slides[i].Hide();
+
+                yield return new WaitForSeconds(_hideDuration);
 
                 yield return Fade(0f, 1f, _fadeDuration);
 
@@ -95,6 +99,8 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
                 yield return null;
             }
+
+
         }
 
         private void OnDestroy() => StopSlideShow();
