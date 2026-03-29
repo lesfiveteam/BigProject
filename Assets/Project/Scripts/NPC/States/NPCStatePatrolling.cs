@@ -35,7 +35,7 @@ namespace BigProject.NPC.States
         {
             NPCController companion = other.GetComponentInParent<NPCController>();
 
-            if (companion != null && IsSuitableStateForChat(companion.State) && WantToChat())
+            if (companion != null && IsSuitableStateForChat(companion.State) && WantToChat() && ComanionWantToChat(companion))
             {
                 NPCStateChase chaser = new(_controller, companion, other.transform);
                 companion.ChangeState(new NPCStateWait(companion, chaser, _controller.transform));
@@ -43,7 +43,9 @@ namespace BigProject.NPC.States
             }
         }
 
-        private bool WantToChat() => Random.Range(0f, 1f) <= _controller.Talkativeness;
+        private bool WantToChat() => Random.Range(0f, 1f) < _controller.Talkativeness;
+
+        private bool ComanionWantToChat(NPCController companion) => !Mathf.Approximately(companion.Talkativeness, 0f);
 
         private bool IsSuitableStateForChat(NPCState state) => state < NPCState.Chase;
 

@@ -62,11 +62,11 @@ namespace BigProject.NPC
             ChangeState(_initialState);
         }
 
-        private void Start() => _progressManager.LoadAdditionalData(this, silent: true);
+        //private void Start() => _progressManager.LoadAdditionalData(this, silent: true);
 
         private void OnDestroy()
         {
-            _progressManager.SaveAdditionalData(this);
+            //_progressManager.SaveAdditionalData(this);
             _state?.Dispose();
 
             foreach (INPCState state in _hashedStates.Values)
