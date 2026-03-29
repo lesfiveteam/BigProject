@@ -1,6 +1,7 @@
 using BigProject.Gameplay.Common;
 using BigProject.Managers;
 using BigProject.Player;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Systems.Inventory;
 using BigProject.UI;
 using UnityEngine;

@@ -24,6 +24,7 @@ using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using TMPro;
+using BigProject.Managers.SoundsMusicManagers;
 
 namespace BigProject.Initializers
 {
@@ -245,7 +246,7 @@ namespace BigProject.Initializers
 
         private void CreatePlayer(PlayerController playerController, SceneLoadManager sceneLoader)
         {
-            playerController.Init(_playerInput, sceneLoader);
+            playerController.Init(_playerInput, sceneLoader, ServiceLocator.GetService<SoundsManager>());
             playerController.transform.parent = transform.parent;
             ServiceLocator.AddService(playerController);
             playerController.gameObject.SetActive(true);

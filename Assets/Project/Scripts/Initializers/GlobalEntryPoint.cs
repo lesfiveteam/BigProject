@@ -1,4 +1,5 @@
 using Assets.Project.Scripts.Managers.SceneLoader;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Managers;
 using BigProject.Settings;
 using BigProject.Systems;
@@ -18,6 +19,8 @@ namespace BigProject.Initializers
         private GlobalConfig _config;
         [SerializeField]
         private MusicManager _musicManagerPrefab;
+        [SerializeField]
+        private SoundsManager _soundsManagerPrefab;
         [SerializeField]
         private LogLevel _currentLogLevel = LogLevel.None;
 
@@ -39,6 +42,7 @@ namespace BigProject.Initializers
             
             Assert.IsNotNull(_config, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Global Entry Point", "Global Config"));
             Assert.IsNotNull(_musicManagerPrefab, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Global Entry Point", "Music Manager Prefab"));
+            Assert.IsNotNull(_soundsManagerPrefab, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Global Entry Point", "Sounds Manager Prefab"));
             _isInstantiated = true;
 
             GameObject globalServices = new GameObject("GlobalServices");
@@ -60,6 +64,10 @@ namespace BigProject.Initializers
             MusicManager musicManager = Instantiate(_musicManagerPrefab);
             musicManager.transform.parent = globalServices.transform;
             ServiceLocator.AddService(musicManager);
+
+            SoundsManager soundsManager = Instantiate(_soundsManagerPrefab);
+            soundsManager.transform.parent = globalServices.transform;
+            ServiceLocator.AddService(soundsManager);
         }
     }
 }
