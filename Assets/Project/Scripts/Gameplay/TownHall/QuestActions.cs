@@ -42,6 +42,8 @@ namespace BigProject.Gameplay.TownHall
         private LocalizedString _needFatherRemark;
         [SerializeField]
         private LocalizedString _openChestRemark;
+        [SerializeField]
+        private LocalizedString _getKeyRemark;
 
         private InventorySystem _inventory;
         private InventoryUI _inventoryUI;
@@ -95,28 +97,31 @@ namespace BigProject.Gameplay.TownHall
 
         public void FirstInteraction(bool isCompleted)
         {
-            if (isCompleted)
+            if (isCompleted && _firstTouchChestTrigger != null)
             {
-                if (_firstInteractionClue != null)
-                {
-                    StopCoroutine(_firstInteractionClue);
-                }
+                // ReplicaManager.ShowReplica("Теперь сундук");
+                Destroy(_firstTouchChestTrigger);
+            }
 
-                if (_firstTouchChestTrigger != null)
-                {
-                   // ReplicaManager.ShowReplica("Теперь сундук");
-                    Destroy(_firstTouchChestTrigger);
-                }
-            }
-            else
-            {
-                _firstInteractionClue = StartCoroutine(InteractionClueRoutune());
-            }
+            //if (isCompleted)
+            //{
+            //    //if (_firstInteractionClue != null)
+            //    //{
+            //    //    StopCoroutine(_firstInteractionClue);
+            //    //}
+
+         //   }
+         //   }
+            //else
+            //{
+            //    _firstInteractionClue = StartCoroutine(InteractionClueRoutune());
+            //}
         }
 
         public void GetBrokenKey()
         {
             GameLogManager.Info(String.Format(LogStr.INFO_QUEST, "add broken key"));
+            ReplicaManager.ShowReplica(_getKeyRemark);
             _inventory.AddItemByName(_brokenKeyItemName);
         }
 
@@ -181,11 +186,11 @@ namespace BigProject.Gameplay.TownHall
             _runesSystem.ChangeRunebarBackgroundBasedOnQuest(1);
         }
 
-        private IEnumerator InteractionClueRoutune()
-        {
-            yield return new WaitForSeconds(_firstInteractionClueTime);
-            //ReplicaManager.ShowReplica("Надо подергать что-то");
-        }
+        //private IEnumerator InteractionClueRoutune()
+        //{
+        //    yield return new WaitForSeconds(_firstInteractionClueTime);
+        //    //ReplicaManager.ShowReplica("Надо подергать что-то");
+        //}
 
         private IEnumerator CheckPillarsRoutine()
         {

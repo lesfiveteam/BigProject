@@ -1,5 +1,7 @@
 using BigProject.Managers;
+using BigProject.Settings;
 using BigProject.Systems;
+using BigProject.Systems.QuestSystem;
 using BigProject.Utilities;
 using System;
 using UnityEngine;
@@ -60,6 +62,11 @@ namespace BigProject.Initializers
                     {
                         Debug.Log(LogStr.INFO_REMOVING_GAMEPLAY_SERVICES);
                         Remover.SafeRelease(_gameplayEntryPoint);
+
+                        // Temporary solution.
+                        ServiceLocator.GetService<ProgressManager>().Dispose();
+                        ServiceLocator.ReleaseService<ProgressManager>();
+                        ServiceLocator.AddService(new ProgressManager("Player", new QuestJsonLoader("Data/Quests"), ServiceLocator.GetService<SavesManager>()));
                     }
                     else
                     {
