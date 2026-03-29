@@ -19,7 +19,7 @@ namespace BigProject.Player
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
         [SerializeField] private float _climbSpeed = 0.2f;
-        [SerializeField] private float _groundCheckInterval = 0.5f;
+        [SerializeField] private float _groundCheckInterval = 0.2f;
 
         private WaitForSeconds _groundCheckWait;
 
@@ -183,7 +183,7 @@ namespace BigProject.Player
                 {
                     if (hit.transform.TryGetComponent(out GroundSounds groundSounds))
                     {
-                        _soundsManager.PlaySound(groundSounds.GetStepSound(), spawnPosition: _camera.transform);
+                        _soundsManager.PlaySound(groundSounds.GetStepSound(), spawnPosition: _camera.transform, volume: 0.1f);
                     }
                 }
 
