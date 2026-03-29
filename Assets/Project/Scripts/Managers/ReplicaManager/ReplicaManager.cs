@@ -27,10 +27,10 @@ namespace BigProject.Managers
 
         public ReplicaManager(PlayerChatController chatController, ManualLoop manualLoop)
         {
-            if (_isInitialized)
-            {
-                throw new InvalidOperationException(string.Format(LogStr.CRITICAL_SYSTEM, "ReplicaManager", "try duplicate instance"));
-            }
+            //if (_isInitialized)
+            //{
+            //    throw new InvalidOperationException(string.Format(LogStr.CRITICAL_SYSTEM, "ReplicaManager", "try duplicate instance"));
+            //}
 
             _isInitialized = true;
             _chatController = chatController;
