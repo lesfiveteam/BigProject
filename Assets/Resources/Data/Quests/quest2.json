@@ -343,6 +343,48 @@
                     ]
                 }
             ]
+        },
+        {
+            "id":50,
+            "name":"InteractPuzzle",
+            "currentState":1,
+            "conditions":
+            [
+                {
+                    "fromState":1,
+                    "toState":2,
+                    "dependencyPacks":
+                    [
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":3,
+                                    "state":2
+                                }
+                            ]
+                        },
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":6,
+                                    "state":2
+                                }
+                            ]
+                        },
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":7,
+                                    "state":2
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "questStates":
