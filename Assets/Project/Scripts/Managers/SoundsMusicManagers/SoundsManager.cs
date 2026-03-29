@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using Random = UnityEngine.Random;
 
-namespace BigProject.Managers
+namespace BigProject.Managers.SoundsMusicManagers
 {
     public enum MixerType
     {
@@ -17,7 +17,8 @@ namespace BigProject.Managers
 
     public class SoundsManager : MonoBehaviour
     {
-        [SerializeField] private AudioSource _audioSource;
+        [SerializeField] private AudioSource _audioSource3D;
+        [SerializeField] private AudioSource _audioSource2D;
         [SerializeField] private List<MixerMapping> _mixerMappings = new List<MixerMapping>();
 
         private List<AudioSource> _activeAudioSources = new List<AudioSource>();
@@ -46,9 +47,10 @@ namespace BigProject.Managers
         /// Spawns a sound object.
         /// <param name = "owner"> If there is an owner, the next sounds spawned with this owner will stop the previous one </param>
         /// <param name = "lowestPitch"> Lowest possible random pitch </param>
+        /// <param name = "lowestPitch"> Lowest possible random pitch </param>
         /// <param name = "highestPitch"> Highest possible random pitch </param>
         /// </summary>
-        public void PlaySound(AudioClip clip, MixerType mixerType = MixerType.Master, float lowestPitch = 1f, float highestPitch = 1f, Transform spawnPosition = null, float volume = 1f, Transform owner = null)
+        public void PlaySound(AudioClip clip, MixerType mixerType = MixerType.Master, float lowestPitch = 1f, float highestPitch = 1f, Transform spawnPosition = null, float volume = 1f, Transform owner = null, bool is2D = false)
         {
             if (owner != null && _objectAudioMap.ContainsKey(owner))
             {
@@ -56,7 +58,8 @@ namespace BigProject.Managers
             }
 
             Vector3 spawnPos = spawnPosition != null ? spawnPosition.position : transform.position;
-            AudioSource audioSource = Instantiate(_audioSource, spawnPos, Quaternion.identity, transform);
+            Transform parent = spawnPosition != null ? spawnPosition : transform;
+            AudioSource audioSource = Instantiate(is2D ? _audioSource2D : _audioSource3D, spawnPos, Quaternion.identity, parent);
             audioSource.clip = clip;
             audioSource.volume = volume;
 

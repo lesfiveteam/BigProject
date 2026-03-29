@@ -1,6 +1,8 @@
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Intercatable;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Systems;
+using BigProject.Systems.Sound;
 using BigProject.Utilities;
 using System;
 using System.Collections;
@@ -17,6 +19,9 @@ namespace BigProject.Player
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
         [SerializeField] private float _climbSpeed = 0.2f;
+        [SerializeField] private float _groundCheckInterval = 0.5f;
+
+        private WaitForSeconds _groundCheckWait;
 
         private PlayerInputHandler _inputHandler;
         private IInteractable _interactable = null;
@@ -28,23 +33,28 @@ namespace BigProject.Player
 
         private Camera _camera;
         private SceneLoadManager _sceneLoader;
+        private SoundsManager _soundsManager;
+        private Coroutine _groundCheckCoroutine;
 
         private const string MOVING_ANIM_BOOL = "IsMoving";
 
         public bool IsMoving => _isMoving;
 
-        public void Init(PlayerInputHandler inputHandler, SceneLoadManager sceneLoader)
+        public void Init(PlayerInputHandler inputHandler, SceneLoadManager sceneLoader, SoundsManager soundsManager)
         {
             _inputHandler = inputHandler;
             _sceneLoader = sceneLoader;
+            _soundsManager = soundsManager;
             ExceptionUtilities.ThrowIfNull(_inputHandler, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "PlayerInputHandler"));
             ExceptionUtilities.ThrowIfNull(_sceneLoader, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SceneLoadManager"));
+            ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
             _navMeshAgent.updateRotation = false;
         }
 
         private void Start()
         {
             FindCamera();
+            _groundCheckWait = new(_groundCheckInterval);
         }
 
         private void OnEnable()
@@ -56,6 +66,9 @@ namespace BigProject.Player
         {
             _inputHandler.Click -= OnClick;
             _sceneLoader.SceneLoadingCompleted -= OnSceneLoadingCompleted;
+
+            if (_groundCheckCoroutine != null)
+                StopCoroutine(_groundCheckCoroutine);
         }
 
         private void OnSceneLoadingCompleted() => FindCamera();
@@ -110,6 +123,12 @@ namespace BigProject.Player
                         _isMoving = false;
                         _animatorController.SetBool(MOVING_ANIM_BOOL, false);
                         Interact();
+
+                        if (_groundCheckCoroutine != null)
+                        {
+                            StopCoroutine(_groundCheckCoroutine);
+                            _groundCheckCoroutine = null;
+                        }
                     }
                 }
             }
@@ -121,7 +140,7 @@ namespace BigProject.Player
             {
                 // Getting the move direction
                 Vector3 moveDirection = _navMeshAgent.velocity.normalized;
-                moveDirection.y = 0; // Игнорируем вертикальную составляющую
+                moveDirection.y = 0;
 
                 if (moveDirection != Vector3.zero)
                 {
@@ -143,13 +162,40 @@ namespace BigProject.Player
             _isMoving = true;
             _animatorController.SetBool(MOVING_ANIM_BOOL, true);
             _navMeshAgent.SetDestination(_destination);
+
+            if (_groundCheckCoroutine == null)
+            {
+                _groundCheckCoroutine = StartCoroutine(GroundCheckRoutine());
+            }
+        }
+
+        /// <summary>
+        /// Creates sound of walking
+        /// Make sure that collider of the ground is lower, than the boy transform point, or else the raycast will cast incorrectrly, ignoring the floor
+        /// </summary>
+        private IEnumerator GroundCheckRoutine()
+        {
+            while (true)
+            {
+                Ray ray = new Ray(transform.position, Vector3.down);
+
+                if (Physics.Raycast(ray, out RaycastHit hit))
+                {
+                    if (hit.transform.TryGetComponent(out GroundSounds groundSounds))
+                    {
+                        _soundsManager.PlaySound(groundSounds.GetStepSound(), spawnPosition: _camera.transform);
+                    }
+                }
+
+                yield return _groundCheckWait;
+            }
         }
 
         private bool TryClimb()
         {
             if (_navMeshAgent.isOnOffMeshLink)
             {
-                
+
                 if (_climbProcess == null)
                 {
                     _climbProcess = StartCoroutine(ClimbProcess(_navMeshAgent.currentOffMeshLinkData));

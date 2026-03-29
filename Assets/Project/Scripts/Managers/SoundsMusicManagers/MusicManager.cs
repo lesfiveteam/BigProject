@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace BigProject.Managers
+namespace BigProject.Managers.SoundsMusicManagers
 {
     public class MusicManager : MonoBehaviour
     {
