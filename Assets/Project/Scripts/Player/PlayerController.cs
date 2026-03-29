@@ -183,7 +183,8 @@ namespace BigProject.Player
                 {
                     if (hit.transform.TryGetComponent(out GroundSounds groundSounds))
                     {
-                        _soundsManager.PlaySound(groundSounds.GetStepSound(), spawnPosition: _camera.transform, volume: 0.1f);
+                        float stepVolume = groundSounds.GetSoundVolume();
+                        _soundsManager.PlaySound(groundSounds.GetStepSound(), spawnPosition: _camera.transform, volume: stepVolume);
                     }
                 }
 
