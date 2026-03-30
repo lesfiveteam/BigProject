@@ -114,5 +114,10 @@ namespace BigProject.UI
                 OnShardPlacedCorrectly?.Invoke(_id);
             }
         }
+
+        public void ResetPosition()
+        {
+            transform.position = _startPos.position;
+        }
     }
 }

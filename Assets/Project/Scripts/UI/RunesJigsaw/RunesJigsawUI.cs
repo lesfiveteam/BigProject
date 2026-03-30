@@ -24,7 +24,8 @@ namespace BigProject.UI
         [SerializeField] private List<BackingImage> _backingImages;
         [SerializeField] private Image _backingImage;
         [SerializeField] private List<Image> _segmentImages;
-        [SerializeField] private Transform shardHolder;
+        [SerializeField] private Transform _shardHolder;
+        [SerializeField] private Button _exitButton;
 
         private RuneShardsSystem _runeShardsSystem;
         private List<ShardUI> _freeShards = new List<ShardUI>();
@@ -81,6 +82,8 @@ namespace BigProject.UI
             {
                 if (_shardsLeftToFinishSegments[i] == 0) ShowSegmentFilled(i);
             }
+
+            _exitButton.onClick.AddListener(OnExitButtonClicked);
         }
 
         private void OnDestroy()
@@ -109,7 +112,7 @@ namespace BigProject.UI
             }
 
             Vector3 spawnPos = isPlaced ? goalShard.transform.position : startShard.transform.position;
-            GameObject spawnedShard = Instantiate(_shardPrefab, spawnPos, Quaternion.identity, shardHolder);
+            GameObject spawnedShard = Instantiate(_shardPrefab, spawnPos, Quaternion.identity, _shardHolder);
 
             ShardUI shardUI = spawnedShard.GetComponent<ShardUI>();
 
@@ -218,6 +221,15 @@ namespace BigProject.UI
                 _placedShards.Remove(shard);
                 Destroy(shard.gameObject);
             }
+        }
+
+        private void OnExitButtonClicked()
+        {
+            foreach (var freeShard in _freeShards)
+            {
+                freeShard.ResetPosition();
+            }
+            Hide();
         }
     }
 }
