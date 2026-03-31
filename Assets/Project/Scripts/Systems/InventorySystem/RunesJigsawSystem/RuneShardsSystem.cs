@@ -17,27 +17,36 @@ namespace BigProject.Systems.Inventory
         private List<int> _unlockedSegmentsIDs = new List<int>();
         private List<int> _placedShardsIDs = new List<int>();
         private List<int> _filledSegmentsIDs = new List<int>();
+        private int _questsFinished = 0;
 
         public event Action<RuneShard> OnShardAdded;
         public event Action<int> OnSegmentUnlocked;
 
-        public void AddRuneShard(int id)
+        /// <summary>
+        /// Adds unlocked runes when invoked after each quest.
+        /// </summary>
+        public void AddRunes()
         {
-            if (!_foundShardsIDs.Contains(id))
+            _questsFinished++;
+
+            if (_questsFinished > 3)
             {
-                _foundShardsIDs.Add(id);
-            }
-            else
-            {
-                Debug.LogWarning($"Shard with ID {id} already added.");
+                Debug.LogError("AddRunes() invoked more than 3 times!");
             }
 
-            var shard = _runeShardsDatabase.Shards.FirstOrDefault(s => s.Id == id);
-
-            OnShardAdded?.Invoke(shard);
+            int segmentIdToUnlock = 2 * _questsFinished - 1;
+            UnlockSegmentByID(segmentIdToUnlock);
+            UnlockSegmentByID(segmentIdToUnlock - 1);
+            foreach (var shard in _runeShardsDatabase.Shards)
+            {
+                if (shard.SegmentId == segmentIdToUnlock || shard.SegmentId == segmentIdToUnlock - 1)
+                {
+                    _foundShardsIDs.Add(shard.Id);
+                }
+            }
         }
 
-        public void UnlockSegment(int id)
+        private void UnlockSegmentByID(int id)
         {
             if (_unlockedSegmentsIDs.Contains(id))
             {
@@ -116,13 +125,19 @@ namespace BigProject.Systems.Inventory
             _filledSegmentsIDs.Add(id);
         }
 
+        // Test code
         private void Awake()
         {
-            for (int i = 0; i < 4; ++i)
-                _unlockedSegmentsIDs.Add(i);
+            //for (int i = 0; i < 4; ++i)
+            //    _unlockedSegmentsIDs.Add(i);
 
-            for (int i = 0; i < 22; ++i)
-                _foundShardsIDs.Add(i);
+            //for (int i = 0; i < 22; ++i)
+            //    _foundShardsIDs.Add(i);
+
+            //for (int i = 0; i < 11; ++i)
+            //    _placedShardsIDs.Add(i * 2);
+            AddRunes();
+            AddRunes();
 
             _runesJigsawUI.Init(this);
         }
