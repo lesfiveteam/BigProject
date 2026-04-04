@@ -9,18 +9,48 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 {
     public class SlideManager : MonoBehaviour
     {
+        private const float SKIP_DURATION = 0.2f;
+
         public event Action OpeningEnded;
 
         [SerializeField] private List<Slide> _slides;
         [SerializeField] private Image _fader;
 
-        [SerializeField] private float _slideDuration = 7f;
-        [SerializeField] private float _hideDuration = 5f;
+        private float _slideShowDuration = 25f;
+        private float _currentSlideShowDuration;
 
-        [SerializeField] private float _fadeDuration = 0.3f;
-        [SerializeField] private float _fadeInterval = 0.3f;
+        private float _fadeDuration = 1f;
+        private float _currentFadeDuration;
+
+        private bool _inShowProcces = false;
 
         private Coroutine _slideCoroutine;
+
+        private int _currentSlideIndex = 0;
+
+        private void Update()
+        {
+            InputHandler();
+        }
+
+        private void InputHandler()
+        {
+            if (Mouse.current.leftButton.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
+            {
+                if (_inShowProcces)
+                {
+                    _slides[_currentSlideIndex].SkipShow();
+                    _inShowProcces = false;
+                    _currentFadeDuration = SKIP_DURATION;
+                }
+                else
+                {
+                    _slides[_currentSlideIndex].SkipHide();
+                    _currentSlideShowDuration = SKIP_DURATION;
+                    _currentFadeDuration = SKIP_DURATION;
+                }
+            }
+        }
 
         public void StartSlideShow()
         {
@@ -45,38 +75,44 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         private IEnumerator PlaySlider()
         {
-            for (int i = 0; i < _slides.Count; i++)
+            for (_currentSlideIndex = 0; _currentSlideIndex < _slides.Count; _currentSlideIndex++)
             {
-                _slides[i].Play();
+                _currentSlideShowDuration = _slideShowDuration;
+                _currentFadeDuration = _fadeDuration;
 
-                yield return Fade(1f, 0f, _fadeDuration);
+                _inShowProcces = true;
 
-                yield return WaitForSlide();
+                _slides[_currentSlideIndex].Show(() => _inShowProcces = false);
 
-                _slides[i].Hide();
+                yield return Fade(1f, 0f);
 
-                yield return new WaitForSeconds(_hideDuration);
+                yield return DynamicWait();
 
-                yield return Fade(0f, 1f, _fadeDuration);
+                bool isHideProccesEnded = false;
 
-                _slides[i].Stop();
+                _slides[_currentSlideIndex].Hide(() => isHideProccesEnded = true);
 
-                yield return new WaitForSeconds(_fadeInterval);
+                yield return Fade(0f, 1f);
+
+                yield return new WaitUntil(() => isHideProccesEnded);
+
+                _slides[_currentSlideIndex].Stop();
             }
 
             OpeningEnded?.Invoke();
         }
 
-        private IEnumerator Fade(float from, float to, float duration)
+        private IEnumerator Fade(float from, float to)
         {
             Color color = _fader.color;
             float elapsed = 0f;
 
-            while (elapsed < duration)
+            while (elapsed < _currentFadeDuration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
+                float t = Mathf.Clamp01(elapsed / _currentFadeDuration);
                 float alpha = Mathf.Lerp(from, to, t);
+
                 _fader.color = new Color(color.r, color.g, color.b, alpha);
 
                 yield return null;
@@ -85,22 +121,16 @@ namespace Assets.Project.Scripts.Managers.SlideManager
             _fader.color = new Color(color.r, color.g, color.b, to);
         }
 
-        private IEnumerator WaitForSlide()
+        private IEnumerator DynamicWait()
         {
             float elapsed = 0f;
-            bool clicked = false;
 
-            while (elapsed < _slideDuration && !clicked)
+            while (elapsed < _currentSlideShowDuration)
             {
                 elapsed += Time.deltaTime;
-
-                if (Mouse.current != null & Mouse.current.leftButton.wasPressedThisFrame)
-                    clicked = true;
-
+                Debug.Log(_currentSlideShowDuration + " " + elapsed);
                 yield return null;
             }
-
-
         }
 
         private void OnDestroy() => StopSlideShow();
