@@ -31,6 +31,8 @@ namespace BigProject.Player
         private Coroutine _climbProcess;
         private float _climbDuration;
 
+        private Coroutine _movingTowardsCursor;
+
         private Camera _camera;
         private SceneLoadManager _sceneLoader;
         private SoundsManager _soundsManager;
@@ -104,6 +106,39 @@ namespace BigProject.Player
                     IInteractable interactableObject = hit.collider.GetComponent<IInteractable>();
                     SetInterableObject(interactableObject);
                 }
+            }
+
+            if (_movingTowardsCursor == null)
+            {
+                _movingTowardsCursor = StartCoroutine(MoveTowardsCursor());
+            }
+            else
+            {
+                StopCoroutine(_movingTowardsCursor);
+                _movingTowardsCursor = StartCoroutine(MoveTowardsCursor());
+            }
+        }
+
+        private IEnumerator MoveTowardsCursor()
+        {
+            while (_inputHandler.IsClickBeingPressed())
+            {
+                if (!GameplayUtilities.IsPointerOverUI())
+                {
+                    Vector2 mousePosition = _inputHandler.GetMousePosition();
+                    Ray ray = _camera.ScreenPointToRay(mousePosition);
+
+                    if (Physics.Raycast(ray, out RaycastHit hit))
+                    {
+                        if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, _navMeshHitPointDistance, NavMesh.AllAreas))
+                        {
+                            SetDestination(navMeshHit.position);
+                            Move();
+                        }
+                    }
+                }
+
+                yield return null;
             }
         }
 

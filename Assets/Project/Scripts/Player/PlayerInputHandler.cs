@@ -92,6 +92,11 @@ namespace BigProject.Player
             Reset?.Invoke();
         }
 
+        public bool IsClickBeingPressed()
+        {
+            return _inputActions.Player.Click.IsPressed();
+        }
+
         public void SwitchToPlayerActionMap()
         {
             _inputActions.Player.Enable();
