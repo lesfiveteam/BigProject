@@ -36,6 +36,7 @@ namespace BigProject.Systems
         public const string CRITICAL_UNABLE_GET_SERVICE = "{0}: can't get {1} service.";
         public const string CRITICAL_NOT_SERIALIZED_FIELD = "{0}: has not serialized field [{1}].";
         public const string CRITICAL_NULL_REFERENCE = "{0}: get null reference [{1}].";
+        public const string CRITICAL_EMPTY_COLLECTION = "Collection is empty";
 
         public const string INFO_SYSTEM = "System \"{0}\" info: {1}.";
         public const string WARNING_SYSTEM = "System \"{0}\" warning: {1}.";
