@@ -1,4 +1,6 @@
+using BigProject.Systems;
 using System;
+using System.Collections;
 
 namespace BigProject.Utilities
 {
@@ -28,6 +30,12 @@ namespace BigProject.Utilities
             {
                 throw new NullReferenceException(string.Format(AUTHOR_EXCEPTION_MSG, author, msg));
             }
+        }
+
+        public static void ThrowIfEmptyCollection(ICollection collection, string name)
+        {
+            if (collection.Count == 0)
+                throw new InvalidOperationException(string.Format(AUTHOR_EXCEPTION_MSG, name, LogStr.CRITICAL_EMPTY_COLLECTION));
         }
     }
 }

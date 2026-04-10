@@ -7,7 +7,8 @@ namespace BigProject.Systems.Sound
     
     public class GroundSounds : MonoBehaviour
     {
-        [SerializeField] private AudioClip[] _stepSounds;
+        [SerializeField] 
+        private AudioClip[] _stepSounds;
 
         public AudioClip GetStepSound() => _stepSounds[Random.Range(0, _stepSounds.Length)];
 
@@ -20,6 +21,11 @@ namespace BigProject.Systems.Sound
                     Debug.LogError("На " + gameObject.name + " звук == null");
                 }
             }
+        }
+
+        public float GetSoundVolume()
+        {
+            return _volume;
         }
     }
 }
