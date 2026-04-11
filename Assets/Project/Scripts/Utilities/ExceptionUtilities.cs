@@ -1,6 +1,8 @@
 using BigProject.Systems;
 using System;
 using System.Collections;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace BigProject.Utilities
 {
@@ -29,6 +31,27 @@ namespace BigProject.Utilities
             if (arg == null)
             {
                 throw new NullReferenceException(string.Format(AUTHOR_EXCEPTION_MSG, author, msg));
+            }
+        }
+
+        public static void ThrowIfNullFormat<T>(T target, string msg = "")
+        {
+            StackFrame frame = new(1);
+            MethodBase method = frame.GetMethod();
+            string callerClass = method?.DeclaringType?.Name ?? "UnknownClass";
+            string callerMethod = method?.Name ?? "UnknownMethod";
+            string caller = $"{callerClass}.{callerMethod}";
+
+            string typeName = target?.GetType().Name ?? typeof(T).Name;
+
+            if (target == null)
+            {
+                throw new NullReferenceException($"{string.Format(LogStr.CRITICAL_NULL_REFERENCE, caller, typeName)} {msg}");
+            }
+
+            if (target is UnityEngine.Object unityObj && !unityObj)
+            {
+                throw new NullReferenceException($"{string.Format(LogStr.CRITICAL_NULL_REFERENCE, caller, typeName)} {msg}");
             }
         }
 

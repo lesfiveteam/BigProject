@@ -95,7 +95,9 @@ namespace BigProject.Player
             Vector2 mousePosition = _inputHandler.GetMousePosition();
             Ray ray = _camera.ScreenPointToRay(mousePosition);
 
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            int layerMask = ~((1 << LayerMask.NameToLayer("Scared")) | (1 << LayerMask.NameToLayer("Ignore Raycast")));
+
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, layerMask))
             {
                 if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, _navMeshHitPointDistance, NavMesh.AllAreas))
                 {

@@ -25,6 +25,7 @@ namespace BigProject.Systems
         public const string WARNING_GAME_EXECUTION_REWRITE_STAGE = "Game execution already at stage: {0}.";
         public const string WARNING_DUPLICATE_UNIQUE_ENTITY = "Try duplicate [{0}]. It should exist in one copy.";
         public const string WARNING_QUEST = "Quest warning: {0}.";
+        public const string WARNING_CANT_FIND_PATH = "The: {0} can't find path in {1}.";
 
         public const string ERROR_WRITE_FAILED = "Logger write failed: {0}.";
         public const string ERROR_FILE_DELETE_FAILED = "Failed to delete {0}: {1}.";
