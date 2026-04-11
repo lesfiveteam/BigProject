@@ -50,7 +50,7 @@ namespace BigProject.Managers.SoundsMusicManagers
         /// <param name = "lowestPitch"> Lowest possible random pitch </param>
         /// <param name = "highestPitch"> Highest possible random pitch </param>
         /// </summary>
-        public void PlaySound(AudioClip clip, MixerType mixerType = MixerType.Master, float lowestPitch = 1f, float highestPitch = 1f, Transform spawnPosition = null, float volume = 1f, Transform owner = null, bool is2D = false)
+        public void PlaySound(AudioClip clip, MixerType mixerType = MixerType.Master, float lowestPitch = 1f, float highestPitch = 1f, Transform spawnPosition = null, float volume = 1f, Transform owner = null, bool is2D = false, bool isLooped = false)
         {
             if (owner != null && _objectAudioMap.ContainsKey(owner))
             {
@@ -62,6 +62,7 @@ namespace BigProject.Managers.SoundsMusicManagers
             AudioSource audioSource = Instantiate(is2D ? _audioSource2D : _audioSource3D, spawnPos, Quaternion.identity, parent);
             audioSource.clip = clip;
             audioSource.volume = volume;
+            audioSource.loop = isLooped;
 
             if (_mixerDictionary.TryGetValue(mixerType, out AudioMixerGroup mixerGroup) && mixerGroup != null)
             {
@@ -83,7 +84,10 @@ namespace BigProject.Managers.SoundsMusicManagers
                 _objectAudioMap[owner] = audioSource;
             }
 
-            StartCoroutine(DestroyAfterPlayback(audioSource, owner));
+            if (!isLooped)
+            {
+                StartCoroutine(DestroyAfterPlayback(audioSource, owner));
+            }
         }
 
         /// <summary>

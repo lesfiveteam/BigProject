@@ -19,9 +19,6 @@ namespace BigProject.Player
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
         [SerializeField] private float _climbSpeed = 0.2f;
-        [SerializeField] private float _groundCheckInterval = 0.2f;
-
-        private WaitForSeconds _groundCheckWait;
 
         private PlayerInputHandler _inputHandler;
         private IInteractable _interactable = null;
@@ -36,7 +33,6 @@ namespace BigProject.Player
         private Camera _camera;
         private SceneLoadManager _sceneLoader;
         private SoundsManager _soundsManager;
-        private Coroutine _groundCheckCoroutine;
 
         private const string MOVING_ANIM_BOOL = "IsMoving";
 
@@ -56,7 +52,6 @@ namespace BigProject.Player
         private void Start()
         {
             FindCamera();
-            _groundCheckWait = new(_groundCheckInterval);
         }
 
         private void OnEnable()
@@ -68,9 +63,6 @@ namespace BigProject.Player
         {
             _inputHandler.Click -= OnClick;
             _sceneLoader.SceneLoadingCompleted -= OnSceneLoadingCompleted;
-
-            if (_groundCheckCoroutine != null)
-                StopCoroutine(_groundCheckCoroutine);
         }
 
         private void OnSceneLoadingCompleted() => FindCamera();
@@ -160,12 +152,6 @@ namespace BigProject.Player
                         _isMoving = false;
                         _animatorController.SetBool(MOVING_ANIM_BOOL, false);
                         Interact();
-
-                        if (_groundCheckCoroutine != null)
-                        {
-                            StopCoroutine(_groundCheckCoroutine);
-                            _groundCheckCoroutine = null;
-                        }
                     }
                 }
             }
@@ -199,33 +185,22 @@ namespace BigProject.Player
             _isMoving = true;
             _animatorController.SetBool(MOVING_ANIM_BOOL, true);
             _navMeshAgent.SetDestination(_destination);
-
-            if (_groundCheckCoroutine == null)
-            {
-                _groundCheckCoroutine = StartCoroutine(GroundCheckRoutine());
-            }
         }
 
         /// <summary>
         /// Creates sound of walking
         /// Make sure that collider of the ground is lower, than the boy transform point, or else the raycast will cast incorrectrly, ignoring the floor
         /// </summary>
-        private IEnumerator GroundCheckRoutine()
+        public void PlayGroundSound()
         {
-            while (true)
+            Ray ray = new Ray(transform.position, Vector3.down);
+
+            if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                Ray ray = new Ray(transform.position, Vector3.down);
-
-                if (Physics.Raycast(ray, out RaycastHit hit))
+                if (hit.transform.TryGetComponent(out GroundSounds groundSounds))
                 {
-                    if (hit.transform.TryGetComponent(out GroundSounds groundSounds))
-                    {
-                        float stepVolume = groundSounds.GetSoundVolume();
-                        _soundsManager.PlaySound(groundSounds.GetStepSound(), spawnPosition: _camera.transform, volume: stepVolume);
-                    }
+                    _soundsManager.PlaySound(groundSounds.GetStepSound(), spawnPosition:transform);
                 }
-
-                yield return _groundCheckWait;
             }
         }
 

@@ -9,6 +9,8 @@ using BigProject.Player;
 using BigProject.Intercatable.HighlightedObjects;
 using BigProject.Managers.CursorManager;
 using Assets.Project.Scripts.Managers.SceneLoader;
+using BigProject.Systems.Sound;
+using BigProject.Managers.SoundsMusicManagers;
 
 namespace BigProject.Initializers
 {
@@ -33,9 +35,12 @@ namespace BigProject.Initializers
             InitQuestHandlers(pm);
             InitInteractable(pm);
             InitDoors();
+            InitRiverSound();
             InitDialogueNPCs();
             InitCursorChangingEffects();
+            InitEnvironmentSounds();
             InitNPCControllers(pm);
+            InitGlobalRotationObjects();
             GameLogManager.Info(LogStr.INFO_INITIALIZING_SCENE_SERVICES_COMPLETED);
             _initActions?.Invoke();
         }
@@ -115,6 +120,17 @@ namespace BigProject.Initializers
             }
         }
 
+        private void InitEnvironmentSounds()
+        {
+            EnvironmentSound[] environmentSounds = FindObjectsByType<EnvironmentSound>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
+
+            foreach (EnvironmentSound environmentSound in environmentSounds)
+            {
+                environmentSound.Init(soundsManager);
+            }
+        }
+
         private void InitNPCControllers(ProgressManager progressManager)
         {
             NPCController[] controllers = FindObjectsByType<NPCController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -122,6 +138,30 @@ namespace BigProject.Initializers
             foreach (NPCController controller in controllers)
             {
                 controller.Init(progressManager);
+            }
+        }
+
+        private void InitGlobalRotationObjects()
+        {
+            GlobalRotationObject[] globalRotationObjects = FindObjectsByType<GlobalRotationObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
+
+            foreach (GlobalRotationObject globalRotationObject in globalRotationObjects)
+            {
+                manualLoop.AddTickable(globalRotationObject);
+            }
+        }
+        
+        private void InitRiverSound()
+        {
+            RiverSoundMover[] riverSoundMovers = FindObjectsByType<RiverSoundMover>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
+            PlayerController player = ServiceLocator.GetService<PlayerController>();
+
+            foreach (RiverSoundMover riverSoundMover in riverSoundMovers)
+            {
+                manualLoop.AddTickable(riverSoundMover);
+                riverSoundMover.Init(player.transform);
             }
         }
     }
