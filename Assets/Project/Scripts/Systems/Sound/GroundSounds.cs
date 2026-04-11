@@ -10,11 +10,17 @@ namespace BigProject.Systems.Sound
         [SerializeField] 
         private AudioClip[] _stepSounds;
 
-        [SerializeField]
-        private float _volume = 0.2f;
-        public AudioClip GetStepSound()
+        public AudioClip GetStepSound() => _stepSounds[Random.Range(0, _stepSounds.Length)];
+
+        private void Awake()
         {
-            return _stepSounds[Random.Range(0, _stepSounds.Length)];
+            foreach(AudioClip stepSound in _stepSounds)
+            {
+                if(stepSound == null)
+                {
+                    Debug.LogError("На " + gameObject.name + " звук == null");
+                }
+            }
         }
 
         public float GetSoundVolume()
