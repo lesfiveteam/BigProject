@@ -22,10 +22,5 @@ namespace BigProject.Systems.Sound
                 }
             }
         }
-
-        public float GetSoundVolume()
-        {
-            return _volume;
-        }
     }
 }
