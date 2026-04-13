@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Assertions;
+using BigProject.Settings;
+using BigProject.Systems.HUD;
 
 namespace BigProject.Gameplay.Watermill
 {
@@ -38,6 +40,10 @@ namespace BigProject.Gameplay.Watermill
         private QuestActionHandlersContainer _actions;
         [SerializeField]
         private int _noteItemId;
+        [SerializeField]
+        private HUDConfig _hudConfig;
+        [SerializeField]
+        private Transform _targetPosition;
 
         [Header("Levers settings")]
         [SerializeField]
@@ -79,19 +85,23 @@ namespace BigProject.Gameplay.Watermill
         private Vector2 _deltaInversion = new(-1f, 1f);
         private GameplayManager _gameplayManager;
         private MusicManager _musicManager;
+        private HUD _hud;
 
         public ControlPanelState CurrentPanelState => _currentPanelState;
 
-        public void Init(GameplayManager gameplayManager, PlayerInputHandler inputHandler, InventorySystem inventory, MusicManager musicManager)
+        public void Init(GameplayManager gameplayManager, PlayerInputHandler inputHandler, InventorySystem inventory,
+            MusicManager musicManager, HUD hud)
         {
             _gameplayManager = gameplayManager;
             _inputHandler = inputHandler;
             _inventory = inventory;
             _musicManager = musicManager;
+            _hud = hud;
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Gameplay Manager"));
             ExceptionUtilities.ThrowIfNull(_inputHandler, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Input Handler"));
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory System"));
             ExceptionUtilities.ThrowIfNull(_musicManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Music Manager"));
+            ExceptionUtilities.ThrowIfNull(_hud, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "HUD"));
             ChangeState(ControlPanelState.Broken);
         }
 
@@ -103,6 +113,8 @@ namespace BigProject.Gameplay.Watermill
             Assert.IsNotNull(_repairedLeverHolder, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Repaired Lever Holder"));
             Assert.IsNotNull(_repairedLever, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Repaired Lever"));
             Assert.IsNotNull(_gearsHandler, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Gears Handler"));
+            Assert.IsNotNull(_hudConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD Config"));
+            Assert.IsNotNull(_targetPosition, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Target Position"));
         }
 
         private void OnDestroy()
@@ -117,6 +129,8 @@ namespace BigProject.Gameplay.Watermill
                 _activator.ActivateMiniGame();
             }
         }
+
+        public Vector3 TargetPosition => _targetPosition.position;
 
         public void Deactivate()
         {
@@ -136,9 +150,21 @@ namespace BigProject.Gameplay.Watermill
             }
 
             _isLeverMoving = true;
-            lever.DOLocalMove(targetPosition, time);
-            await Awaitable.WaitForSecondsAsync(time + 0.1f, cancellationToken: ct);
-            _isLeverMoving = false;
+            Tween tween = lever.DOLocalMove(targetPosition, time);
+
+            try
+            {
+                await Awaitable.WaitForSecondsAsync(time + 0.1f, cancellationToken: ct);
+            }
+            catch (OperationCanceledException)
+            {
+                tween.Kill();
+                throw;
+            }
+            finally
+            {
+                _isLeverMoving = false;
+            }
         }
 
         private void OnActivated(bool isActivated)
@@ -146,6 +172,7 @@ namespace BigProject.Gameplay.Watermill
             if (isActivated)
             {
                 _state?.Start();
+                _state?.OnActivated();
             }
             else
             {
@@ -201,13 +228,8 @@ namespace BigProject.Gameplay.Watermill
                     break;
                 case ControlPanelState.Fixed:
                     _state = new ControlPanelStateFixed(this, _inputHandler, _leversPoints, _levers, _leverMoveTime,
-                        _leverStaggerTime, _staggerDistance, _noteItemId, _gearsHandler, _actions["ActivateMech"], _inventory);
-
-                    //if (_activator.IsActivated)
-                    //{
-                    //    _inventoryUI.SetNoteVisibility(true);
-                    //}
-
+                        _leverStaggerTime, _staggerDistance, _noteItemId, _gearsHandler, _actions["ActivateMech"], _inventory, _hud,
+                        _hudConfig.HUDResetWidgetId, _activator.IsActivated);
                     break;
                 default:
                     _state = null;
@@ -225,12 +247,18 @@ namespace BigProject.Gameplay.Watermill
             }
         }
 
+        private void ResetPanel()
+        {
+            _state?.Reset();
+        }
+
         private void OnEnable()
         {
             _activator.Activated += OnActivated;
             _inputHandler.MiniGameClick += OnClicked;
             _inputHandler.MiniGameSwipe += OnSwiped;
             _inputHandler.MiniGameUnclick += OnUnclicked;
+            _inputHandler.Reset += ResetPanel;
         }
 
         private void OnDisable()
@@ -239,6 +267,7 @@ namespace BigProject.Gameplay.Watermill
             _inputHandler.MiniGameClick -= OnClicked;
             _inputHandler.MiniGameSwipe -= OnSwiped;
             _inputHandler.MiniGameUnclick -= OnUnclicked;
+            _inputHandler.Reset -= ResetPanel;
         }
     }
 }

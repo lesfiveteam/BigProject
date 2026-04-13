@@ -16,5 +16,7 @@ namespace BigProject.Gameplay.Watermill
         public void OnSwiped(Vector2 delta) { }
         public void OnUnclicked() { }
         public void ApplyItem(Item item) { }
+        public void OnActivated() { }
+        public void Reset() { }
     }
 }

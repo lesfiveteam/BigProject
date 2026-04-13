@@ -25,6 +25,8 @@ namespace BigProject.Gameplay.TownHall
         [SerializeField]
         private MiniGameActivator _activator;
         [SerializeField]
+        private Transform _target;
+        [SerializeField]
         private List<Collider> _keysHolders;
         [SerializeField]
         private List<GameObject> _keysPrefabs;
@@ -95,6 +97,8 @@ namespace BigProject.Gameplay.TownHall
 
         public object SavingData => _dataToSave;
 
+        public Vector3 TargetPosition => _target.position;
+
         public void Init(InventorySystem inventory, InventoryUI inventoryUI, ProgressManager progressManager, HUD hud, PlayerInputHandler inputHandler)
         {
             _inventory = inventory;
@@ -113,6 +117,7 @@ namespace BigProject.Gameplay.TownHall
         private void Awake()
         {
             Assert.IsNotNull(_activator, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Activator"));
+            Assert.IsNotNull(_target, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Target position"));
             Assert.IsNotNull(_chestCup, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chest cup"));
             Assert.IsNotNull(_actionHandlers, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest action handler"));
             Assert.IsNotNull(_hudConfig, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD Config"));

@@ -17,6 +17,8 @@ namespace BigProject.Systems.QuestSystem
         private bool _destroyAfterInteract = false;
         [SerializeField]
         private bool _destroyWithGameObject = false;
+        [SerializeField]
+        private Transform _targetPosition;
 
         private ProgressManager _progressManager;
         private IQuestActionHandler _actionHandler;
@@ -53,5 +55,7 @@ namespace BigProject.Systems.QuestSystem
                 Destroy(_destroyWithGameObject ? gameObject : this);
             }
         }
+
+        public Vector3 TargetPosition => _targetPosition == null ? transform.position : _targetPosition.position;
     }
 }

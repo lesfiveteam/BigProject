@@ -4,9 +4,25 @@ namespace BigProject.Intercatable
 {
     public interface IInteractable
     {
-        // Возвращает true, если для взаимодействия нужно подойти
-        public bool NeedComeUp { get => true; }
-        // Вызывается при взаимодействии с объектом
+        public bool NeedComeUp => true;
+        public bool NeedLookAt => false;
         public void Interact();
+
+        public Vector3 TargetPosition
+        {
+            get
+            {
+                if (this is MonoBehaviour obj)
+                {
+                    return obj.transform.position;
+                }
+
+                return default;
+            }
+        }
+
+        public Vector3 TargetLookAt => TargetPosition;
+
+        public float MaxDistance => 2f;
     }
 }
