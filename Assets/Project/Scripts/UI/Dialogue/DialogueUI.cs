@@ -12,6 +12,8 @@ namespace BigProject.UI.Dialogue
     {
         private const string BOY_NAME = "Эйрик";
         private const string DIALOGUE_ANIM_TRIGGER = "Pressed";
+        // Hack - determine that this is a boy sprite and reduce it if so
+        private const string BASE_BOY_SPRITE_NAME = "эмоции_мальчик";
         [SerializeField]
         public GameObject _dialogueWindow;
         [SerializeField]
@@ -25,9 +27,13 @@ namespace BigProject.UI.Dialogue
         [SerializeField]
         private TextMeshProUGUI _dialogueTextBack;
         [SerializeField]
-        public Animator _dialogueMaskBackAnimator;
+        private Animator _dialogueMaskBackAnimator;
         [SerializeField]
-        public Animator _dialogueAnswersAnimator;
+        private Animator _dialogueAnswersAnimator;
+        [SerializeField]
+        private Color _chosenAnwerColor = Color.grey;
+        [SerializeField]
+        private Color _notChosenAnwerColor = Color.black;
         [SerializeField]
         private Image _rightCharacterImage;
         [SerializeField]
@@ -38,6 +44,12 @@ namespace BigProject.UI.Dialogue
         private GameObject _leftCharacterNameField;
         [SerializeField]
         private GameObject _rightCharacterNameField;
+        [SerializeField]
+        private float _defaultRectTransformHeight = 1400;
+        [SerializeField]
+        private float _boyRectTransformHeight = 1240;
+        [SerializeField]
+        private RectTransform _rectTransform;
 
         [SerializeField]
         private float _speakerImageTone = 0.5f;
@@ -69,6 +81,8 @@ namespace BigProject.UI.Dialogue
                     _answerOptionButtonTexts.Add(buttonText);
                 }
             }
+
+            _rectTransform = _leftCharacterImage.GetComponent<RectTransform>();
 
             // Name fields
             _leftNameTMPro = _leftCharacterNameField.GetComponentInChildren<TextMeshProUGUI>();
@@ -123,6 +137,7 @@ namespace BigProject.UI.Dialogue
 
             // Answer options only for Boy
             _leftNameTMPro.text = BOY_NAME;
+            ResizeBoyRectTtransform(_boyRectTransformHeight);
 
             // Количество кнопок, которые нужно показать
             int buttonCount = Mathf.Min(
@@ -132,8 +147,13 @@ namespace BigProject.UI.Dialogue
 
             for (int i = 0; i < buttonCount; i++)
             {
+                DialogueAnswerOption answer = dialogueLine.DialogueAnswerOptions[i];
                 _answerOptionButtons[i].gameObject.SetActive(true);
-                _answerOptionButtonTexts[i].text = dialogueLine.DialogueAnswerOptions[i].Text;
+                _answerOptionButtonTexts[i].text = answer.Text;
+                // Styling for already chosen option
+                _answerOptionButtonTexts[i].color = answer.IsChosenByDefault || _dialogueManager.IsAnswerChosen(answer)
+                    ? _chosenAnwerColor
+                    : _notChosenAnwerColor;
             }
 
             _dialogueBackgroundAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER);
@@ -184,19 +204,21 @@ namespace BigProject.UI.Dialogue
                 // Show new sprite
                 _leftCharacterImage.sprite = dialogueNPCPhrase.LeftCharacterSprite;
                 _leftCharacterImage.enabled = true;
+                Debug.Log(dialogueNPCPhrase.LeftCharacterSprite.name);
+                float rectTransformHeight = dialogueNPCPhrase.LeftCharacterSprite.name.Contains(BASE_BOY_SPRITE_NAME)
+                    ? _boyRectTransformHeight
+                    : _defaultRectTransformHeight;
+                ResizeBoyRectTtransform(rectTransformHeight);
             }
             else
             {
                 _leftCharacterImage.enabled = false;
             }
 
-
             _leftCharacterNameField.SetActive(!dialogueNPCPhrase.IsRightSpeaker);
             _rightCharacterNameField.SetActive(dialogueNPCPhrase.IsRightSpeaker);
             // Включаем возможность продолжить
             _nextButton.gameObject.SetActive(true);
-
-
 
             if (_isFirstLine)
             {
@@ -245,6 +267,11 @@ namespace BigProject.UI.Dialogue
         {
             Color color = new Color(tone, tone, tone);
             characterImage.color = color;
+        }
+
+        private void ResizeBoyRectTtransform(float height)
+        {
+            _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
         }
     }
 }

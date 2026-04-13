@@ -33,6 +33,8 @@ namespace BigProject.NPC
             public bool hasTransition;
             public int phraseIdToTransit;
             public int transitionId;
+            // line after completing the quest
+            public DialogueLine defaultDialogue;
 
             [HideInInspector]
             public IQuestActionHandler actionHandler;
@@ -98,6 +100,7 @@ namespace BigProject.NPC
                 if (condition.actionHandler.CurrentState == condition.state)
                 {
                     _dialogue.StartDialogLine = condition.dialogue;
+                    _defaultLine = condition.defaultDialogue;
                     return;
                 }
             }

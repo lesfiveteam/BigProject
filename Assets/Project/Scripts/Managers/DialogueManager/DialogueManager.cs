@@ -1,6 +1,7 @@
 using BigProject.Systems.DialogueSystem;
 using BigProject.UI.Dialogue;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BigProject.Managers
@@ -9,13 +10,16 @@ namespace BigProject.Managers
     {
         // Событие срабатывает во время фразы NPC, если указан Id
         public static event Action<int> OnDialoguePhrase;
+        public bool IsDialogue => _currentDialogueLine != null;
+
 
         private DialogueLine _currentDialogueLine;
         private int _currentDialoguePhraseIndex = 0;
 
         private DialogueUI _dialogueView;
 
-        public bool IsDialogue => _currentDialogueLine != null;
+        private HashSet<string> _chosenAnswers = new HashSet<string>();
+
 
         public DialogueManager(DialogueUI dialogueView)
         {
@@ -99,6 +103,9 @@ namespace BigProject.Managers
 
         public void SelectAnswerOption(int answerOptionIndex)
         {
+            DialogueAnswerOption selectedAnwser = _currentDialogueLine.DialogueAnswerOptions[answerOptionIndex];
+            MarkAnswerOptionAsChosen(selectedAnwser);
+
             _currentDialogueLine =
                 _currentDialogueLine.DialogueAnswerOptions[answerOptionIndex].DialogueLine;
             _currentDialoguePhraseIndex = 0;
@@ -117,6 +124,17 @@ namespace BigProject.Managers
             {
                 gameplayManager.ChangeState(GameplayState.Play);
             }
+        }
+
+        // return true, if already was chosen - exist in hashSet
+        public bool IsAnswerChosen(DialogueAnswerOption answer)
+        {
+            return _chosenAnswers.Contains(answer.HashId);
+        }
+
+        private void MarkAnswerOptionAsChosen(DialogueAnswerOption answer)
+        {
+            _chosenAnswers.Add(answer.HashId);
         }
     }
 }
