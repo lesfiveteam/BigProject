@@ -58,5 +58,16 @@ namespace Assets.Project.Scripts.Utilities
 
             return newDirection.normalized;
         }
+
+        public static void CreateDebugSphere(Vector3 position) => CreateDebugSphere(position, Color.blue);
+
+        public static void CreateDebugSphere(Vector3 position, Color color)
+        {
+            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            MeshRenderer renderer = sphere.GetComponent<MeshRenderer>();
+
+            sphere.transform.position = position;
+            renderer.material.color = color;
+        }
     }
 }
