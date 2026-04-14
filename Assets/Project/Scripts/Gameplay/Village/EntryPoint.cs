@@ -1,5 +1,6 @@
 using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
+using BigProject.NPC;
 using BigProject.Player;
 using BigProject.Systems.QuestSystem;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ namespace BigProject.Gameplay.Village
         private List<MonoBehaviour> _questsControllers;
         [SerializeField]
         private ChestSound _chestSound;
+        [SerializeField]
+        private NPCChatsDatabasesController _chatsDatabasesController;
 
         private QuestsBoundariesTracker _questsTracker;
 
@@ -36,6 +39,7 @@ namespace BigProject.Gameplay.Village
             _questsTracker.OnSceneEntry();
 
             _chestSound.Init(ServiceLocator.GetService<SoundsManager>());
+            _chatsDatabasesController.Init(ServiceLocator.GetService<ProgressManager>());
         }
 
         private void OnDestroy()

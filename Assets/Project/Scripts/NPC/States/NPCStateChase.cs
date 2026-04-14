@@ -31,7 +31,9 @@ namespace BigProject.NPC.States
         public void Start()
         {
             _controller.AgentOn();
-            NPCChat chat = new(_controller, out NPCStateChat speaker1, _target, out NPCStateChat speaker2, _controller.ChatsDatabase.GetRandomChat());
+            NPCChatsDatabase chatsDb = NPCChatsDatabasesController.ActualChatsDatabase;
+            ExceptionUtilities.ThrowIfNull(chatsDb, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "NPCStateChase", "NPCChatsDatabase"));
+            NPCChat chat = new(_controller, out NPCStateChat speaker1, _target, out NPCStateChat speaker2, chatsDb.GetRandomChat());
             _transition.GoToAndLookAt(() => _ = StartChat(chat, speaker1, speaker2));
         }
 
