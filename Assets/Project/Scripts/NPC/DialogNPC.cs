@@ -13,11 +13,18 @@ namespace BigProject.NPC
         public DialogueLine StartDialogLine;
 
         private DialogueManager _dialogueManager;
+        private const float TALK_DISTANCE = 1.5f;
 
         public void Interact()
         {
             StartDialog();
         }
+
+        public bool NeedLookAt => true;
+
+        public Vector3 TargetLookAt => transform.position;
+
+        public Vector3 TargetPosition => transform.position + transform.forward * TALK_DISTANCE;
 
         public void Init(DialogueManager dialogueManager)
         {

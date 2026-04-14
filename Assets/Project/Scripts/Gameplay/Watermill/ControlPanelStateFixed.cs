@@ -1,5 +1,6 @@
 using BigProject.Managers;
 using BigProject.Player;
+using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using BigProject.Systems.QuestSystem;
 using BigProject.Utilities;
@@ -27,7 +28,11 @@ namespace BigProject.Gameplay.Watermill
         private Lever _chosenLever;
         private List<Lever> _levers;
         private List<LeverPoint> _leversPoints;
+        private List<Transform> _pointsTransforms;
         private Vector2 _delta = Vector2.zero;
+        private HUD _hud;
+        private int _resetWidgetId;
+        private Dictionary<Lever, (Vector3, int)> _leversInitPositions = new();
         private const float MIN_SWIPE_DELTA = 80f;
         private const float MAX_SWIPE_ANGLE_DELTA = 30f;
 
@@ -44,7 +49,8 @@ namespace BigProject.Gameplay.Watermill
 
         public ControlPanelStateFixed(ControlPanel controlPanel, PlayerInputHandler input, List<Transform> pointsTransforms,
             List<Lever> levers, float leverMoveTime, float leverStaggerTime, float staggerDistance, int noteItemId, 
-            GearsHandler gearsHandler, IQuestActionHandler activateMechAction, InventorySystem inventory)
+            GearsHandler gearsHandler, IQuestActionHandler activateMechAction, InventorySystem inventory, HUD hud,
+            int resetWidgetId, bool isActivated)
         {
             _controlPanel = controlPanel;
             _input = input;
@@ -58,8 +64,21 @@ namespace BigProject.Gameplay.Watermill
             _isMoving = false;
             _chosenLever = null;
             _gearsHandler = gearsHandler;
-            SetLeversPoints(pointsTransforms);
+            _pointsTransforms = pointsTransforms;
+            SetLeversPoints(_pointsTransforms);
             _inventory = inventory;
+            _hud = hud;
+            _resetWidgetId = resetWidgetId;
+
+            foreach (Lever lever in _levers)
+            {
+                _leversInitPositions.TryAdd(lever, (lever.Transform.position, lever.PointId));
+            }
+
+            if (isActivated)
+            {
+                OnActivated();
+            }
         }
 
         public bool IsReady => _activateMechAction.CurrentState == QuestActionState.Active;
@@ -138,6 +157,25 @@ namespace BigProject.Gameplay.Watermill
             _ctSource?.Dispose();
         }
 
+        public void OnActivated()
+        {
+            _hud.ShowWidget(_resetWidgetId);
+        }
+
+        public void Reset()
+        {
+            _ctSource?.Cancel();
+            _ctSource?.Dispose();
+            _ctSource = null;
+
+            foreach (Lever lever in _levers)
+            {
+                (lever.Transform.position, lever.PointId) = _leversInitPositions.GetValueOrDefault(lever);
+            }
+
+            SetLeversPoints(_pointsTransforms);
+        }
+
         private void SetLeversPoints(List<Transform> pointsTransforms)
         {
             int pointsNumber = pointsTransforms.Count;
@@ -186,28 +224,33 @@ namespace BigProject.Gameplay.Watermill
             newLeverPosition.x = target.transform.localPosition.x;
             newLeverPosition.y = target.transform.localPosition.y;
 
-            if (target.isFree)
+            try
             {
-                currentPoint.isFree = true;
-                lever.PointId = target.id;
-                target.isFree = false;
-                await _controlPanel.MoveLever(lever.Transform, newLeverPosition, _leverMoveTime, ct);
-                _chosenLever = null;
-
-                if (IsLeversInTargetPosition())
+                if (target.isFree)
                 {
-                    MakeTransition();
+                    currentPoint.isFree = true;
+                    lever.PointId = target.id;
+                    target.isFree = false;
+                    await _controlPanel.MoveLever(lever.Transform, newLeverPosition, _leverMoveTime, ct);
+                    _chosenLever = null;
+
+                    if (IsLeversInTargetPosition())
+                    {
+                        MakeTransition();
+                    }
+                }
+                else
+                {
+                    Vector3 startPosition = lever.Transform.localPosition;
+                    Vector3 endPosition = startPosition + (newLeverPosition - startPosition).normalized * _staggerDistance;
+                    await _controlPanel.MoveLever(lever.Transform, endPosition, _leverStaggerTime + 0.1f, ct);
+                    await _controlPanel.MoveLever(lever.Transform, startPosition, _leverStaggerTime + 0.1f, ct);
                 }
             }
-            else
+            finally
             {
-                Vector3 startPosition = lever.Transform.localPosition;
-                Vector3 endPosition = startPosition + (newLeverPosition - startPosition).normalized * _staggerDistance;
-                await _controlPanel.MoveLever(lever.Transform, endPosition, _leverStaggerTime + 0.1f, ct);
-                await _controlPanel.MoveLever(lever.Transform, startPosition, _leverStaggerTime + 0.1f, ct);
+                _isMoving = false;
             }
-
-            _isMoving = false;
         }
 
         private void MakeTransition()
@@ -239,6 +282,7 @@ namespace BigProject.Gameplay.Watermill
         {
             if (_activateMechAction.CurrentState >= QuestActionState.Completed)
             {
+                _hud.HideWidget(_resetWidgetId);
                 _controlPanel.ChangeState(ControlPanelState.Completed);
                 _controlPanel.PlayFixedMusic();
                 _controlPanel.Deactivate();

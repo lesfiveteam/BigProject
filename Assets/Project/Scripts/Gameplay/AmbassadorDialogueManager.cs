@@ -56,11 +56,9 @@ namespace Managers.Gameplay
 
         private IEnumerator AmbassadorDialogueRoutine()
         {
-            _player.SetInterableObject(_ambassador);
-            _player.SetDestination(_ambassador.transform.position);
-            _player.Move();
+            _player.AutoTarget(_ambassador);
 
-            while (_dialogueManager.IsDialogue || _player.IsMoving)
+            while (_dialogueManager.IsDialogue || _player.IsAutopilot)
             {
                 yield return null;
             }
@@ -73,10 +71,7 @@ namespace Managers.Gameplay
             yield return new WaitUntil(() => !isWaiting);
 
             _player.transform.position = _villageCentre.position;
-            _player.SetInterableObject(_nextDialogueNPC);
-            _player.SetDestination(_nextDialogueNPC.transform.position);
-            _player.Move();
-
+            _player.AutoTarget(_nextDialogueNPC);
             isWaiting = true;
             fader.FadeOut(() => isWaiting = false);
             yield return new WaitUntil(() => !isWaiting);
