@@ -160,7 +160,7 @@ namespace BigProject.Player
                 Vector2 mousePosition = _inputHandler.GetMousePosition();
                 Ray ray = _camera.ScreenPointToRay(mousePosition);
 
-                if (Physics.Raycast(ray, out RaycastHit hit, _layerMask))
+                if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _layerMask))
                 {
                     if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, _navMeshHitPointDistance, NavMesh.AllAreas))
                     {
