@@ -193,6 +193,38 @@
             ]
         },
         {
+            "id":15,
+            "name":"LeverActive",
+            "currentState":1,
+            "conditions":
+            [
+                {
+                    "toState":2,
+                    "dependencyPacks":
+                    [
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":6,
+                                    "state":2
+                                }
+                            ]
+                        },
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":7,
+                                    "state":2
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "id":6,
             "name":"InstallRepairedLever",
             "currentState":1,

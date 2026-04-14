@@ -3,9 +3,11 @@ using BigProject.Player;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using BigProject.Systems.QuestSystem;
+using BigProject.Utilities;
 using System;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace BigProject.Gameplay.Watermill
 {
@@ -20,9 +22,10 @@ namespace BigProject.Gameplay.Watermill
         private CancellationTokenSource _crSource;
         private float _leverInstallTime;
         private bool _isSkipped = true;
+        private UnityEvent _incompleteClue;
 
         public ControlPanelStateIncompleted(ControlPanel controlPanel, PlayerInputHandler input, GameObject repairedLeverHolder, GameObject repairedLever,
-            float leverInstallTime, IQuestActionHandler installLeverAction, InventorySystem inventory)
+            float leverInstallTime, IQuestActionHandler installLeverAction, InventorySystem inventory, UnityEvent incompleteClue)
         {
             _controlPanel = controlPanel;
             _input = input;
@@ -33,6 +36,7 @@ namespace BigProject.Gameplay.Watermill
             _installLeverAction.StateChanged += OnStateChanged;
             OnStateChanged();
             _inventory = inventory;
+            _incompleteClue = incompleteClue;
         }
 
         public bool IsReady => _installLeverAction.CurrentState == QuestActionState.Active;
@@ -41,6 +45,14 @@ namespace BigProject.Gameplay.Watermill
         {
             _repairedLeverHolder.SetActive(true);
             OnStateChanged();
+        }
+        public void OnClicked()
+        {
+            if (GameplayUtilities.TryGetClickedObject(_input.GetMousePosition(), out GameObject go) &&
+                go.TryGetComponent(out CapsuleCollider _) && _isSkipped)
+            {
+                _incompleteClue?.Invoke();
+            }
         }
 
         // Apply repaired lever to panel.

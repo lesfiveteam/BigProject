@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using BigProject.Settings;
 using BigProject.Systems.HUD;
+using UnityEngine.Events;
 
 namespace BigProject.Gameplay.Watermill
 {
@@ -76,6 +77,8 @@ namespace BigProject.Gameplay.Watermill
         private float _musicFadeInTime = 0.1f;
         [SerializeField]
         private float _musicFadeOutTime = 0.1f;
+        [SerializeField]
+        private UnityEvent _incompleteClue;
 
         private PlayerInputHandler _inputHandler;
         private InventorySystem _inventory;
@@ -224,7 +227,7 @@ namespace BigProject.Gameplay.Watermill
                     break;
                 case ControlPanelState.Incompleted:
                     _state = new ControlPanelStateIncompleted(this, _inputHandler, _repairedLeverHolder, 
-                        _repairedLever, _repairedLeverInstallTime, _actions["InstallLever"], _inventory);
+                        _repairedLever, _repairedLeverInstallTime, _actions["InstallLever"], _inventory, _incompleteClue);
                     break;
                 case ControlPanelState.Fixed:
                     _state = new ControlPanelStateFixed(this, _inputHandler, _leversPoints, _levers, _leverMoveTime,
