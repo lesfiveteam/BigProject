@@ -22,7 +22,7 @@ namespace Assets.Project.Scripts.NPC.Animals
         private Coroutine _runCoroutine;
         private AnimationClip _clipRun;
 
-        private int _jumpsCount = 7;
+        private int _jumpsCount = 4;
         private float _jumpDistance = 10f;
 
         private int _attemptsForSearch = 2;

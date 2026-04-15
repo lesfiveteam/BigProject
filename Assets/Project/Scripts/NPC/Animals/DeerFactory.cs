@@ -9,10 +9,12 @@ namespace Assets.Project.Scripts.NPC.Animals
         [SerializeField] private NPCDeer _deerPrefab;
         [SerializeField] private List<Transform> _spawnPoints;
         [SerializeField, Range(0, 5)] private int _deerCount;
+        [SerializeField] private Transform _deerConainer;
 
         private void Start()
         {
             ExceptionUtilities.ThrowIfNullFormat(_deerPrefab);
+            ExceptionUtilities.ThrowIfNullFormat(_deerConainer);
 
             if (_spawnPoints == null || _spawnPoints.Count == 0 || _deerCount == 0)
                 return;
@@ -35,7 +37,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             for (int i = 0; i < _deerCount; i++)
             {
                 Transform point = availablePoints[i];
-                Instantiate(_deerPrefab, point.position, point.rotation, transform);
+                Instantiate(_deerPrefab, point.position, point.rotation, _deerConainer);
             }
         }
     }
