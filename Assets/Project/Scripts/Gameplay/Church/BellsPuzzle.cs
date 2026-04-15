@@ -1,5 +1,6 @@
 using BigProject.Gameplay.Common;
 using BigProject.Intercatable;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Utilities;
 using NUnit.Framework;
@@ -21,14 +22,21 @@ namespace BigProject.Gameplay.Church
         private PlayerInputHandler _inputHandler;
         private Bell _clickedBell;
 
+        private SoundsManager _soundsManager;
 
         public void Init(
-            PlayerInputHandler inputHandler, 
-            MiniGameActivator miniGameActivator
+            PlayerInputHandler inputHandler,
+            MiniGameActivator miniGameActivator,
+            SoundsManager soundsManager
             )
         {
             _activator = miniGameActivator;
             _inputHandler = inputHandler;
+
+            foreach (Bell bell in _bellQuestOrder)
+            {
+                bell.Init(soundsManager);
+            }
         }
 
         public void Interact()

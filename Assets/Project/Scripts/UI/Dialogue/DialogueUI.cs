@@ -204,7 +204,6 @@ namespace BigProject.UI.Dialogue
                 // Show new sprite
                 _leftCharacterImage.sprite = dialogueNPCPhrase.LeftCharacterSprite;
                 _leftCharacterImage.enabled = true;
-                Debug.Log(dialogueNPCPhrase.LeftCharacterSprite.name);
                 float rectTransformHeight = dialogueNPCPhrase.LeftCharacterSprite.name.Contains(BASE_BOY_SPRITE_NAME)
                     ? _boyRectTransformHeight
                     : _defaultRectTransformHeight;

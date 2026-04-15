@@ -5,6 +5,7 @@ using UnityEngine.Assertions;
 using BigProject.Player;
 using BigProject.Managers;
 using BigProject.UI;
+using BigProject.Managers.SoundsMusicManagers;
 
 namespace BigProject.Gameplay.Church
 {
@@ -27,10 +28,11 @@ namespace BigProject.Gameplay.Church
             GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
             InventoryUI inventoryUI = ServiceLocator.GetService<InventoryUI>();
             PlayerController player = ServiceLocator.GetService<PlayerController>();
+            SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
 
             _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(), 
                 player.GetComponentInChildren<SkinnedMeshRenderer>());
-            _bellsPuzzle.Init(inputHandler, _miniGameActivator);
+            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager);
         }
     }
 }
