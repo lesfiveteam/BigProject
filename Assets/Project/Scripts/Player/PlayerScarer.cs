@@ -12,5 +12,13 @@ namespace Assets.Project.Scripts.Player
                 victim.Scare(transform.position);
             }
         }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.TryGetComponent(out IUnscared victim))
+            {
+                victim.Unscare();
+            }
+        }
     }
 }
