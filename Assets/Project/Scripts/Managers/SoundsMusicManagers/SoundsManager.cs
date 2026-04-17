@@ -43,6 +43,9 @@ namespace BigProject.Managers.SoundsMusicManagers
             }
         }
 
+        public AudioSource GetAudioSource2D() { return _audioSource2D; }
+        public AudioSource GetAudioSource3D() { return _audioSource3D; }
+
         /// <summary>
         /// Spawns a sound object.
         /// <param name = "owner"> If there is an owner, the next sounds spawned with this owner will stop the previous one </param>

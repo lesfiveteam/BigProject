@@ -68,6 +68,10 @@ namespace BigProject.Initializers
             SoundsManager soundsManager = Instantiate(_soundsManagerPrefab);
             soundsManager.transform.parent = globalServices.transform;
             ServiceLocator.AddService(soundsManager);
+
+            SettingsManager settingsManager = new();
+            settingsManager.Init(soundsManager);
+            ServiceLocator.AddService(settingsManager);
         }
     }
 }

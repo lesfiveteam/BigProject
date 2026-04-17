@@ -79,6 +79,7 @@ namespace BigProject.Initializers
         private QuestsBoundariesTracker _questsTracker;
         private PlayerSpawner _playerSpawner;
         private CutsceneManager _cutsceneManager;
+        private SettingsManager _settingsManager;
 
         private static bool _isInstantiated;
 
@@ -130,6 +131,7 @@ namespace BigProject.Initializers
             _questsTracker = new(progressManager, _questTrackerConfig.QuestsIds.ToList());
             SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
             PlayerController playerController = Instantiate(_playerControllerPrefab);
+            _settingsManager = ServiceLocator.GetService<SettingsManager>();
             CreatePlayer(playerController, sceneLoader);
             InitDialogue();
 
@@ -176,7 +178,7 @@ namespace BigProject.Initializers
         private void InitPauseMenu()
         {
             _pauseMenuViewObj = Instantiate(_pauseView);
-            _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput);
+            _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput, _settingsManager);
             DontDestroyOnLoad(_pauseMenuViewObj);
         }
 

@@ -28,7 +28,7 @@ namespace BigProject.UI.MainMenu
 
             Assert.IsNotNull(_menuPanel, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Menu EntryPoint", "MenuPanelUI"));
             _menuPanel.Init(ServiceLocator.GetService<ProgressManager>(), ServiceLocator.GetService<SceneLoadManager>(),
-                ServiceLocator.GetService<SavesManager>(), ServiceLocator.GetService<SoundsManager>());
+                ServiceLocator.GetService<SavesManager>(), ServiceLocator.GetService<SoundsManager>(), ServiceLocator.GetService<SettingsManager>());
         }
     }
 }

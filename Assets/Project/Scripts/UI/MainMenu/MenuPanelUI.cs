@@ -12,8 +12,9 @@ using UnityEngine.UI;
 
 namespace BigProject.UI
 {
-    public class MenuPanelUI : MainMenuPanel
+    public class MenuPanelUI : MonoBehaviour
     {
+        [SerializeField] protected MainMenuPanelManager _mainMenuPanelManager;
         [SerializeField] private Button _newGameButton;
         [SerializeField] private Button _continueButton;
         [SerializeField] private Button _settingsButton;
@@ -25,17 +26,22 @@ namespace BigProject.UI
         private SceneLoadManager _sceneLoader;
         private SavesManager _savesManager;
         private SoundsManager _soundsManager;
+        private SettingsManager _settingsManager;
 
-        public void Init(ProgressManager progressManager, SceneLoadManager sceneLoader, SavesManager savesManager, SoundsManager soundsManager)
+        public void Init(ProgressManager progressManager, SceneLoadManager sceneLoader, SavesManager savesManager, SoundsManager soundsManager, SettingsManager settingsManager)
         {
             _progressManager = progressManager;
             _sceneLoader = sceneLoader;
             _savesManager = savesManager;
             _soundsManager = soundsManager;
+            _settingsManager = settingsManager;
             ExceptionUtilities.ThrowIfNull(_progressManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "ProgressManager"));
             ExceptionUtilities.ThrowIfNull(_sceneLoader, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SceneLoadManager"));
             ExceptionUtilities.ThrowIfNull(_savesManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SavesManager"));
-            ExceptionUtilities.ThrowIfNull(_savesManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
+            ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
+            ExceptionUtilities.ThrowIfNull(_settingsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SettingsManager"));
+
+            _mainMenuPanelManager.GetSettingsPanel().Init(_settingsManager);
         }
 
         private void Awake()
