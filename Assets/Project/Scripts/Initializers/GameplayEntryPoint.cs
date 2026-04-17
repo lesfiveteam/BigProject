@@ -54,6 +54,8 @@ namespace BigProject.Initializers
         [SerializeField]
         private PlayerController _playerControllerPrefab;
         [SerializeField]
+        private PlayerConfig _playerConfig;
+        [SerializeField]
         private GameObject _cursorManagerPrefab;
         [SerializeField]
         private CutscenesConfig _cutscenesConfig;
@@ -107,7 +109,8 @@ namespace BigProject.Initializers
             Assert.IsNotNull(_playerControllerPrefab, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Gameplay Entry Point", "PlayerController Prefab"));
             Assert.IsNotNull(_cursorManagerPrefab, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Gameplay Entry Point", "CursorManager Prefab"));
             Assert.IsNotNull(_cutscenesConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Gameplay Entry Point", "CutscenesConfig"));
-
+            Assert.IsNotNull(_playerConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Gameplay Entry Point", "PlayerConfig"));
+            
             GameObject gameplayServices = new GameObject("GameplayServices");
             transform.parent = gameplayServices.transform; // For dispose after gameplay exit
             DontDestroyOnLoad(gameplayServices);
@@ -170,7 +173,7 @@ namespace BigProject.Initializers
             GameplayManager gameplayManager, ManualLoop manualLoop)
         {
             PlayerChatController _chatController = new(playerWorldChat, playerWorldText, chatWidget, gameplayManager);
-            _replicaManager = new ReplicaManager(_chatController, manualLoop);
+            _replicaManager = new ReplicaManager(_chatController, manualLoop, _playerConfig);
         }
 
         private void InitPauseMenu()
