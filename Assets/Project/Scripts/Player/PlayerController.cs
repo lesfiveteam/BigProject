@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.Interactable;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Intercatable;
 using BigProject.Managers.SoundsMusicManagers;
@@ -6,6 +7,7 @@ using BigProject.Systems.Sound;
 using BigProject.Utilities;
 using System;
 using System.Collections;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,6 +15,9 @@ namespace BigProject.Player
 {
     public class PlayerController : MonoBehaviour
     {
+        public Action OnUp;
+        public Action OnDown;
+
         [SerializeField] private NavMeshAgent _navMeshAgent;
         [SerializeField] private Animator _animatorController;
 
@@ -113,6 +118,21 @@ namespace BigProject.Player
             if (_camera == null)
             {
                 _camera = Camera.main;
+
+                CinemachineBrain brain = Camera.main.GetComponent<CinemachineBrain>();
+
+                if (brain == null)
+                    Debug.LogError(string.Format(LogStr.ERROR_NULL_COMPONENT, typeof(CinemachineBrain)));
+
+                ICinemachineCamera activeCamera = brain.ActiveVirtualCamera;
+
+                if (activeCamera == null)
+                    Debug.LogError(string.Format(LogStr.ERROR_NULL_COMPONENT, typeof(ICinemachineCamera)));
+
+                CameraMove cameraMove = (activeCamera as CinemachineCamera).GetComponent<CameraMove>();
+
+                if (cameraMove != null)
+                    cameraMove.Subscribe(this);
             }
         }
 
@@ -226,7 +246,6 @@ namespace BigProject.Player
         {
             if (_navMeshAgent.isOnOffMeshLink)
             {
-
                 if (_climbProcess == null)
                 {
                     _climbProcess = StartCoroutine(ClimbProcess(_navMeshAgent.currentOffMeshLinkData));
@@ -240,8 +259,15 @@ namespace BigProject.Player
 
         private IEnumerator ClimbProcess(OffMeshLinkData offMeshLinkData)
         {
+            _isMoving = true;
+
             Vector3 startPosition = offMeshLinkData.startPos;
             Vector3 endPosition = offMeshLinkData.endPos;
+
+            if (startPosition.y < endPosition.y)
+                OnUp?.Invoke();
+            else
+                OnDown?.Invoke();
 
             Vector3 moveDirection = (endPosition - startPosition).normalized;
             moveDirection.y = 0;
@@ -263,7 +289,7 @@ namespace BigProject.Player
 
                 progress += Time.deltaTime;
 
-                yield return null;
+                yield return new WaitWhile(() => Time.timeScale == 0);
             }
 
             _navMeshAgent.CompleteOffMeshLink();
