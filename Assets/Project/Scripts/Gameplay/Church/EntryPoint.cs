@@ -6,6 +6,8 @@ using BigProject.Player;
 using BigProject.Managers;
 using BigProject.UI;
 using BigProject.Managers.SoundsMusicManagers;
+using Assets.Project.Scripts.Managers.SceneLoader;
+using BigProject.Utilities;
 
 namespace BigProject.Gameplay.Church
 {
@@ -15,6 +17,8 @@ namespace BigProject.Gameplay.Church
         private MiniGameActivator _miniGameActivator;
         [SerializeField]
         private BellsPuzzle _bellsPuzzle;
+        [SerializeField]
+        private TeleportHandler _teleport;
 
         private void Awake()
         {
@@ -29,10 +33,12 @@ namespace BigProject.Gameplay.Church
             InventoryUI inventoryUI = ServiceLocator.GetService<InventoryUI>();
             PlayerController player = ServiceLocator.GetService<PlayerController>();
             SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
+            ProgressManager progressManager = ServiceLocator.GetService<ProgressManager>();
 
             _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(), 
                 player.GetComponentInChildren<SkinnedMeshRenderer>());
-            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager);
+            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, progressManager);
+            _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
         }
     }
 }
