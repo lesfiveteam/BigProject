@@ -7,6 +7,8 @@ using BigProject.Systems.Sound;
 using BigProject.Utilities;
 using System;
 using System.Collections;
+using System.Linq;
+using Unity.AI.Navigation;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.AI;
@@ -18,22 +20,49 @@ namespace BigProject.Player
         public Action OnUp;
         public Action OnDown;
 
+        private const float MIN_WALK_SPEED_COEFF = 0.1f;
+        private const float MIN_ANIM_SPEED_COEFF = 0.5f;
+        private const float MAX_TARGET_ANGLE_OFFSET = 3f;
+
+        private const float LINK_SPEED = 4f;
+        private const float JUMP_SPEED = 7f;
+        private const int JUMP_LINK_ID = 2;
+        private const int CLIMB_LINK_ID = 3;
+        private const int JUMP_START_FRAMES = 15;
+        private const int JUMP_FINISH_FRAMES = 45;
+        private const string JUMP_CLIP_NAME = "Jump";
+        private readonly int JumpTrigger = Animator.StringToHash("Jump");
+        private readonly int JumpAnimationSpeed = Animator.StringToHash("JumpSpeed");
+        private readonly int IsMoving = Animator.StringToHash("IsMoving");
+        private readonly int IsBoredAnimationBool = Animator.StringToHash("IsBored");
+
         [SerializeField] private NavMeshAgent _navMeshAgent;
         [SerializeField] private Animator _animatorController;
 
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
-        [SerializeField] private float _climbSpeed = 0.2f;
         [SerializeField] private bool _walkOnHolding = true;
         [SerializeField] private float _walkOnHoldingCheckInterval = 0.2f;
+        [SerializeField] private float _timeToBored = 7f;
 
         private PlayerInputHandler _inputHandler;
         private IInteractable _interactable = null;
         private Vector3 _destination;
         private bool _isMoving;
 
-        private Coroutine _climbProcess;
-        private float _climbDuration;
+        private bool _isBored;
+        private bool IsBored
+        {
+            get => _isBored;
+            set
+            {
+                _isBored = value;
+                _animatorController.SetBool(IsBoredAnimationBool, value);
+            }
+        }
+
+        private Coroutine _linkProcess;
+        private AnimationClip _clipJump;
 
         private Camera _camera;
         private SceneLoadManager _sceneLoader;
@@ -43,11 +72,7 @@ namespace BigProject.Player
         private Coroutine _interactCoroutine;
         private float _animSpeed;
         private int _layerMask;
-
-        private const string MOVING_ANIM_BOOL = "IsMoving";
-        private const float MIN_WALK_SPEED_COEFF = 0.1f;
-        private const float MIN_ANIM_SPEED_COEFF = 0.5f;
-        private const float MAX_TARGET_ANGLE_OFFSET = 3f;
+        private float _boredTimer;
 
         public bool IsAutopilot { private set; get;}
 
@@ -56,12 +81,17 @@ namespace BigProject.Player
             _inputHandler = inputHandler;
             _sceneLoader = sceneLoader;
             _soundsManager = soundsManager;
+
             ExceptionUtilities.ThrowIfNull(_inputHandler, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "PlayerInputHandler"));
             ExceptionUtilities.ThrowIfNull(_sceneLoader, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SceneLoadManager"));
             ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
-            _navMeshAgent.updateRotation = false;
-            _layerMask = ~((1 << LayerMask.NameToLayer("Scared")) | (1 << LayerMask.NameToLayer("Ignore Raycast")));
+
             _animSpeed = _animatorController.speed;
+            _clipJump = _animatorController.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == JUMP_CLIP_NAME);
+            _layerMask = ~((1 << LayerMask.NameToLayer("Scared")) | (1 << LayerMask.NameToLayer("Ignore Raycast")));
+
+            _navMeshAgent.updateRotation = false;
+
             _walkOnHolingCheckWait = new(_walkOnHoldingCheckInterval);
         }
 
@@ -155,11 +185,12 @@ namespace BigProject.Player
 
         private void Update()
         {
-            if (TryClimb())
+            if (TryLink())
                 return;
 
             if (_isMoving)
             {
+                StopBoring();
                 RotateTowardsMovement();
                 HandleWalkAnimation();
 
@@ -167,10 +198,32 @@ namespace BigProject.Player
                     (!_navMeshAgent.hasPath || _navMeshAgent.velocity.sqrMagnitude == 0f))
                 {                    
                     _isMoving = false;
-                    _animatorController.SetBool(MOVING_ANIM_BOOL, false);
+                    _animatorController.SetBool(IsMoving, false);
                     TryInteract();
                 }
             }
+            else
+            {
+                if(!IsBored)
+                    Boring();
+            }
+        }
+
+        private void Boring()
+        {
+            _boredTimer += Time.deltaTime;
+
+            if (_boredTimer > _timeToBored)
+            {
+                _boredTimer = 0;
+                IsBored = true;
+            }
+        }
+
+        private void StopBoring()
+        {
+            _boredTimer = 0;
+            IsBored = false;
         }
 
         private IEnumerator CalculateMovementRoutine()
@@ -228,7 +281,7 @@ namespace BigProject.Player
         {
             float speedCoeff = _navMeshAgent.velocity.magnitude / _navMeshAgent.speed;
             bool isMovingAnim = speedCoeff > MIN_WALK_SPEED_COEFF;
-            _animatorController.SetBool(MOVING_ANIM_BOOL, isMovingAnim);
+            _animatorController.SetBool(IsMoving, isMovingAnim);
 
             if (isMovingAnim)
             {
@@ -242,13 +295,31 @@ namespace BigProject.Player
             _navMeshAgent.SetDestination(_destination);
         }
 
-        private bool TryClimb()
+        private bool TryLink()
         {
             if (_navMeshAgent.isOnOffMeshLink)
             {
-                if (_climbProcess == null)
+                if (_linkProcess == null)
                 {
-                    _climbProcess = StartCoroutine(ClimbProcess(_navMeshAgent.currentOffMeshLinkData));
+                    _isMoving = true;
+
+                    StopBoring();
+
+                    int linkArea = (_navMeshAgent.currentOffMeshLinkData.owner as NavMeshLink)?.area ?? JUMP_LINK_ID;
+
+                    switch (linkArea)
+                    {
+                        case JUMP_LINK_ID:
+                            _linkProcess = StartCoroutine(JumpProcess(_navMeshAgent.currentOffMeshLinkData));
+                            break;
+
+                        case CLIMB_LINK_ID:
+                            _linkProcess = StartCoroutine(ClimbProcess(_navMeshAgent.currentOffMeshLinkData));
+                            break;
+
+                        default:
+                            throw new ArgumentException(string.Format(LogStr.CRITICAL_WRONG_ARGUMENT, name, linkArea));
+                    }
                 }
 
                 return true;
@@ -257,10 +328,59 @@ namespace BigProject.Player
             return false;
         }
 
+        private IEnumerator JumpProcess(OffMeshLinkData offMeshLinkData)
+        {
+            Vector3 startPosition = transform.position;
+            Vector3 endPosition = offMeshLinkData.endPos;
+
+            Vector3 moveDirection = (endPosition - startPosition).normalized;
+            moveDirection.y = 0;
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+
+            float height = 1.3f;
+            float progress = 0;
+
+            Vector3 midPosition = (startPosition + endPosition) / 2 + Vector3.up * height;
+            float curvedDistance = Vector3.Distance(startPosition, midPosition) + Vector3.Distance(midPosition, endPosition);
+            float linkDuration = curvedDistance / JUMP_SPEED;
+
+            float clipLength = _clipJump.length;
+            float frameDuration = 1f / _clipJump.frameRate;
+            float timeForStartJumpFrames = frameDuration * JUMP_START_FRAMES;
+            float timeForJumpFrames = frameDuration * (JUMP_FINISH_FRAMES - JUMP_START_FRAMES);
+            float timeForStopJumpFrames = clipLength - (frameDuration * JUMP_FINISH_FRAMES);
+
+            float speedMultiplier = timeForJumpFrames / linkDuration;
+
+            _animatorController.SetFloat(JumpAnimationSpeed, speedMultiplier);
+            _animatorController.SetTrigger(JumpTrigger);
+
+            float adjustedStartDuration = timeForStartJumpFrames / speedMultiplier;
+
+            yield return new WaitForSeconds(adjustedStartDuration);
+
+            while (progress < linkDuration)
+            {
+                progress += Time.deltaTime;
+
+                float t = Mathf.Clamp01(progress / linkDuration);
+                Vector3 pos = GetBezierPoint(startPosition, midPosition, endPosition, t);
+                _navMeshAgent.transform.position = pos;
+
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+
+                yield return new WaitWhile(() => Time.timeScale == 0);
+            }
+
+            float adjustedEndDuration = timeForStopJumpFrames / speedMultiplier;
+            yield return new WaitForSeconds(adjustedEndDuration);
+
+            _navMeshAgent.CompleteOffMeshLink();
+            _linkProcess = null;
+        }
+
         private IEnumerator ClimbProcess(OffMeshLinkData offMeshLinkData)
         {
-            _isMoving = true;
-
             Vector3 startPosition = offMeshLinkData.startPos;
             Vector3 endPosition = offMeshLinkData.endPos;
 
@@ -273,27 +393,27 @@ namespace BigProject.Player
             moveDirection.y = 0;
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
 
-            _climbDuration = Vector3.Distance(startPosition, endPosition) / _climbSpeed;
-
+            float linkDuration = Vector3.Distance(startPosition, endPosition) / LINK_SPEED;
             float progress = 0;
 
-            while (progress < _climbDuration)
+            while (progress < linkDuration)
             {
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    targetRotation,
-                    _rotationSpeed * Time.deltaTime
-                );
-
-                _navMeshAgent.transform.position = Vector3.Lerp(startPosition, endPosition, progress / _climbDuration);
-
                 progress += Time.deltaTime;
+
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+                _navMeshAgent.transform.position = Vector3.Lerp(startPosition, endPosition, progress / linkDuration);
 
                 yield return new WaitWhile(() => Time.timeScale == 0);
             }
 
             _navMeshAgent.CompleteOffMeshLink();
-            _climbProcess = null;
+            _linkProcess = null;
+        }
+
+        private Vector3 GetBezierPoint(Vector3 a, Vector3 b, Vector3 c, float t)
+        {
+            float u = 1 - t;
+            return u * u * a + 2 * u * t * b + t * t * c;
         }
 
         private bool TryInteract()
