@@ -32,8 +32,9 @@ namespace BigProject.Initializers
 #endif
             GameLogManager.Info(LogStr.INFO_INITIALIZING_SCENE_SERVICES);
             ProgressManager pm = ServiceLocator.GetService<ProgressManager>();
+            SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
             InitQuestHandlers(pm);
-            InitInteractable(pm);
+            InitInteractable(pm, soundsManager);
             InitDoors();
             InitRiverSound();
             InitDialogueNPCs();
@@ -69,13 +70,13 @@ namespace BigProject.Initializers
             }
         }
 
-        private void InitInteractable(ProgressManager progressManager)
+        private void InitInteractable(ProgressManager progressManager, SoundsManager soundsManager)
         {
             QuestInteractableHandler[] interactableHandlers = FindObjectsByType<QuestInteractableHandler>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
             foreach (QuestInteractableHandler interactableHandler in interactableHandlers)
             {
-                interactableHandler.Init(progressManager);
+                interactableHandler.Init(progressManager, soundsManager);
             }
 
             HighlightSwitchByTrigger[] switchesByTriggers = FindObjectsByType<HighlightSwitchByTrigger>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -91,10 +92,11 @@ namespace BigProject.Initializers
             MovingNextSceneHandler[] movingHandlers = FindObjectsByType<MovingNextSceneHandler>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
             PlayerSpawner playerSpawner = ServiceLocator.GetService<PlayerSpawner>();
+            SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
 
             foreach (MovingNextSceneHandler movingHandler in movingHandlers)
             {
-                movingHandler.Init(sceneLoader, playerSpawner);
+                movingHandler.Init(sceneLoader, playerSpawner, soundsManager);
             }
         }
 
@@ -155,12 +157,10 @@ namespace BigProject.Initializers
         private void InitRiverSound()
         {
             RiverSoundMover[] riverSoundMovers = FindObjectsByType<RiverSoundMover>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
             PlayerController player = ServiceLocator.GetService<PlayerController>();
 
             foreach (RiverSoundMover riverSoundMover in riverSoundMovers)
             {
-                manualLoop.AddTickable(riverSoundMover);
                 riverSoundMover.Init(player.transform);
             }
         }

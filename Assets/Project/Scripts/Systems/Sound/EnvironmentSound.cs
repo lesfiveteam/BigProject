@@ -13,6 +13,7 @@ namespace BigProject.Systems.Sound
         [SerializeField] private AudioClip _audioClip;
         [SerializeField] private float _soundInterval = DEFAULT_SOUND_INTERVAL;
         [Range(0, 1)][SerializeField] private float _playSoundChance;
+        [SerializeField] private float _volume = 1f;
 
         private Coroutine _playSoundRoutine;
         private SoundsManager _soundsManager;
@@ -24,6 +25,7 @@ namespace BigProject.Systems.Sound
         public void Init(SoundsManager soundsManager)
         {
             _soundsManager = soundsManager;
+            ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Sounds manager"));
 
             if (_soundInterval != DEFAULT_SOUND_INTERVAL)
             {
@@ -35,8 +37,6 @@ namespace BigProject.Systems.Sound
             {
                 PlaySound();
             }
-
-            ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Sounds manager"));
         }
 
         private void OnEnable()
