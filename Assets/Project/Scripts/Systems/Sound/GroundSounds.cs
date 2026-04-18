@@ -9,8 +9,11 @@ namespace BigProject.Systems.Sound
     {
         [SerializeField] 
         private AudioClip[] _stepSounds;
+        [SerializeField]
+        private float _stepVolume = 1f;
 
         public AudioClip GetStepSound() => _stepSounds[Random.Range(0, _stepSounds.Length)];
+        public float StepVolume => _stepVolume;
 
         private void Awake()
         {

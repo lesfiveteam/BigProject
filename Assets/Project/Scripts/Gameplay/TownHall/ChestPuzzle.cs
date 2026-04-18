@@ -1,6 +1,7 @@
 using BigProject.Gameplay.Common;
 using BigProject.Intercatable;
 using BigProject.Managers;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Settings;
 using BigProject.Systems;
@@ -54,6 +55,10 @@ namespace BigProject.Gameplay.TownHall
         private float _timeBeforeClue;
         [SerializeField]
         private HUDConfig _hudConfig;
+        [SerializeField]
+        private AudioClip _chestOpenSound;
+        [SerializeField]
+        private float _chestOpenSoundVolume = 1f;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -70,6 +75,7 @@ namespace BigProject.Gameplay.TownHall
         private HUD _hud;
         private PlayerInputHandler _inputHandler;
         private Coroutine _clueCoroutine;
+        private SoundsManager _soundsManager;
 
         private readonly Vector3 BROKEN_KEY_PART_1_MOVING_OFFSET = new(0.24f, -0.3f, 0f);
         private readonly Vector3 BROKEN_KEY_PART_1_ROTATION_OFFSET = new(-0f, 270f, 360f);
@@ -99,19 +105,21 @@ namespace BigProject.Gameplay.TownHall
 
         public Vector3 TargetPosition => _target.position;
 
-        public void Init(InventorySystem inventory, InventoryUI inventoryUI, ProgressManager progressManager, HUD hud, PlayerInputHandler inputHandler)
+        public void Init(InventorySystem inventory, InventoryUI inventoryUI, ProgressManager progressManager, HUD hud, PlayerInputHandler inputHandler, SoundsManager soundsManager)
         {
             _inventory = inventory;
             _inventoryUI = inventoryUI;
             _progressManager = progressManager;
             _hud = hud;
             _inputHandler = inputHandler;
+            _soundsManager = soundsManager;
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Gameplay Manager"));
             ExceptionUtilities.ThrowIfNull(_inventoryUI, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Input Handler"));
             ExceptionUtilities.ThrowIfNull(_progressManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Progress Manager"));
             ExceptionUtilities.ThrowIfNull(_hud, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "HUD"));
             ExceptionUtilities.ThrowIfNull(_inputHandler, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Input Handler"));
             ExceptionUtilities.ThrowIfNull(_puzzleRemark, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "LocalizedString puzzle remark"));
+            ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Sounds manager"));
         }
 
         private void Awake()
@@ -278,6 +286,7 @@ namespace BigProject.Gameplay.TownHall
             if (IsCorrectKeys())
             {
                 _hud.HideWidget(_hudConfig.HUDResetWidgetId);
+                _soundsManager.PlaySound(_chestOpenSound, volume: _chestOpenSoundVolume);
                 MoveElement(_chestCup, Vector3.zero, CHEST_CUP_OPEN_ROTATION_OFFSET, _openChestMovingTime);
 
                 foreach (GameObject key in _keys)
@@ -383,7 +392,7 @@ namespace BigProject.Gameplay.TownHall
         {
             if (_actionHandlers[_actionOpenName].CurrentState == QuestActionState.Completed)
             {
-                //ReplicaManager.ShowReplica("Óðà!!!");
+                //ReplicaManager.ShowReplica("Ð£Ñ€Ð°!!!");
                 _progressManager.SaveAdditionalData(this);
             }
         }

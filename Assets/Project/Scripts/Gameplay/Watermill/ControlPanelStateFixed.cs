@@ -1,4 +1,5 @@
 using BigProject.Managers;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
@@ -35,6 +36,8 @@ namespace BigProject.Gameplay.Watermill
         private Dictionary<Lever, (Vector3, int)> _leversInitPositions = new();
         private const float MIN_SWIPE_DELTA = 80f;
         private const float MAX_SWIPE_ANGLE_DELTA = 30f;
+        private SoundsManager _soundsManager;
+        private AudioClip _leverMoveSound;
 
         // Key points of lever route.
         private class LeverPoint
@@ -50,7 +53,7 @@ namespace BigProject.Gameplay.Watermill
         public ControlPanelStateFixed(ControlPanel controlPanel, PlayerInputHandler input, List<Transform> pointsTransforms,
             List<Lever> levers, float leverMoveTime, float leverStaggerTime, float staggerDistance, int noteItemId, 
             GearsHandler gearsHandler, IQuestActionHandler activateMechAction, InventorySystem inventory, HUD hud,
-            int resetWidgetId, bool isActivated)
+            int resetWidgetId, bool isActivated, SoundsManager soundsManager, AudioClip leverMoveSound)
         {
             _controlPanel = controlPanel;
             _input = input;
@@ -69,6 +72,8 @@ namespace BigProject.Gameplay.Watermill
             _inventory = inventory;
             _hud = hud;
             _resetWidgetId = resetWidgetId;
+            _leverMoveSound = leverMoveSound;
+            _soundsManager = soundsManager;
 
             foreach (Lever lever in _levers)
             {
@@ -219,6 +224,7 @@ namespace BigProject.Gameplay.Watermill
 
         private async Awaitable MoveLever(Lever lever, LeverPoint currentPoint, LeverPoint target, CancellationToken ct)
         {
+            _soundsManager.PlaySound(_leverMoveSound, is2D:true);
             _isMoving = true;
             Vector3 newLeverPosition = lever.Transform.localPosition;
             newLeverPosition.x = target.transform.localPosition.x;

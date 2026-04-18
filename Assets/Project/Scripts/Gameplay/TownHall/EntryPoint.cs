@@ -52,12 +52,13 @@ namespace BigProject.Gameplay.TownHall
             GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
             PlayerInputHandler inputHandler = ServiceLocator.GetService<PlayerInputHandler>();
             PlayerController playerController = ServiceLocator.GetService<PlayerController>();
+            SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
 
             _questActions.Init(inventorySystem, inventoryUI, gameplayManager, ServiceLocator.GetService<RunesSystem>());
-            _chestPuzzle.Init(inventorySystem, inventoryUI, progressmanager, ServiceLocator.GetService<HUD>(), inputHandler);
+            _chestPuzzle.Init(inventorySystem, inventoryUI, progressmanager, ServiceLocator.GetService<HUD>(), inputHandler, soundsManager);
             _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, playerController.GetComponent<Collider>(),
                 playerController.GetComponentInChildren<SkinnedMeshRenderer>());
-            _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>());
+            _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
         }
     }
 }
