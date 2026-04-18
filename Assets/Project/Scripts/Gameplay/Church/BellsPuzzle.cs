@@ -15,9 +15,11 @@ namespace BigProject.Gameplay.Church
         [SerializeField]
         private int _swipeDownValue = -10;
         [SerializeField]
-        private List<Bell> _bellQuestOrder = new List<Bell>();
+        private List<Bell> _bells = new List<Bell>();
+        [SerializeField]
+        private List<int> _targetBellOrder = new List<int>();
 
-        private List<Bell> _bellPlayerOrder = new List<Bell>();
+        private List<int> _playerBellOrder = new List<int>();
         private MiniGameActivator _activator;
         private PlayerInputHandler _inputHandler;
         private Bell _clickedBell;
@@ -33,7 +35,7 @@ namespace BigProject.Gameplay.Church
             _activator = miniGameActivator;
             _inputHandler = inputHandler;
 
-            foreach (Bell bell in _bellQuestOrder)
+            foreach (Bell bell in _bells)
             {
                 bell.Init(soundsManager);
             }
@@ -55,7 +57,7 @@ namespace BigProject.Gameplay.Church
             if (!activated)
             {
                 // Clear player attempts
-                _bellPlayerOrder.Clear();
+                _playerBellOrder.Clear();
                 ResetActions();
             }
         }
@@ -75,15 +77,15 @@ namespace BigProject.Gameplay.Church
             {
                 // Jingle bells! - ringing bellg
                 _clickedBell.Ring();
-                _bellPlayerOrder.Add(_clickedBell);
+                _playerBellOrder.Add(_clickedBell.Id);
 
-                if (_bellPlayerOrder.Count > _bellQuestOrder.Count)
+                if (_playerBellOrder.Count > _targetBellOrder.Count)
                 {
                     // take the last played bells - delete first clicked bell in player order
-                    _bellPlayerOrder.RemoveAt(0);
+                    _playerBellOrder.RemoveAt(0);
                 }
 
-                if (_bellPlayerOrder.Count == _bellQuestOrder.Count && BellsOrderIsRight())
+                if (_playerBellOrder.Count == _targetBellOrder.Count && BellsOrderIsRight())
                 {
                    WinMiniGame();
                 }
@@ -95,9 +97,9 @@ namespace BigProject.Gameplay.Church
         // The order of the bells is correct
         private bool BellsOrderIsRight()
         {
-            for (int i = 0; i < _bellQuestOrder.Count; i++)
+            for (int i = 0; i < _targetBellOrder.Count; i++)
             {
-                if (_bellQuestOrder[i] != _bellPlayerOrder[i])
+                if (_targetBellOrder[i] != _playerBellOrder[i])
                 {
                     // Find error in order
                     return false;
