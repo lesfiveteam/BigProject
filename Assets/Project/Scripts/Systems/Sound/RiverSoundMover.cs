@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BigProject.Systems.Sound
 {
-    public class RiverSoundMover : MonoBehaviour, ITickable
+    public class RiverSoundMover : MonoBehaviour
     {
         [SerializeField] private List<Transform> _waypointTransforms = new();
         [SerializeField] private Transform _soundPoint;
@@ -44,7 +44,7 @@ namespace BigProject.Systems.Sound
             _lastUpdateTime = Time.time;
         }
 
-        public void Tick()
+        private void Update()
         {
             if (Time.time - _lastUpdateTime >= _updateInterval)
             {

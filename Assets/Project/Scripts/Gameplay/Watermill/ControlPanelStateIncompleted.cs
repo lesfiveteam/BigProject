@@ -1,4 +1,5 @@
 using BigProject.Managers;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
@@ -23,9 +24,12 @@ namespace BigProject.Gameplay.Watermill
         private float _leverInstallTime;
         private bool _isSkipped = true;
         private UnityEvent _incompleteClue;
+        private SoundsManager _soundsManager;
+        private AudioClip _leverInsertSound;
 
         public ControlPanelStateIncompleted(ControlPanel controlPanel, PlayerInputHandler input, GameObject repairedLeverHolder, GameObject repairedLever,
-            float leverInstallTime, IQuestActionHandler installLeverAction, InventorySystem inventory, UnityEvent incompleteClue)
+            float leverInstallTime, IQuestActionHandler installLeverAction, InventorySystem inventory, UnityEvent incompleteClue,
+            SoundsManager soundsManager, AudioClip leverInsertSound)
         {
             _controlPanel = controlPanel;
             _input = input;
@@ -37,6 +41,8 @@ namespace BigProject.Gameplay.Watermill
             OnStateChanged();
             _inventory = inventory;
             _incompleteClue = incompleteClue;
+            _soundsManager = soundsManager;
+            _leverInsertSound = leverInsertSound;
         }
 
         public bool IsReady => _installLeverAction.CurrentState == QuestActionState.Active;
@@ -90,6 +96,7 @@ namespace BigProject.Gameplay.Watermill
 
         private async Awaitable InstallLever(CancellationToken ct)
         {
+            _soundsManager.PlaySound(_leverInsertSound, is2D: true);
             _isSkipped = false;
             SetVisibility();
             await _controlPanel.MoveLever(_repairedLever.transform, _repairedLeverHolder.transform.localPosition, _leverInstallTime, ct);

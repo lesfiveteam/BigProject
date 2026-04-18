@@ -116,7 +116,7 @@ namespace BigProject.Player
             {
                 if (hit.transform.TryGetComponent(out GroundSounds groundSounds))
                 {
-                    //_soundsManager.PlaySound(groundSounds.GetStepSound(), spawnPosition: transform);
+                    _soundsManager.PlaySound(groundSounds.GetStepSound(), volume: groundSounds.StepVolume, spawnPosition: transform);
                 }
             }
         }
