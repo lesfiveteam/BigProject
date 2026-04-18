@@ -116,11 +116,11 @@ namespace BigProject.Managers
         /// <summary>
         /// Subscribe to quest.
         /// </summary>
-        public bool AddQuestStateListener(int quiestId, Action<IQuest> callback)
+        public bool AddQuestStateListener(int questId, Action<IQuest> callback)
         {
-            if (!_quests.TryGetValue(quiestId, out IQuest quest))
+            if (!_quests.TryGetValue(questId, out IQuest quest))
             {
-                Debug.LogError(String.Format(LogStr.ERROR_SYSTEM, "ProgressManager", $"unable to add state listener, has no quest [{quiestId}]"));
+                Debug.LogError(String.Format(LogStr.ERROR_SYSTEM, "ProgressManager", $"unable to add state listener, has no quest [{questId}]"));
                 return false;
             }
 
@@ -131,15 +131,15 @@ namespace BigProject.Managers
         /// <summary>
         /// Unsubscribe from quest.
         /// </summary>
-        public void RemoveQuestStateListener(int quiestId, Action<IQuest> callback)
+        public void RemoveQuestStateListener(int questId, Action<IQuest> callback)
         {
-            if (_quests.TryGetValue(quiestId, out IQuest quest))
+            if (_quests.TryGetValue(questId, out IQuest quest))
             {
                 quest.StateChanged -= callback;
             }
             else
             {
-                Debug.LogError(String.Format(LogStr.ERROR_SYSTEM, "ProgressManager", $"unable to remove state listener, has no quest [{quiestId}]"));
+                Debug.LogError(String.Format(LogStr.ERROR_SYSTEM, "ProgressManager", $"unable to remove state listener, has no quest [{questId}]"));
             }
         }
 
