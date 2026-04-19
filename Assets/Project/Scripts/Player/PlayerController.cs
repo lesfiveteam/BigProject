@@ -381,7 +381,7 @@ namespace BigProject.Player
 
         private IEnumerator ClimbProcess(OffMeshLinkData offMeshLinkData)
         {
-            Vector3 startPosition = offMeshLinkData.startPos;
+            Vector3 startPosition = transform.position;
             Vector3 endPosition = offMeshLinkData.endPos;
 
             if (startPosition.y < endPosition.y)
