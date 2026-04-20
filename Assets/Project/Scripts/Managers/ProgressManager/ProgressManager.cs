@@ -288,7 +288,7 @@ namespace BigProject.Managers
         /// Add additional data.
         /// </summary>
         /// <returns>True when success.</returns>
-        public bool SaveAdditionalData(ISavable savable)
+        public bool SaveAdditionalData(ISavable savable, bool trackRelevance = true)
         {
             bool result;
 
@@ -306,9 +306,16 @@ namespace BigProject.Managers
             {
                 if (_additionalRelevance.ContainsKey(savable.Key))
                 {
-                    _additionalRelevance[savable.Key] = false;
+                    if (trackRelevance)
+                    {
+                        _additionalRelevance[savable.Key] = false;
+                    }
+                    else
+                    {
+                        _additionalRelevance.Remove(savable.Key);
+                    }
                 }
-                else
+                else if (trackRelevance)
                 {
                     _additionalRelevance.Add(savable.Key, false);
                 }

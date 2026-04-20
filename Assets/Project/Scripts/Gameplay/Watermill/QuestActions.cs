@@ -18,6 +18,8 @@ namespace BigProject.Gameplay.Watermill
         private void Awake()
         {
             ServiceLocator.GetService<InventorySystem>().AddItemByName("repaired_lever");
+            //ServiceLocator.GetService<RunesSystem>().AddRune(0);
+            //ServiceLocator.GetService<RunesSystem>().AddRune(4);
         }
         public void FirstWatermillMeeting()
         {
