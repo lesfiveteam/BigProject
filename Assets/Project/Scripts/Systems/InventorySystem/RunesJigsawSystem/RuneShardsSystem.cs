@@ -179,7 +179,7 @@ namespace BigProject.Systems.Inventory
 
             if (!_isLoading)
             {
-                _progressManager.SaveAdditionalData(this);
+                _progressManager.SaveAdditionalData(this, trackRelevance: false);
             }
         }
 
