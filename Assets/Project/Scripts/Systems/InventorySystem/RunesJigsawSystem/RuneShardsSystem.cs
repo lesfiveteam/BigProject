@@ -18,6 +18,8 @@ namespace BigProject.Systems.Inventory
         private List<int> _filledSegmentsIDs = new List<int>();
         private RunesConfig _runesConfig;
         private DataToSave _dataToSave;
+        private ProgressManager _progressManager;
+        private bool _isLoading = false;
 
         public event Action<RuneShard> OnShardAdded;
         public event Action<int> OnSegmentUnlocked;
@@ -33,6 +35,7 @@ namespace BigProject.Systems.Inventory
         }
 
         public string Key => "RuneShardsSystem";
+
         public object SavingData
         {
             get
@@ -51,6 +54,7 @@ namespace BigProject.Systems.Inventory
                 return;
             }
 
+            _isLoading = true;
             _foundShardsIDs.Clear();
             _unlockedSegmentsIDs.Clear();
 
@@ -61,16 +65,20 @@ namespace BigProject.Systems.Inventory
 
             _dataToSave = null;
             OnUpdated?.Invoke();
+            _isLoading = false;
         }
 
-        public RuneShardsSystem(RunesConfig runesConfig, RuneShardsDatabaseSO runeShardsDatabase, RuneSegmentsDatabaseSO runeSegmentsDatabase)
+        public RuneShardsSystem(RunesConfig runesConfig, RuneShardsDatabaseSO runeShardsDatabase, RuneSegmentsDatabaseSO runeSegmentsDatabase,
+            ProgressManager progressManager)
         {
             _runesConfig = runesConfig;
             _runeShardsDatabase = runeShardsDatabase;
             _runeSegmentsDatabase = runeSegmentsDatabase;
+            _progressManager = progressManager;
             ExceptionUtilities.ThrowIfNull(_runesConfig, "RuneShardsSystem", "RunesConfig");
             ExceptionUtilities.ThrowIfNull(_runeShardsDatabase, "RuneShardsSystem", "RuneShardsDatabaseSO");
             ExceptionUtilities.ThrowIfNull(_runeSegmentsDatabase, "RuneShardsSystem", "RuneSegmentsDatabaseSO");
+            ExceptionUtilities.ThrowIfNull(_progressManager, "RuneShardsSystem", "ProgressManager");
         }
 
         /// <summary>
@@ -168,6 +176,11 @@ namespace BigProject.Systems.Inventory
         {
             _filledSegmentsIDs.Add(id);
             OnSegmentFilled?.Invoke(id);
+
+            if (!_isLoading)
+            {
+                _progressManager.SaveAdditionalData(this);
+            }
         }
 
         private void CreateDTO()
