@@ -211,7 +211,7 @@ namespace BigProject.Initializers
             _inventoryUI.Init(_inventory);
             GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
             _runeUI.Init(_runesSystem, gameplayManager);
-            runesJigsawUI.Init(_runesShardsSystem, _playerInput, gameplayManager);
+            runesJigsawUI.Init(_runesShardsSystem, gameplayManager);
             _hud = ServiceLocator.GetService<HUD>();
             _hud.AddWidget(_hudConfig.HUDInventoryWidgetId, _inventoryUI);
             _hud.AddWidget(_hudConfig.HUDJournalWidgetId, _journalView);

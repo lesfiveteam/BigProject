@@ -30,14 +30,13 @@ namespace BigProject.UI
         [SerializeField] private Image _finalImage;
 
         private RuneShardsSystem _runeShardsSystem;
-        private PlayerInputHandler _inputHandler;
         private GameplayManager _gameplayManager;
         private List<ShardUI> _freeShards = new List<ShardUI>();
         private List<ShardUI> _placedShards = new List<ShardUI>();
         private List<int> _shardsLeftToFinishSegments;
         private int _filledSegmentsNum = 0;
 
-        public void Init(RuneShardsSystem runeShardsSystem, PlayerInputHandler inputHandler, GameplayManager gameplayManager)
+        public void Init(RuneShardsSystem runeShardsSystem, GameplayManager gameplayManager)
         {
             if (runeShardsSystem == null)
             {
@@ -46,7 +45,6 @@ namespace BigProject.UI
             }
 
             _runeShardsSystem = runeShardsSystem;
-            _inputHandler = inputHandler;
             _gameplayManager = gameplayManager;
 
             _runeShardsSystem.OnShardAdded += AddNewShard;
@@ -217,12 +215,10 @@ namespace BigProject.UI
         public void Hide()
         {
             gameObject.SetActive(false);
-            _inputHandler.Cancel -= OnExitButtonClicked;
         }
         public void Show()
         {
             gameObject.SetActive(true);
-            _inputHandler.Cancel += OnExitButtonClicked;
         }
 
         private void ShowSegmentFilled(int segmentID)
@@ -247,7 +243,7 @@ namespace BigProject.UI
             TryShowFinalImage();            
         }
 
-        private void OnExitButtonClicked()
+        public void OnExitButtonClicked()
         {
             foreach (ShardUI freeShard in _freeShards)
             {

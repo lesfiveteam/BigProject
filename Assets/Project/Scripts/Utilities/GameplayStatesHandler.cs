@@ -45,11 +45,16 @@ namespace BigProject.Utilities
                     _input.SwitchToPlayerActionMap();
                     break;
                 case GameplayState.MiniGame:
-                    MiniGameTemplateOn();
+                    _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
+                    _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
+                    _hud.ShowWidget(_hudConfig.HUDCancelWidgetId);
+                    _input.SwitchToMiniGameActionMap();
                     break;
                 case GameplayState.RunesJagsaw:
-                    MiniGameTemplateOn();
+                    _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
+                    _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
                     _hud.ShowWidget(_hudConfig.HUDRunesJigsawWidgetId);
+                    _input.SwitchToMiniGameActionMap();
                     break;
                 case GameplayState.Dialogue:
                 case GameplayState.Cutscene:
@@ -61,14 +66,6 @@ namespace BigProject.Utilities
                 default:
                     break;
             }
-        }
-
-        private void MiniGameTemplateOn()
-        {
-            _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
-            _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
-            _hud.ShowWidget(_hudConfig.HUDCancelWidgetId);
-            _input.SwitchToMiniGameActionMap();
         }
     }
 }
