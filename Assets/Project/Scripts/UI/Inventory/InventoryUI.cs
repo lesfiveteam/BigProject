@@ -15,6 +15,9 @@ namespace BigProject.UI
         [SerializeField] private Image _noteImage;
         private InventorySystem _inventorySystem;
 
+        private const string NOTE_ANIM_TRIGGER = "Appear";
+        private Animator _noteAnimator;
+        
         public void Init(InventorySystem inventorySystem)
         {
             if (inventorySystem == null)
@@ -31,6 +34,11 @@ namespace BigProject.UI
         {
             Assert.AreEqual(5, _inventorySlots.Count, "Less than 5 inventory slots were added in InventoryUI");
             Assert.IsNotNull(_noteImage, "Note image was not initialised for InventoryUI");
+            if (_noteImage != null)
+            {
+                _noteAnimator = _noteImage.gameObject.GetComponent<Animator>();
+                Assert.IsNotNull(_noteAnimator, "Note doesn't haave an animator in InventoryUI");
+            }
             Assert.IsNotNull(_inventorySystem, "Inventory System was not initialised for InventoryUI");
         }
 
@@ -89,6 +97,7 @@ namespace BigProject.UI
             if (_noteImage.sprite != null)
             {
                 _noteImage.gameObject.SetActive(isVisible);
+                _noteAnimator.SetTrigger(NOTE_ANIM_TRIGGER);    
             }
         }
 
