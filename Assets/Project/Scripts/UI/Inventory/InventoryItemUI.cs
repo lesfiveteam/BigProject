@@ -14,6 +14,9 @@ namespace BigProject.UI
     {
         [SerializeField] private Image _image;
 
+        private const string NOTE_ANIM_TRIGGER = "Appear";
+        private Animator _noteAnimator;
+
         private Transform _defaultParent;
         private Camera _camera;
         private Item _item;
@@ -36,6 +39,7 @@ namespace BigProject.UI
             {
                 noteImage.sprite = item._noteSprite;
                 _noteObject = noteImage.gameObject;
+                _noteAnimator = _noteObject.GetComponent<Animator>();
             }
 
             AddModifiers(modifiers);
@@ -87,6 +91,7 @@ namespace BigProject.UI
             }
 
             _noteObject.SetActive(!_noteObject.activeInHierarchy);
+            _noteAnimator.SetTrigger(NOTE_ANIM_TRIGGER);
         }
 
         private void AddModifiers(IReadOnlyList<ItemModifier> modifiers)
