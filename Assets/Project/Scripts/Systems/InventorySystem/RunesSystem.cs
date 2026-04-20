@@ -13,6 +13,7 @@ namespace BigProject.Systems.Inventory
 
         public event Action<int> OnRuneAdded;
         public event Action<int> OnQuestChanged;
+        public event Action OnCleared;
         public List<int> _unlockedSegments = new();
 
         public RunesSystem(RuneShardsSystem runeShardsSystem, RunesConfig runesConfig)
@@ -22,11 +23,13 @@ namespace BigProject.Systems.Inventory
             ExceptionUtilities.ThrowIfNull(_runeShardsSystem, "RunesSystem", "RuneShardsSystem");
             ExceptionUtilities.ThrowIfNull(_runesConfig, "RunesSystem", "RunesConfig");
             _runeShardsSystem.OnSegmentFilled += OnSegmentFilled;
+            _runeShardsSystem.OnUpdated += OnUpdated;
         }
 
         public void Dispose()
         {
             _runeShardsSystem.OnSegmentFilled -= OnSegmentFilled;
+            _runeShardsSystem.OnUpdated -= OnUpdated;
         }
 
         private void CheckQuestRunesAssemble()
@@ -61,6 +64,17 @@ namespace BigProject.Systems.Inventory
             OnRuneAdded?.Invoke(segmentId);
             GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, "RunesSystem", $"add runes segment {segmentId}"));
             CheckQuestRunesAssemble();
+        }
+
+        private void OnUpdated()
+        {
+            _unlockedSegments.Clear();
+            OnCleared?.Invoke();
+
+            foreach (int segmentId in _runeShardsSystem.GetFilledSegmentsIDs())
+            {
+                OnSegmentFilled(segmentId);
+            }
         }
     }
 }

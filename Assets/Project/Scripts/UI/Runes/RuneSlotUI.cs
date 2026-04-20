@@ -9,5 +9,10 @@ namespace BigProject.UI
         {
             _runeImage.SetActive(true);
         }
+
+        public void HideRune()
+        {
+            _runeImage.SetActive(false);
+        }
     }
 }

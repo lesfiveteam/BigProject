@@ -51,7 +51,13 @@ namespace BigProject.UI
 
             _runeShardsSystem.OnShardAdded += AddNewShard;
             _runeShardsSystem.OnSegmentUnlocked += UpdateBackingVisual;
+            _runeShardsSystem.OnUpdated += ResetUI;
+            _shardsLeftToFinishSegments = _runeShardsSystem.GetShardsLeftToFinishSegments();
+        }
 
+        private void ResetUI()
+        {
+            ClearData();
             UpdateBackingVisual(_runeShardsSystem.GetUnlockedSegmentsNum());
 
             _shardsLeftToFinishSegments = _runeShardsSystem.GetShardsLeftToFinishSegments();
@@ -61,14 +67,6 @@ namespace BigProject.UI
                 Debug.LogError("ShardsLeftToFinishSegments is null.");
                 return;
             }
-
-            foreach (int segmentID in _runeShardsSystem.GetFilledSegmentsIDs())
-            {
-                ShowSegmentFilled(segmentID);
-                _filledSegmentsNum++;
-            }
-
-            TryShowFinalImage();
 
             List<int> placedShardsIDs = _runeShardsSystem.GetPlacedShardsIDs();
             List<int> freeShardsIDs = _runeShardsSystem.GetFreeShardsIDs();
@@ -88,10 +86,21 @@ namespace BigProject.UI
                 ShowSegmentFilled(segmentID);
             }
 
-            for (int i = 0; i < _shardsLeftToFinishSegments.Count; i++)
-            {
-                if (_shardsLeftToFinishSegments[i] == 0) ShowSegmentFilled(i);
-            }
+            //for (int i = 0; i < _shardsLeftToFinishSegments.Count; i++)
+            //{
+            //    if (_shardsLeftToFinishSegments[i] == 0) ShowSegmentFilled(i);
+            //}
+        }
+
+        private void ClearData()
+        {
+            _shardsLeftToFinishSegments?.Clear();
+            _shardsLeftToFinishSegments = null;
+            _freeShards.ForEach(x => Destroy(x.gameObject));
+            _placedShards.ForEach(x => Destroy(x.gameObject));
+            _freeShards.Clear();
+            _placedShards.Clear();
+            _filledSegmentsNum = 0;
         }
 
         private void OnDestroy()
@@ -100,6 +109,7 @@ namespace BigProject.UI
             {
                 _runeShardsSystem.OnShardAdded -= AddNewShard;
                 _runeShardsSystem.OnSegmentUnlocked -= UpdateBackingVisual;
+                _runeShardsSystem.OnUpdated -= ResetUI;
             }
         }
         private void AddNewShard(RuneShard shard)
@@ -121,7 +131,6 @@ namespace BigProject.UI
 
             Vector3 spawnPos = isPlaced ? goalShard.transform.position : startShard.transform.position;
             GameObject spawnedShard = Instantiate(_shardPrefab, spawnPos, Quaternion.identity, _shardHolder);
-
             ShardUI shardUI = spawnedShard.GetComponent<ShardUI>();
 
             if (shardUI == null)

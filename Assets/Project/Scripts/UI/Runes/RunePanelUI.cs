@@ -1,10 +1,11 @@
 using BigProject.Managers;
-using BigProject.Systems.Inventory;
 using BigProject.Systems.HUD;
+using BigProject.Systems.Inventory;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
+using static Unity.Collections.Unicode;
 
 namespace BigProject.UI
 {
@@ -28,6 +29,7 @@ namespace BigProject.UI
             _gameplayManager = gameplayManager;
             _runesSystem.OnRuneAdded += AddRune;
             _runesSystem.OnQuestChanged += ChangeBackgroundBasedOnQuest;
+            _runesSystem.OnCleared += OnCleared;
         }
         
         private void Start()
@@ -40,6 +42,7 @@ namespace BigProject.UI
         {
             _runesSystem.OnRuneAdded -= AddRune;
             _runesSystem.OnQuestChanged -= ChangeBackgroundBasedOnQuest;
+            _runesSystem.OnCleared -= OnCleared;
         }
 
         private void AddRune(int runeId)
@@ -49,13 +52,13 @@ namespace BigProject.UI
 
         private void ChangeBackgroundBasedOnQuest(int questID)
         {
-            if (questID < 0 || questID >= 3)
+            if (questID < 1 || questID > 3)
             {
                 Debug.LogError("You're trying to change runebar background using a wrong questID (must be in range [0; 2]). Background wasn't changed");
                 return;
             }
 
-            _backgroundImage.sprite = _backgroundSprites[questID];
+            _backgroundImage.sprite = _backgroundSprites[questID - 1];
         }
 
         public void Show()
@@ -71,6 +74,11 @@ namespace BigProject.UI
         public void OpenJagsawPanel()
         {
             _gameplayManager.ChangeState(GameplayState.RunesJagsaw);
+        }
+
+        private void OnCleared()
+        {
+            _runeSlots.ForEach(x => x.HideRune());
         }
     }
 }

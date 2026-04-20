@@ -4,10 +4,11 @@ using System;
 using System.Linq;
 using BigProject.Settings;
 using BigProject.Utilities;
+using BigProject.Managers;
 
 namespace BigProject.Systems.Inventory
 {
-    public class RuneShardsSystem
+    public class RuneShardsSystem : ISavable
     {
         private RuneShardsDatabaseSO _runeShardsDatabase;
         private RuneSegmentsDatabaseSO _runeSegmentsDatabase;
@@ -16,10 +17,51 @@ namespace BigProject.Systems.Inventory
         private List<int> _placedShardsIDs = new List<int>();
         private List<int> _filledSegmentsIDs = new List<int>();
         private RunesConfig _runesConfig;
+        private DataToSave _dataToSave;
 
         public event Action<RuneShard> OnShardAdded;
         public event Action<int> OnSegmentUnlocked;
         public event Action<int> OnSegmentFilled;
+        public event Action OnUpdated;
+
+        [Serializable]
+        private class DataToSave
+        {
+            public List<int> unlockedSegmentsIds;
+            public List<int> filledSegmentsIds;
+            public List<int> placedShardsIDs;
+        }
+
+        public string Key => "RuneShardsSystem";
+        public object SavingData
+        {
+            get
+            {
+                CreateDTO();
+                return _dataToSave;
+            }
+        }
+
+        public void OnSaved(bool _) => _dataToSave = null;
+
+        public void OnLoad()
+        {
+            if (_dataToSave == null)
+            {
+                return;
+            }
+
+            _foundShardsIDs.Clear();
+            _unlockedSegmentsIDs.Clear();
+
+            foreach (int segmentId in _dataToSave.unlockedSegmentsIds)
+            {
+                AddRunesSegment(segmentId);
+            }
+
+            _dataToSave = null;
+            OnUpdated?.Invoke();
+        }
 
         public RuneShardsSystem(RunesConfig runesConfig, RuneShardsDatabaseSO runeShardsDatabase, RuneSegmentsDatabaseSO runeSegmentsDatabase)
         {
@@ -126,6 +168,18 @@ namespace BigProject.Systems.Inventory
         {
             _filledSegmentsIDs.Add(id);
             OnSegmentFilled?.Invoke(id);
+        }
+
+        private void CreateDTO()
+        {
+            if (_dataToSave == null)
+            {
+                _dataToSave = new();
+            }
+
+            _dataToSave.unlockedSegmentsIds = new(_unlockedSegmentsIDs);
+            _dataToSave.filledSegmentsIds = _filledSegmentsIDs;
+            _dataToSave.placedShardsIDs = _placedShardsIDs;
         }
     }
 }
