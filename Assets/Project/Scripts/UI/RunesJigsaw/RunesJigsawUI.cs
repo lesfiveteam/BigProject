@@ -1,3 +1,5 @@
+using BigProject.Managers;
+using BigProject.Player;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using System;
@@ -25,16 +27,17 @@ namespace BigProject.UI
         [SerializeField] private Image _backingImage;
         [SerializeField] private List<Image> _segmentImages;
         [SerializeField] private Transform _shardHolder;
-        [SerializeField] private Button _exitButton;
         [SerializeField] private Image _finalImage;
 
         private RuneShardsSystem _runeShardsSystem;
+        private PlayerInputHandler _inputHandler;
+        private GameplayManager _gameplayManager;
         private List<ShardUI> _freeShards = new List<ShardUI>();
         private List<ShardUI> _placedShards = new List<ShardUI>();
         private List<int> _shardsLeftToFinishSegments;
         private int _filledSegmentsNum = 0;
 
-        public void Init(RuneShardsSystem runeShardsSystem)
+        public void Init(RuneShardsSystem runeShardsSystem, PlayerInputHandler inputHandler, GameplayManager gameplayManager)
         {
             if (runeShardsSystem == null)
             {
@@ -43,6 +46,8 @@ namespace BigProject.UI
             }
 
             _runeShardsSystem = runeShardsSystem;
+            _inputHandler = inputHandler;
+            _gameplayManager = gameplayManager;
 
             _runeShardsSystem.OnShardAdded += AddNewShard;
             _runeShardsSystem.OnSegmentUnlocked += UpdateBackingVisual;
@@ -57,7 +62,7 @@ namespace BigProject.UI
                 return;
             }
 
-            foreach (var segmentID in _runeShardsSystem.GetFilledSegmentsIDs())
+            foreach (int segmentID in _runeShardsSystem.GetFilledSegmentsIDs())
             {
                 ShowSegmentFilled(segmentID);
                 _filledSegmentsNum++;
@@ -65,20 +70,20 @@ namespace BigProject.UI
 
             TryShowFinalImage();
 
-            var placedShardsIDs = _runeShardsSystem.GetPlacedShardsIDs();
-            var freeShardsIDs = _runeShardsSystem.GetFreeShardsIDs();
+            List<int> placedShardsIDs = _runeShardsSystem.GetPlacedShardsIDs();
+            List<int> freeShardsIDs = _runeShardsSystem.GetFreeShardsIDs();
 
-            foreach (var shardID in placedShardsIDs)
+            foreach (int shardID in placedShardsIDs)
             {
                 SpawnShard(_runeShardsSystem.GetShardByID(shardID), isPlaced: true);
             }
 
-            foreach (var shardID in freeShardsIDs)
+            foreach (int shardID in freeShardsIDs)
             {
                 SpawnShard(_runeShardsSystem.GetShardByID(shardID), isPlaced: false);
             }
 
-            foreach (var segmentID in _runeShardsSystem.GetFilledSegmentsIDs())
+            foreach (int segmentID in _runeShardsSystem.GetFilledSegmentsIDs())
             {
                 ShowSegmentFilled(segmentID);
             }
@@ -87,8 +92,6 @@ namespace BigProject.UI
             {
                 if (_shardsLeftToFinishSegments[i] == 0) ShowSegmentFilled(i);
             }
-
-            _exitButton.onClick.AddListener(OnExitButtonClicked);
         }
 
         private void OnDestroy()
@@ -128,6 +131,7 @@ namespace BigProject.UI
             }
 
             RectTransform rect = goalShard.GetComponent<RectTransform>();
+
             if (rect == null)
             {
                 Debug.LogError($"Goal shard {id} has no RectTransform.");
@@ -194,7 +198,7 @@ namespace BigProject.UI
                 return;
             }
 
-            foreach (var backingImage in _backingImages.OrderByDescending(b => b.unlockedSegmentsThreshold))
+            foreach (BackingImage backingImage in _backingImages.OrderByDescending(b => b.unlockedSegmentsThreshold))
             {
                 if (unlockedSegmentsNum >= backingImage.unlockedSegmentsThreshold)
                 {
@@ -206,8 +210,16 @@ namespace BigProject.UI
             Debug.LogWarning("No suitable backing image found.");
         }
 
-        public void Hide() => gameObject.SetActive(false);
-        public void Show() => gameObject.SetActive(true);
+        public void Hide()
+        {
+            gameObject.SetActive(false);
+            _inputHandler.Cancel -= OnExitButtonClicked;
+        }
+        public void Show()
+        {
+            gameObject.SetActive(true);
+            _inputHandler.Cancel += OnExitButtonClicked;
+        }
 
         private void ShowSegmentFilled(int segmentID)
         {
@@ -219,9 +231,9 @@ namespace BigProject.UI
 
             _segmentImages[segmentID].gameObject.SetActive(true);
 
-            var shardsToRemove = _placedShards.Where(s => s.SegmentID == segmentID).ToList();
+            List<ShardUI> shardsToRemove = _placedShards.Where(s => s.SegmentID == segmentID).ToList();
 
-            foreach (var shard in shardsToRemove)
+            foreach (ShardUI shard in shardsToRemove)
             {
                 _placedShards.Remove(shard);
                 Destroy(shard.gameObject);
@@ -233,11 +245,12 @@ namespace BigProject.UI
 
         private void OnExitButtonClicked()
         {
-            foreach (var freeShard in _freeShards)
+            foreach (ShardUI freeShard in _freeShards)
             {
                 freeShard.ResetPosition();
             }
-            Hide();
+
+            _gameplayManager.ChangeState(GameplayState.Play);
         }
 
         private void TryShowFinalImage()

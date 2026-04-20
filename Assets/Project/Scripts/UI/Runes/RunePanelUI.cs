@@ -14,8 +14,9 @@ namespace BigProject.UI
         [SerializeField] private List<RuneSlotUI> _runeSlots;
         [SerializeField] private List<Sprite> _backgroundSprites;
         private RunesSystem _runesSystem;
+        private GameplayManager _gameplayManager;
 
-        public void Init(RunesSystem runesSystem)
+        public void Init(RunesSystem runesSystem, GameplayManager gameplayManager)
         {
             if (runesSystem == null)
             {
@@ -24,6 +25,7 @@ namespace BigProject.UI
             }
 
             _runesSystem = runesSystem;
+            _gameplayManager = gameplayManager;
             _runesSystem.OnRuneAdded += AddRune;
             _runesSystem.OnQuestChanged += ChangeBackgroundBasedOnQuest;
         }
@@ -64,6 +66,11 @@ namespace BigProject.UI
         public void Hide()
         {
             gameObject.SetActive(false);
+        }
+
+        public void OpenJagsawPanel()
+        {
+            _gameplayManager.ChangeState(GameplayState.RunesJagsaw);
         }
     }
 }
