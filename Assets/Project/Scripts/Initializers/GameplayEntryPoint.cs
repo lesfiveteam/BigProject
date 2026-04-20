@@ -134,7 +134,8 @@ namespace BigProject.Initializers
             _hud = new();
             _playerInput = new();
             _questJournal = new QuestJournal(progressManager, _journalConfig);
-            _runesShardsSystem = new(_runesConfig, _runeShardsDatabase, _runeSegmentsDatabase, progressManager);
+            _runesShardsSystem = new(_runesConfig, _runeShardsDatabase, _runeSegmentsDatabase);
+            progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
             _runesSystem = new(_runesShardsSystem, _runesConfig);
             ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
             GameplayManager gameplayManager = new(ServiceLocator.GetService<ManualLoop>());
@@ -148,6 +149,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_questJournal);
             ServiceLocator.AddService(_runesSystem);
             ServiceLocator.AddService(_runesShardsSystem);
+            ServiceLocator.AddService(_runesConfig);
             ServiceLocator.AddService(_inventory);
             ServiceLocator.AddService(_hud);
             ServiceLocator.AddService(_playerInput);
@@ -335,6 +337,7 @@ namespace BigProject.Initializers
             ServiceLocator.ReleaseService<QuestJournal>();
             ServiceLocator.ReleaseService<RunesSystem>();
             ServiceLocator.ReleaseService<RuneShardsSystem>();
+            ServiceLocator.ReleaseService<RunesConfig>();
             ServiceLocator.ReleaseService<InventorySystem>();
             ServiceLocator.ReleaseService<HUD>();
             ServiceLocator.ReleaseService<InventoryUI>();

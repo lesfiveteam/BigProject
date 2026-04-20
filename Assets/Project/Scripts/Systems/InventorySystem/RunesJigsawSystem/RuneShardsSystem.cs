@@ -68,17 +68,14 @@ namespace BigProject.Systems.Inventory
             _isLoading = false;
         }
 
-        public RuneShardsSystem(RunesConfig runesConfig, RuneShardsDatabaseSO runeShardsDatabase, RuneSegmentsDatabaseSO runeSegmentsDatabase,
-            ProgressManager progressManager)
+        public RuneShardsSystem(RunesConfig runesConfig, RuneShardsDatabaseSO runeShardsDatabase, RuneSegmentsDatabaseSO runeSegmentsDatabase)
         {
             _runesConfig = runesConfig;
             _runeShardsDatabase = runeShardsDatabase;
             _runeSegmentsDatabase = runeSegmentsDatabase;
-            _progressManager = progressManager;
             ExceptionUtilities.ThrowIfNull(_runesConfig, "RuneShardsSystem", "RunesConfig");
             ExceptionUtilities.ThrowIfNull(_runeShardsDatabase, "RuneShardsSystem", "RuneShardsDatabaseSO");
             ExceptionUtilities.ThrowIfNull(_runeSegmentsDatabase, "RuneShardsSystem", "RuneSegmentsDatabaseSO");
-            ExceptionUtilities.ThrowIfNull(_progressManager, "RuneShardsSystem", "ProgressManager");
         }
 
         /// <summary>

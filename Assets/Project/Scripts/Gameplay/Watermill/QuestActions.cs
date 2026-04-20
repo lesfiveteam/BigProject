@@ -15,12 +15,6 @@ namespace BigProject.Gameplay.Watermill
         [SerializeField]
         private LocalizedString _panelCompletedRemark;
 
-        private void Awake()
-        {
-            ServiceLocator.GetService<InventorySystem>().AddItemByName("repaired_lever");
-            //ServiceLocator.GetService<RunesSystem>().AddRune(0);
-            //ServiceLocator.GetService<RunesSystem>().AddRune(4);
-        }
         public void FirstWatermillMeeting()
         {
             ReplicaManager.ShowReplica(_firstEnterRemark);

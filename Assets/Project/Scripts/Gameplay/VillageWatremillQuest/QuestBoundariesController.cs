@@ -3,6 +3,7 @@ using BigProject.Systems.Inventory;
 using BigProject.Systems.HUD;
 using UnityEngine;
 using BigProject.Systems.QuestSystem;
+using BigProject.Settings;
 
 namespace BigProject.Gameplay.VillageWatermillQuest
 {
@@ -22,7 +23,7 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         public void InitOnSceneEntry()
         {
             _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RunesSystem>(),
-                ServiceLocator.GetService<HUD>());
+                ServiceLocator.GetService<HUD>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>());
 
             _miller.SetActive(true);
             _questWatermillObjects.SetActive(true);

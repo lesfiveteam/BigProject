@@ -6,6 +6,7 @@ using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using BigProject.Utilities;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Localization;
@@ -30,6 +31,8 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         private GearsHandler _millWheelHandler;
         [SerializeField]
         private HUDConfig _hudConfig;
+        [SerializeField]
+        private int _questId = 2;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -38,12 +41,16 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         private InventorySystem _inventory;
         private RunesSystem _runes;
         private HUD _hud;
+        private RuneShardsSystem _runesSystem;
+        private RunesConfig _runesConfig;
 
-        public void Init(InventorySystem inventory, RunesSystem runes, HUD hud)
+        public void Init(InventorySystem inventory, RunesSystem runes, HUD hud, RuneShardsSystem runesSystem, RunesConfig runesConfig)
         {
             _inventory = inventory;
             _runes = runes;
             _hud = hud;
+            _runesSystem = runesSystem;
+            _runesConfig = runesConfig;
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(gameObject.name, "Inventory System"));
             ExceptionUtilities.ThrowIfNull(_runes, String.Format(gameObject.name, "Rune System"));
             ExceptionUtilities.ThrowIfNull(_hud, String.Format(gameObject.name, "HUD"));
@@ -89,9 +96,14 @@ namespace BigProject.Gameplay.VillageWatermillQuest
 
         public void GetRune()
         {
-            _hud.ShowWidget(_hudConfig.HUDRunesWidgetId);
-            //_runes.AddRune(0);
-            //_runes.AddRune(4);
+            IReadOnlyList<int> rewardRunes = _runesConfig.GetQuestRewardRunes(_questId);
+            ExceptionUtilities.ThrowIfNullFormat(rewardRunes, "unable to get reward runes");
+
+            foreach (int rewardRuneId in rewardRunes)
+            {
+                _runesSystem.AddRunesSegment(rewardRuneId);
+            }
+
             ReplicaManager.ShowReplica(_runeRemark);
         }
     }
