@@ -85,11 +85,6 @@ namespace BigProject.UI
             {
                 ShowSegmentFilled(segmentID);
             }
-
-            //for (int i = 0; i < _shardsLeftToFinishSegments.Count; i++)
-            //{
-            //    if (_shardsLeftToFinishSegments[i] == 0) ShowSegmentFilled(i);
-            //}
         }
 
         private void ClearData()
