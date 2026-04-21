@@ -15,6 +15,7 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
         TownHall = 400,
         Watermill = 500,
         Church = 600,
+        Outro = 1000,
     }
 
     public class SceneLoadManager : IDisposable
