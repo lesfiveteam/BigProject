@@ -42,6 +42,7 @@ namespace BigProject.NPC
         
         private void Awake()
         {
+            // TODO: remove ServiceLocator from here
             ServiceLocator.TryGetService(out ProgressManager pm);
             Assert.IsNotNull(_dialogue, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "NPC dialogue"));
             ExceptionUtilities.ThrowIfNull(pm, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Progress manager"));
@@ -70,7 +71,11 @@ namespace BigProject.NPC
 
         private void Start()
         {
-            StateChanged();
+            // TODO: remove ServiceLocator from here
+            if (ServiceLocator.GetService<ProgressManager>().GetQuestState(_questId) == QuestState.Active)
+            {
+                StateChanged();
+            }
         }
 
         private void OnEnable()
