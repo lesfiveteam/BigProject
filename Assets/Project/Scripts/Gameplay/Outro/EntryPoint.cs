@@ -4,7 +4,7 @@ using BigProject.Initializers;
 using BigProject.Managers;
 using UnityEngine;
 
-namespace Assets.Project.Scripts.Gameplay.Opening
+namespace Assets.Project.Scripts.Gameplay.Outro
 {
     public class EntryPoint : MonoBehaviour
     {
@@ -20,8 +20,8 @@ namespace Assets.Project.Scripts.Gameplay.Opening
         {
             _slideManager.OpeningEnded -= OnOpeningEnded;
 
-            Bootstrapper.SetStage(GameExecutionStage.Gameplay);
-            ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.Village);
+            Bootstrapper.SetStage(GameExecutionStage.Launch);
+            ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.MainMenu);
         }
     }
 }
