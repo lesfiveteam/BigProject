@@ -134,8 +134,7 @@ namespace BigProject.Initializers
             _hud = new();
             _playerInput = new();
             _questJournal = new QuestJournal(progressManager, _journalConfig);
-            _runesShardsSystem = new(_runesConfig, _runeShardsDatabase, _runeSegmentsDatabase);
-            progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
+            _runesShardsSystem = new(_runesConfig, _runeShardsDatabase, _runeSegmentsDatabase, progressManager);
             _runesSystem = new(_runesShardsSystem, _runesConfig);
             ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
             GameplayManager gameplayManager = new(ServiceLocator.GetService<ManualLoop>());
@@ -167,6 +166,7 @@ namespace BigProject.Initializers
             InitPauseMenu();
 
             _questJournal.Init();
+            progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
             AddQuestsSwitches(progressManager);
             CreateCursorManager(sceneLoader);
             CreateCutsceneManager(sceneLoader);

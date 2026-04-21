@@ -68,14 +68,17 @@ namespace BigProject.Systems.Inventory
             _isLoading = false;
         }
 
-        public RuneShardsSystem(RunesConfig runesConfig, RuneShardsDatabaseSO runeShardsDatabase, RuneSegmentsDatabaseSO runeSegmentsDatabase)
+        public RuneShardsSystem(RunesConfig runesConfig, RuneShardsDatabaseSO runeShardsDatabase, RuneSegmentsDatabaseSO runeSegmentsDatabase,
+            ProgressManager progressmanager)
         {
             _runesConfig = runesConfig;
             _runeShardsDatabase = runeShardsDatabase;
             _runeSegmentsDatabase = runeSegmentsDatabase;
+            _progressManager = progressmanager;
             ExceptionUtilities.ThrowIfNull(_runesConfig, "RuneShardsSystem", "RunesConfig");
             ExceptionUtilities.ThrowIfNull(_runeShardsDatabase, "RuneShardsSystem", "RuneShardsDatabaseSO");
             ExceptionUtilities.ThrowIfNull(_runeSegmentsDatabase, "RuneShardsSystem", "RuneSegmentsDatabaseSO");
+            ExceptionUtilities.ThrowIfNull(_progressManager, "RuneShardsSystem", "ProgressManager");
         }
 
         /// <summary>
@@ -83,34 +86,41 @@ namespace BigProject.Systems.Inventory
         /// </summary>
         public void AddRunesSegment(int segmentId)
         {
-            UnlockSegmentByID(segmentId);
-
-            foreach (RuneShard shard in _runeShardsDatabase.Shards)
+            if (UnlockSegmentByID(segmentId))
             {
-                if (shard.SegmentId == segmentId)
+                if (!_isLoading)
                 {
-                    _foundShardsIDs.Add(shard.Id);
-                    OnShardAdded?.Invoke(shard);
+                    _progressManager.SaveAdditionalData(this, trackRelevance: false);
+                }
+
+                foreach (RuneShard shard in _runeShardsDatabase.Shards)
+                {
+                    if (shard.SegmentId == segmentId)
+                    {
+                        _foundShardsIDs.Add(shard.Id);
+                        OnShardAdded?.Invoke(shard);
+                    }
                 }
             }
         }
 
-        private void UnlockSegmentByID(int id)
+        private bool UnlockSegmentByID(int id)
         {
             if (_unlockedSegmentsIDs.Contains(id))
             {
                 Debug.LogWarning($"Segment {id} already unlocked.");
-                return;
+                return false;
             }
 
             if (!_runeSegmentsDatabase.Segments.Any(s => s.Id == id))
             {
                 Debug.LogError($"Segment ID {id} not found in database.");
-                return;
+                return false;
             }
 
             _unlockedSegmentsIDs.Add(id);
             OnSegmentUnlocked?.Invoke(_unlockedSegmentsIDs.Count);
+            return true;
         }
 
         public int GetUnlockedSegmentsNum() => _unlockedSegmentsIDs.Count;
