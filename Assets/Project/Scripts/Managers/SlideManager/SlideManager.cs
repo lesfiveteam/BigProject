@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BigProject.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +16,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         [SerializeField] private List<Slide> _slides;
         [SerializeField] private Image _fader;
+        [SerializeField] private CanvasGroup _skip;
 
         private float _slideShowDuration = 25f;
         private float _currentSlideShowDuration;
@@ -22,11 +24,25 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         private float _fadeDuration = 1f;
         private float _currentFadeDuration;
 
-        private bool _inShowProcces = false;
+        private bool _inShowProcess = false;
 
         private Coroutine _slideCoroutine;
+        private Coroutine _longPressCoroutine;
+        private Coroutine _skipShowCoroutine;
 
         private int _currentSlideIndex = 0;
+
+        private float _longPressDuration = 2f;
+        private float _skipFadeDuration = 0.5f;
+        private float _skipShowDuration = 2f;
+        private float _skipShowTimer;
+
+        private void Start()
+        {
+            ExceptionUtilities.ThrowIfEmptyCollection(_slides, nameof(_slides));
+            ExceptionUtilities.ThrowIfNullFormat(_fader);
+            ExceptionUtilities.ThrowIfNullFormat(_skip);
+        }
 
         private void Update()
         {
@@ -35,21 +51,58 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         private void InputHandler()
         {
-            if (Mouse.current.leftButton.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
+            bool isPressed = Mouse.current.leftButton.isPressed || Keyboard.current.spaceKey.isPressed;
+            bool wasPressed = Mouse.current.leftButton.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame;
+
+            if (wasPressed)
             {
-                if (_inShowProcces)
-                {
-                    _slides[_currentSlideIndex].SkipShow();
-                    _inShowProcces = false;
-                    _currentFadeDuration = SKIP_DURATION;
-                }
+                OnShortPress();
+                
+                if (_longPressCoroutine != null)
+                    StopCoroutine(_longPressCoroutine);
+
+                _longPressCoroutine = StartCoroutine(LongPressTimer());
+
+                if (_skipShowCoroutine != null)
+                    _skipShowTimer = _skipShowDuration;
                 else
-                {
-                    _slides[_currentSlideIndex].SkipHide();
-                    _currentSlideShowDuration = SKIP_DURATION;
-                    _currentFadeDuration = SKIP_DURATION;
-                }
+                    _skipShowCoroutine = StartCoroutine(FadeSkip());
             }
+
+            if (!isPressed && _longPressCoroutine != null)
+            {
+                StopCoroutine(_longPressCoroutine);
+                _longPressCoroutine = null;
+            }
+        }
+
+        private void OnShortPress()
+        {
+            if (_inShowProcess)
+            {
+                _slides[_currentSlideIndex].SkipShow();
+                _inShowProcess = false;
+                _currentFadeDuration = SKIP_DURATION;
+            }
+            else
+            {
+                _slides[_currentSlideIndex].SkipHide();
+                _currentSlideShowDuration = SKIP_DURATION;
+                _currentFadeDuration = SKIP_DURATION;
+            }
+        }
+
+        private IEnumerator LongPressTimer()
+        {
+            yield return new WaitForSeconds(_longPressDuration);
+            OnLongPress();
+            _longPressCoroutine = null;
+        }
+
+        private void OnLongPress()
+        {
+            StopSlideShow();
+            OpeningEnded?.Invoke();
         }
 
         public void StartSlideShow()
@@ -68,9 +121,21 @@ namespace Assets.Project.Scripts.Managers.SlideManager
                     slide.Stop();
 
                 StopCoroutine(_slideCoroutine);
-
                 _slideCoroutine = null;
             }
+
+            if (_longPressCoroutine != null)
+            {
+                StopCoroutine(_longPressCoroutine);
+                _longPressCoroutine = null;
+            }
+
+            if (_skipShowCoroutine  != null)
+            {
+                StopCoroutine(_skipShowCoroutine);
+                _skipShowCoroutine = null;
+            }
+
         }
 
         private IEnumerator PlaySlider()
@@ -80,13 +145,13 @@ namespace Assets.Project.Scripts.Managers.SlideManager
                 _currentSlideShowDuration = _slideShowDuration;
                 _currentFadeDuration = _fadeDuration;
 
-                _inShowProcces = true;
+                _inShowProcess = true;
 
-                _slides[_currentSlideIndex].Show(() => _inShowProcces = false);
+                _slides[_currentSlideIndex].Show(() => _inShowProcess = false);
 
                 yield return Fade(1f, 0f);
 
-                yield return DynamicWait();
+                yield return DynamicWait(() => _currentSlideShowDuration);
 
                 bool isHideProccesEnded = false;
 
@@ -121,14 +186,63 @@ namespace Assets.Project.Scripts.Managers.SlideManager
             _fader.color = new Color(color.r, color.g, color.b, to);
         }
 
-        private IEnumerator DynamicWait()
+        private IEnumerator FadeSkip()
+        {
+            _skipShowTimer = _skipShowDuration;
+
+            float elapsed = 0f;
+
+            while (elapsed < _skipFadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / _skipFadeDuration);
+                float alpha = Mathf.Lerp(0f, 1f, t);
+
+                _skip.alpha = alpha;
+
+                yield return null;
+            }
+
+            _skip.alpha = 1f;
+
+            yield return DynamicTimer();
+
+            elapsed = 0f;
+
+            while (elapsed < _skipFadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / _skipFadeDuration);
+                float alpha = Mathf.Lerp(1f, 0f, t);
+
+                _skip.alpha = alpha;
+
+                yield return null;
+            }
+
+            _skip.alpha = 0f;
+
+            _skipShowCoroutine = null;
+        }
+
+        private IEnumerator DynamicWait(Func<float> getDuration)
         {
             float elapsed = 0f;
 
-            while (elapsed < _currentSlideShowDuration)
+            while (elapsed < getDuration())
             {
                 elapsed += Time.deltaTime;
-                Debug.Log(_currentSlideShowDuration + " " + elapsed);
+
+                yield return null;
+            }
+        }
+
+        private IEnumerator DynamicTimer()
+        {
+            while (_skipShowTimer > 0)
+            {
+                _skipShowTimer -= Time.deltaTime;
+
                 yield return null;
             }
         }
