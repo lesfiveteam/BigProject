@@ -2,6 +2,7 @@ using BigProject.Managers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace BigProject.Systems.QuestSystem
@@ -243,6 +244,7 @@ namespace BigProject.Systems.QuestSystem
 
             // Update all states (possibly there are conditions that are met immediately).
             ResetActions();
+            questStates.Sort((x, y) => y.state.CompareTo(x.state));
             ResetQuestState();
 
             // After loading, all activities represent the latest changes.
@@ -507,7 +509,7 @@ namespace BigProject.Systems.QuestSystem
         {
             foreach (QuestCondition questState in questStates)
             {
-                if (CurrentState == questState.state)
+                if (CurrentState >= questState.state)
                 {
                     continue;
                 }
