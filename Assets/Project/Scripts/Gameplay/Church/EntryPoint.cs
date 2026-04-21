@@ -1,13 +1,13 @@
+using Assets.Project.Scripts.Interactable;
+using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Gameplay.Common;
+using BigProject.Managers;
+using BigProject.Managers.SoundsMusicManagers;
+using BigProject.Player;
 using BigProject.Systems;
+using BigProject.UI;
 using UnityEngine;
 using UnityEngine.Assertions;
-using BigProject.Player;
-using BigProject.Managers;
-using BigProject.UI;
-using BigProject.Managers.SoundsMusicManagers;
-using Assets.Project.Scripts.Managers.SceneLoader;
-using BigProject.Utilities;
 
 namespace BigProject.Gameplay.Church
 {
@@ -19,11 +19,14 @@ namespace BigProject.Gameplay.Church
         private BellsPuzzle _bellsPuzzle;
         [SerializeField]
         private TeleportHandler _teleport;
+        [SerializeField]
+        private CameraMove _cameraMove;
 
         private void Awake()
         {
             Assert.IsNotNull(_miniGameActivator, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Mini Game Activator"));
             Assert.IsNotNull(_bellsPuzzle, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Bells Puzzle"));
+            Assert.IsNotNull(_cameraMove, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "CameraMove"));
         }
 
         public void Init()
@@ -39,6 +42,7 @@ namespace BigProject.Gameplay.Church
                 player.GetComponentInChildren<SkinnedMeshRenderer>());
             _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, progressManager);
             _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
+            _cameraMove.Init(ServiceLocator.GetService<PlayerController>());
         }
     }
 }

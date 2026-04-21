@@ -1,4 +1,5 @@
 ﻿using BigProject.Player;
+using BigProject.Utilities;
 using DG.Tweening;
 using UnityEngine;
 
@@ -21,6 +22,13 @@ namespace Assets.Project.Scripts.Interactable
         {
             _downY = transform.position.y;
             _upY = _downY + _moveDistance;
+        }
+
+        public void Init(PlayerController player)
+        {
+            ExceptionUtilities.ThrowIfNullFormat(player);
+
+            Subscribe(player);
         }
 
         private void MoveUp()

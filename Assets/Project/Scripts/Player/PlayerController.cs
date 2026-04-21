@@ -9,7 +9,6 @@ using System;
 using System.Collections;
 using System.Linq;
 using Unity.AI.Navigation;
-using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -132,6 +131,7 @@ namespace BigProject.Player
             _inputHandler.ClickRelease += OnClickRelease;
             _sceneLoader.SceneLoadingCompleted += OnSceneLoadingCompleted;
         }
+
         private void OnDisable()
         {
             _inputHandler.Click -= OnClick;
@@ -148,21 +148,6 @@ namespace BigProject.Player
             if (_camera == null)
             {
                 _camera = Camera.main;
-
-                CinemachineBrain brain = Camera.main.GetComponent<CinemachineBrain>();
-
-                if (brain == null)
-                    Debug.LogError(string.Format(LogStr.ERROR_NULL_COMPONENT, typeof(CinemachineBrain)));
-
-                ICinemachineCamera activeCamera = brain.ActiveVirtualCamera;
-
-                if (activeCamera == null)
-                    Debug.LogError(string.Format(LogStr.ERROR_NULL_COMPONENT, typeof(ICinemachineCamera)));
-
-                CameraMove cameraMove = (activeCamera as CinemachineCamera).GetComponent<CameraMove>();
-
-                if (cameraMove != null)
-                    cameraMove.Subscribe(this);
             }
         }
 

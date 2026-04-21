@@ -27,6 +27,7 @@ namespace BigProject.Systems
         public const string WARNING_QUEST = "Quest warning: {0}.";
         public const string WARNING_CANT_FIND_PATH = "The: {0} can't find path in {1}.";
         public const string WARNING_EMPTY_COLLECTION = "Collection is empty";
+        public const string WARNING_NO_CINEMATIC_CAMERA = "No cinematic camera in Scene: {0}";
 
         public const string ERROR_WRITE_FAILED = "Logger write failed: {0}.";
         public const string ERROR_FILE_DELETE_FAILED = "Failed to delete {0}: {1}.";
