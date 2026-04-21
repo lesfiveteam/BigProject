@@ -42,7 +42,16 @@ namespace BigProject.Gameplay.Church
                 player.GetComponentInChildren<SkinnedMeshRenderer>());
             _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, progressManager);
             _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
-            _cameraMove.Init(ServiceLocator.GetService<PlayerController>());
+            _cameraMove.Init(player);
+
+            SwithOffOutline(player);
+        }
+
+        private void SwithOffOutline(PlayerController player)
+        {
+            Outline outline = player.GetComponentInChildren<Outline>();
+            if (outline != null)
+                outline.enabled = false;
         }
     }
 }
