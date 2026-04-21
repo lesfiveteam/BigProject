@@ -20,8 +20,8 @@ namespace BigProject.Gameplay.Church
 
         public void Ring()
         {
-            //_soundsManager.PlaySound(_audioClip);
-            Debug.Log("Колокльчик #" + Id + " звенит!!!");
+            _soundsManager.PlaySound(_audioClip);
+            Debug.Log("РљРѕР»РѕРєР»СЊС‡РёРє #" + Id + " Р·РІРµРЅРёС‚!!!");
             //_animator.SetTrigger("Ring");
             _animator.Play("Scene", 0, 0f);
         }
