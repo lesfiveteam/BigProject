@@ -11,6 +11,7 @@ using BigProject.Systems.Inventory;
 using BigProject.UI;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 namespace BigProject.Gameplay.TownHall
 {
@@ -53,16 +54,25 @@ namespace BigProject.Gameplay.TownHall
             InventoryUI inventoryUI = ServiceLocator.GetService<InventoryUI>();
             GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
             PlayerInputHandler inputHandler = ServiceLocator.GetService<PlayerInputHandler>();
-            PlayerController playerController = ServiceLocator.GetService<PlayerController>();
+            PlayerController player = ServiceLocator.GetService<PlayerController>();
             SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
 
             _questActions.Init(inventorySystem, inventoryUI, gameplayManager, ServiceLocator.GetService<RuneShardsSystem>(),
                 ServiceLocator.GetService<RunesConfig>());
             _chestPuzzle.Init(inventorySystem, inventoryUI, progressmanager, ServiceLocator.GetService<HUD>(), inputHandler, soundsManager);
-            _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, playerController.GetComponent<Collider>(),
-                playerController.GetComponentInChildren<SkinnedMeshRenderer>());
+            _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(),
+                player.GetComponentInChildren<SkinnedMeshRenderer>());
             _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
-            _cameraMove.Init(ServiceLocator.GetService<PlayerController>());
+            _cameraMove.Init(player);
+
+            SwithOffOutline(player);
+        }
+
+        private void SwithOffOutline(PlayerController player)
+        {
+            Outline outline = player.GetComponentInChildren<Outline>();
+            if (outline != null)
+                outline.enabled = false;
         }
     }
 }

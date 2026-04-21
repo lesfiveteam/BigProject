@@ -31,6 +31,15 @@ namespace BigProject.Gameplay.Watermill
             PlayerController player = ServiceLocator.GetService<PlayerController>();
             _miniGameActivator.Init(gameplayManager, inputHandler, ServiceLocator.GetService<InventoryUI>(), player.GetComponent<Collider>(),
                 player.GetComponentInChildren<SkinnedMeshRenderer>());
+
+            SwithOffOutline(player);
+        }
+
+        private void SwithOffOutline(PlayerController player)
+        {
+            Outline outline = player.GetComponentInChildren<Outline>();
+            if (outline != null)
+                outline.enabled = false;
         }
     }
 }
