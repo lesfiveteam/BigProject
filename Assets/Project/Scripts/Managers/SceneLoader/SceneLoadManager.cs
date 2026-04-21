@@ -85,7 +85,7 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
             _isLoading = true;
             _currentSceneName = sceneName;
 
-            // 1. Затемнение
+            // Fade in
             bool waitFading = true;
             _fader.FadeIn(() => waitFading = false);
 
@@ -96,7 +96,7 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
 
             SceneLoadingStarted?.Invoke();
 
-            // 2. Загрузка сцены
+            // Loading scene
             AsyncOperation async = SceneManager.LoadSceneAsync(_currentSceneName);
             async.allowSceneActivation = false;
             SceneManager.sceneLoaded += NotifyLoadingCompleted;
@@ -108,11 +108,13 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
 
             async.allowSceneActivation = true;
 
-            // 3. Оповещение
+            yield return new WaitUntil(() => SceneManager.GetActiveScene().name == _currentSceneName);
+
+            // Notification
             Debug.Log(string.Format(LogStr.INFO_SCENE_LOADING, scene));
             SceneLoaded?.Invoke(scene);
 
-            // 4. Появление
+            // Fade out
             waitFading = true;
             _fader.FadeOut(() => waitFading = false);
 
