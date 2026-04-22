@@ -8,15 +8,24 @@ using UnityEngine.UI;
 
 namespace Assets.Project.Scripts.Managers.SlideManager
 {
-    public class SlideManager : MonoBehaviour
+    public enum Outro
+    {
+        First = 1,
+        Second = 2,
+    }
+
+    public class OutroSlideManager : MonoBehaviour
     {
         private const float SKIP_DURATION = 0.2f;
 
-        public event Action IntroEnded;
+        public event Action OutroEnded;
 
-        [SerializeField] private List<Slide> _slides;
+        [SerializeField] private List<Slide> _slidesOutro1;
+        [SerializeField] private List<Slide> _slidesOutro2;
         [SerializeField] private Image _fader;
         [SerializeField] private CanvasGroup _skip;
+
+        private List<Slide> _currentSlides;
 
         private float _slideShowDuration = 25f;
         private float _currentSlideShowDuration;
@@ -39,7 +48,8 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         private void Start()
         {
-            ExceptionUtilities.ThrowIfEmptyCollection(_slides, nameof(_slides));
+            ExceptionUtilities.ThrowIfEmptyCollection(_slidesOutro1, nameof(_slidesOutro1));
+            ExceptionUtilities.ThrowIfEmptyCollection(_slidesOutro2, nameof(_slidesOutro2));
             ExceptionUtilities.ThrowIfNullFormat(_fader);
             ExceptionUtilities.ThrowIfNullFormat(_skip);
         }
@@ -80,13 +90,13 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         {
             if (_inShowProcess)
             {
-                _slides[_currentSlideIndex].SkipShow();
+                _currentSlides[_currentSlideIndex].SkipShow();
                 _inShowProcess = false;
                 _currentFadeDuration = SKIP_DURATION;
             }
             else
             {
-                _slides[_currentSlideIndex].SkipHide();
+                _currentSlides[_currentSlideIndex].SkipHide();
                 _currentSlideShowDuration = SKIP_DURATION;
                 _currentFadeDuration = SKIP_DURATION;
             }
@@ -102,22 +112,39 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         private void OnLongPress()
         {
             StopSlideShow();
-            IntroEnded?.Invoke();
+            OutroEnded?.Invoke();
         }
 
-        public void StartSlideShow()
+        public void StartSlideShow(Outro outro)
         {
+            _currentSlides = GetActualSlides(outro);
+
             if (_slideCoroutine != null)
                 StopSlideShow();
 
             _slideCoroutine = StartCoroutine(PlaySlider());
         }
 
+        private List<Slide> GetActualSlides(Outro outro)
+        {
+            switch (outro)
+            {
+                case Outro.First:
+                    return _slidesOutro1;
+
+                case Outro.Second:
+                    return _slidesOutro2;
+
+                default:
+                    throw new ArgumentException(outro.ToString());
+            }
+        }
+
         public void StopSlideShow()
         {
             if (_slideCoroutine != null)
             {
-                foreach (Slide slide in _slides)
+                foreach (Slide slide in _currentSlides)
                     slide.Stop();
 
                 StopCoroutine(_slideCoroutine);
@@ -140,14 +167,14 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         private IEnumerator PlaySlider()
         {
-            for (_currentSlideIndex = 0; _currentSlideIndex < _slides.Count; _currentSlideIndex++)
+            for (_currentSlideIndex = 0; _currentSlideIndex < _currentSlides.Count; _currentSlideIndex++)
             {
                 _currentSlideShowDuration = _slideShowDuration;
                 _currentFadeDuration = _fadeDuration;
 
                 _inShowProcess = true;
 
-                _slides[_currentSlideIndex].Show(() => _inShowProcess = false);
+                _currentSlides[_currentSlideIndex].Show(() => _inShowProcess = false);
 
                 yield return Fade(1f, 0f);
 
@@ -155,16 +182,16 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
                 bool isHideProccesEnded = false;
 
-                _slides[_currentSlideIndex].Hide(() => isHideProccesEnded = true);
+                _currentSlides[_currentSlideIndex].Hide(() => isHideProccesEnded = true);
 
                 yield return Fade(0f, 1f);
 
                 yield return new WaitUntil(() => isHideProccesEnded);
 
-                _slides[_currentSlideIndex].Stop();
+                _currentSlides[_currentSlideIndex].Stop();
             }
 
-            IntroEnded?.Invoke();
+            OutroEnded?.Invoke();
         }
 
         private IEnumerator Fade(float from, float to)

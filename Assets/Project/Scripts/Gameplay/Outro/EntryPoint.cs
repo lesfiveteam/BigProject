@@ -8,17 +8,17 @@ namespace Assets.Project.Scripts.Gameplay.Outro
 {
     public class EntryPoint : MonoBehaviour
     {
-        [SerializeField] private SlideManager _slideManager;
+        [SerializeField] private OutroSlideManager _slideManager;
 
         private void Start()
         {
-            _slideManager.StartSlideShow();
-            _slideManager.OpeningEnded += OnOpeningEnded;
+            _slideManager.StartSlideShow(Managers.SlideManager.Outro.First); // !Hardcode! Need to set valid outro enum from ServiceLocator
+            _slideManager.OutroEnded += OnOpeningEnded;
         }
 
         private void OnOpeningEnded()
         {
-            _slideManager.OpeningEnded -= OnOpeningEnded;
+            _slideManager.OutroEnded -= OnOpeningEnded;
 
             Bootstrapper.SetStage(GameExecutionStage.Launch);
             ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.MainMenu);

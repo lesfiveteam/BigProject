@@ -13,12 +13,12 @@ namespace Assets.Project.Scripts.Gameplay.Intro
         private void Start()
         {
             _slideManager.StartSlideShow();
-            _slideManager.OpeningEnded += OnOpeningEnded;
+            _slideManager.IntroEnded += OnIntroEnded;
         }
 
-        private void OnOpeningEnded()
+        private void OnIntroEnded()
         {
-            _slideManager.OpeningEnded -= OnOpeningEnded;
+            _slideManager.IntroEnded -= OnIntroEnded;
 
             Bootstrapper.SetStage(GameExecutionStage.Gameplay);
             ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.Village);
