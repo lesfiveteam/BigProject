@@ -5,6 +5,7 @@ using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Systems;
+using BigProject.Systems.Inventory;
 using BigProject.UI;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -21,12 +22,20 @@ namespace BigProject.Gameplay.Church
         private TeleportHandler _teleport;
         [SerializeField]
         private CameraMove _cameraMove;
+        [SerializeField]
+        private int _questId;
+        [SerializeField]
+        private GameObject _questObjects;
+        [SerializeField]
+        private QuestActions _questActions;
 
         private void Awake()
         {
             Assert.IsNotNull(_miniGameActivator, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Mini Game Activator"));
             Assert.IsNotNull(_bellsPuzzle, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Bells Puzzle"));
             Assert.IsNotNull(_cameraMove, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "CameraMove"));
+            Assert.IsNotNull(_questObjects, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Game Objects"));
+            Assert.IsNotNull(_questActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Actions"));
         }
 
         public void Init()
@@ -38,6 +47,12 @@ namespace BigProject.Gameplay.Church
             SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
             ProgressManager progressManager = ServiceLocator.GetService<ProgressManager>();
 
+            if (progressManager.GetQuestState(_questId) == Systems.QuestSystem.QuestState.Active)
+            {
+                _questObjects.SetActive(true);
+            }
+
+            _questActions.Init(ServiceLocator.GetService<InventorySystem>());
             _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(), 
                 player.GetComponentInChildren<SkinnedMeshRenderer>());
             _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, progressManager);

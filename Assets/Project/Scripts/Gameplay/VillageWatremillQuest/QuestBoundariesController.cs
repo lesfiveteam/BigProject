@@ -15,6 +15,8 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         [SerializeField]
         private GameObject _miller;
         [SerializeField]
+        private GameObject _elder;
+        [SerializeField]
         private GameObject _questWatermillObjects;
 
         [field: SerializeField]
@@ -26,13 +28,13 @@ namespace BigProject.Gameplay.VillageWatermillQuest
                 ServiceLocator.GetService<HUD>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>());
 
             _miller.SetActive(true);
+            _elder.SetActive(false);
             _questWatermillObjects.SetActive(true);
         }
 
         public void Begin()
         {
             InitOnSceneEntry();
-            _miller.SetActive(true);
         }
     }
 }
