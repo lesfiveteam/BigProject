@@ -4,6 +4,7 @@ using BigProject.Gameplay.Common;
 using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
+using BigProject.Settings;
 using BigProject.Systems;
 using BigProject.Systems.Inventory;
 using BigProject.UI;
@@ -52,7 +53,7 @@ namespace BigProject.Gameplay.Church
                 _questObjects.SetActive(true);
             }
 
-            _questActions.Init(ServiceLocator.GetService<InventorySystem>());
+            _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>());
             _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(), 
                 player.GetComponentInChildren<SkinnedMeshRenderer>());
             _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, progressManager);
