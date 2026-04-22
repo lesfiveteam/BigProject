@@ -70,7 +70,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(soundsManager);
 
             SettingsManager settingsManager = new();
-            settingsManager.Init(soundsManager);
+            settingsManager.Init(soundsManager, musicManager);
             ServiceLocator.AddService(settingsManager);
         }
     }

@@ -43,8 +43,10 @@ namespace BigProject.Managers.SoundsMusicManagers
             }
         }
 
-        public AudioSource GetAudioSource2D() { return _audioSource2D; }
-        public AudioSource GetAudioSource3D() { return _audioSource3D; }
+        public AudioMixerGroup GetMixer()
+        { 
+            return _mixerMappings[0].MixerGroup;
+        }
 
         /// <summary>
         /// Spawns a sound object.

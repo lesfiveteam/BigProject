@@ -2,6 +2,7 @@
 using BigProject.Systems;
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -10,6 +11,7 @@ namespace BigProject.Managers
     public class SettingsManager
     {
         private SoundsManager _soundsManager;
+        private MusicManager _musicManager;
 
         //Settings
         private Resolution[] resolutions;
@@ -19,10 +21,12 @@ namespace BigProject.Managers
         private float _soundVolume;
         private float _musicVolume;
 
-        public void Init(SoundsManager soundsManager)
+        public void Init(SoundsManager soundsManager, MusicManager musicManager)
         {
             _soundsManager = soundsManager;
+            _musicManager = musicManager;
             Assert.IsNotNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "Settings Manager", "Sounds Manager"));
+            Assert.IsNotNull(_musicManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "Settings Manager", "Music Manager"));
 
             resolutions = Screen.resolutions;
             _filteredResolutions = new List<Resolution>();
@@ -37,8 +41,10 @@ namespace BigProject.Managers
                 }
             }
 
-            _soundVolume = _soundsManager.GetAudioSource3D().volume;
-            _musicVolume = _soundsManager.GetAudioSource2D().volume;
+            _soundsManager.GetMixer().audioMixer.GetFloat("MasterVolume", out _soundVolume);
+            _soundVolume = math.remap(-100, 0, 0, 1, _soundVolume);
+
+            _musicVolume = _musicManager.GetAudioSources()[0].volume;
         }
 
         public void SetIsFullscreen(bool isFullscreen)
@@ -68,7 +74,8 @@ namespace BigProject.Managers
 
         public void SetSoundVolume(float val)
         {
-            _soundsManager.GetAudioSource3D().volume = val;
+            float _newVal = math.remap(0, 1, -100, 0, val);
+            _soundsManager.GetMixer().audioMixer.SetFloat("MasterVolume", _newVal);
             _soundVolume = val;
         }
 
@@ -79,7 +86,8 @@ namespace BigProject.Managers
 
         public void SetMusicVolume(float val)
         {
-            _soundsManager.GetAudioSource2D().volume = val;
+            foreach (AudioSource audioSource in _musicManager.GetAudioSources())
+                audioSource.volume = val;
             _musicVolume = val;
         }
 
