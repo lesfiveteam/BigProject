@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.Interactable;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Gameplay.Common;
 using BigProject.Managers;
@@ -8,10 +9,9 @@ using BigProject.Systems;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using BigProject.UI;
-using BigProject.Utilities;
 using UnityEngine;
-using UnityEngine.AI;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 namespace BigProject.Gameplay.TownHall
 {
@@ -29,6 +29,8 @@ namespace BigProject.Gameplay.TownHall
         private int _townhallQuestId;
         [SerializeField]
         private TeleportHandler _teleport;
+        [SerializeField]
+        private CameraMove _cameraMove;
 
         private void Awake()
         {
@@ -36,6 +38,7 @@ namespace BigProject.Gameplay.TownHall
             Assert.IsNotNull(_chestPuzzle, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chest Puzzle"));
             Assert.IsNotNull(_miniGameActivator, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Mini Game Activator"));
             Assert.IsNotNull(_townhallQuestObject, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest objects"));
+            Assert.IsNotNull(_cameraMove, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "CameraMove"));
         }
 
         public void Init()
@@ -51,13 +54,25 @@ namespace BigProject.Gameplay.TownHall
             InventoryUI inventoryUI = ServiceLocator.GetService<InventoryUI>();
             GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
             PlayerInputHandler inputHandler = ServiceLocator.GetService<PlayerInputHandler>();
-            PlayerController playerController = ServiceLocator.GetService<PlayerController>();
+            PlayerController player = ServiceLocator.GetService<PlayerController>();
+            SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
 
-            _questActions.Init(inventorySystem, inventoryUI, gameplayManager, ServiceLocator.GetService<RunesSystem>());
-            _chestPuzzle.Init(inventorySystem, inventoryUI, progressmanager, ServiceLocator.GetService<HUD>(), inputHandler);
-            _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, playerController.GetComponent<Collider>(),
-                playerController.GetComponentInChildren<SkinnedMeshRenderer>());
-            _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>());
+            _questActions.Init(inventorySystem, inventoryUI, gameplayManager, ServiceLocator.GetService<RuneShardsSystem>(),
+                ServiceLocator.GetService<RunesConfig>());
+            _chestPuzzle.Init(inventorySystem, inventoryUI, progressmanager, ServiceLocator.GetService<HUD>(), inputHandler, soundsManager);
+            _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(),
+                player.GetComponentInChildren<SkinnedMeshRenderer>());
+            _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
+            _cameraMove.Init(player);
+
+            SwithOffOutline(player);
+        }
+
+        private void SwithOffOutline(PlayerController player)
+        {
+            Outline outline = player.GetComponentInChildren<Outline>();
+            if (outline != null)
+                outline.enabled = false;
         }
     }
 }

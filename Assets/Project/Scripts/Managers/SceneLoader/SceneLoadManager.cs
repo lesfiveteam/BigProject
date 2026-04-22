@@ -14,6 +14,8 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
         Village = 300,
         TownHall = 400,
         Watermill = 500,
+        Church = 600,
+        Outro = 1000,
     }
 
     public class SceneLoadManager : IDisposable
@@ -28,6 +30,7 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
         private readonly Fader _fader;
 
         private bool _isLoading;
+        private string _currentSceneName;
 
         public SceneLoadManager(MonoBehaviour coroutineStarter)
         {
@@ -81,8 +84,9 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
         private IEnumerator LoadSceneRoutine(Scenes scene, string sceneName)
         {
             _isLoading = true;
+            _currentSceneName = sceneName;
 
-            // 1. Затемнение
+            // Fade in
             bool waitFading = true;
             _fader.FadeIn(() => waitFading = false);
 
@@ -93,10 +97,10 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
 
             SceneLoadingStarted?.Invoke();
 
-            // 2. Загрузка сцены
-            AsyncOperation async = SceneManager.LoadSceneAsync(sceneName);
+            // Loading scene
+            AsyncOperation async = SceneManager.LoadSceneAsync(_currentSceneName);
             async.allowSceneActivation = false;
-            async.completed += NotifyLoadingCompleted;
+            SceneManager.sceneLoaded += NotifyLoadingCompleted;
 
             while (async.progress < 0.9f)
             {
@@ -105,11 +109,13 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
 
             async.allowSceneActivation = true;
 
-            // 3. Оповещение
+            yield return new WaitUntil(() => SceneManager.GetActiveScene().name == _currentSceneName);
+
+            // Notification
             Debug.Log(string.Format(LogStr.INFO_SCENE_LOADING, scene));
             SceneLoaded?.Invoke(scene);
 
-            // 4. Появление
+            // Fade out
             waitFading = true;
             _fader.FadeOut(() => waitFading = false);
 
@@ -124,10 +130,13 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
         /// <summary>
         /// Notify when old scene unloaded and new one is loaded.
         /// </summary>
-        private void NotifyLoadingCompleted(AsyncOperation loading)
+        private void NotifyLoadingCompleted(Scene scene, LoadSceneMode mode)
         {
-            SceneLoadingCompleted?.Invoke();
-            loading.completed -= NotifyLoadingCompleted;
+            if (scene.name == _currentSceneName)
+            {
+                SceneLoadingCompleted?.Invoke();
+                SceneManager.sceneLoaded -= NotifyLoadingCompleted;
+            }
         }
         
         public void Dispose()

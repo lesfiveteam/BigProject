@@ -12,10 +12,11 @@ namespace BigProject.Managers
         Play,
         Dialogue,
         MiniGame,
+        RunesJagsaw,
         Map,
         Inventory,
         Pause,
-        Cutscene
+        Cutscene,
     }
 
     /// <summary>

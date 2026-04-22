@@ -29,7 +29,8 @@ namespace BigProject.Gameplay.Village
             _questsControllers.RemoveAll(x => x is not IQuestBoundariesController);
             _questsTracker = ServiceLocator.GetService<QuestsBoundariesTracker>();
             ServiceLocator.GetService<MusicManager>().PlayMusic(_music, 0.1f, 0.1f);
-            _camera.Follow = ServiceLocator.GetService<PlayerController>().transform;
+            PlayerController player = ServiceLocator.GetService<PlayerController>();
+            _camera.Follow = player.transform;
 
             foreach (IQuestBoundariesController questController in _questsControllers)
             {
@@ -38,8 +39,17 @@ namespace BigProject.Gameplay.Village
 
             _questsTracker.OnSceneEntry();
 
-            _chestSound.Init(ServiceLocator.GetService<SoundsManager>());
+            //_chestSound.Init(ServiceLocator.GetService<SoundsManager>());
             _chatsDatabasesController.Init(ServiceLocator.GetService<ProgressManager>());
+
+            SwithOnOutline(player);
+        }
+
+        private void SwithOnOutline(PlayerController player)
+        {
+            Outline outline = player.GetComponentInChildren<Outline>();
+            if (outline != null)
+                outline.enabled = true;
         }
 
         private void OnDestroy()

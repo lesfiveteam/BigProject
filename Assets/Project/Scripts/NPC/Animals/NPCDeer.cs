@@ -22,14 +22,14 @@ namespace Assets.Project.Scripts.NPC.Animals
         private Coroutine _runCoroutine;
         private AnimationClip _clipRun;
 
-        private int _jumpsCount = 7;
+        private int _jumpsCount = 6;
         private float _jumpDistance = 10f;
 
         private int _attemptsForSearch = 2;
         private float _angleStep = 2f;
         private float _searchRadius = 1f;
 
-        private void Awake()
+        private void Start()
         {
             ExceptionUtilities.ThrowIfNullFormat(_animator);
             ExceptionUtilities.ThrowIfNullFormat(_agent);

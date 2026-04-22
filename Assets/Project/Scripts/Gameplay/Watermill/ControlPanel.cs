@@ -79,6 +79,10 @@ namespace BigProject.Gameplay.Watermill
         private float _musicFadeOutTime = 0.1f;
         [SerializeField]
         private UnityEvent _incompleteClue;
+        [SerializeField]
+        private AudioClip _leverChangeSound;
+        [SerializeField]
+        private AudioClip _leverMoveSound;
 
         private PlayerInputHandler _inputHandler;
         private InventorySystem _inventory;
@@ -88,23 +92,26 @@ namespace BigProject.Gameplay.Watermill
         private Vector2 _deltaInversion = new(-1f, 1f);
         private GameplayManager _gameplayManager;
         private MusicManager _musicManager;
+        private SoundsManager _soundsManager;
         private HUD _hud;
 
         public ControlPanelState CurrentPanelState => _currentPanelState;
 
         public void Init(GameplayManager gameplayManager, PlayerInputHandler inputHandler, InventorySystem inventory,
-            MusicManager musicManager, HUD hud)
+            MusicManager musicManager, HUD hud, SoundsManager soundsManager)
         {
             _gameplayManager = gameplayManager;
             _inputHandler = inputHandler;
             _inventory = inventory;
             _musicManager = musicManager;
             _hud = hud;
+            _soundsManager = soundsManager;
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Gameplay Manager"));
             ExceptionUtilities.ThrowIfNull(_inputHandler, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Input Handler"));
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory System"));
             ExceptionUtilities.ThrowIfNull(_musicManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Music Manager"));
             ExceptionUtilities.ThrowIfNull(_hud, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "HUD"));
+            ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
             ChangeState(ControlPanelState.Broken);
         }
 
@@ -223,16 +230,16 @@ namespace BigProject.Gameplay.Watermill
             {
                 case ControlPanelState.Broken:
                     _state = new ControlPanelStateBroken(this, _inputHandler, _brokenLever, 
-                        _brokenLeverOffset, _brokenLeverRemoveTime, _brokenLeverItemId, _actions["GetBrokenLever"], _inventory);
+                        _brokenLeverOffset, _brokenLeverRemoveTime, _brokenLeverItemId, _actions["GetBrokenLever"], _inventory, _soundsManager, _leverChangeSound);
                     break;
                 case ControlPanelState.Incompleted:
                     _state = new ControlPanelStateIncompleted(this, _inputHandler, _repairedLeverHolder, 
-                        _repairedLever, _repairedLeverInstallTime, _actions["InstallLever"], _inventory, _incompleteClue);
+                        _repairedLever, _repairedLeverInstallTime, _actions["InstallLever"], _inventory, _incompleteClue, _soundsManager, _leverChangeSound);
                     break;
                 case ControlPanelState.Fixed:
                     _state = new ControlPanelStateFixed(this, _inputHandler, _leversPoints, _levers, _leverMoveTime,
                         _leverStaggerTime, _staggerDistance, _noteItemId, _gearsHandler, _actions["ActivateMech"], _inventory, _hud,
-                        _hudConfig.HUDResetWidgetId, _activator.IsActivated);
+                        _hudConfig.HUDResetWidgetId, _activator.IsActivated, _soundsManager, _leverMoveSound);
                     break;
                 default:
                     _state = null;

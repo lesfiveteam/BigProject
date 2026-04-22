@@ -1,5 +1,6 @@
 using BigProject.Intercatable;
 using BigProject.Managers;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Utilities;
 using UnityEngine;
 
@@ -19,7 +20,12 @@ namespace BigProject.Systems.QuestSystem
         private bool _destroyWithGameObject = false;
         [SerializeField]
         private Transform _targetPosition;
+        [SerializeField]
+        private AudioClip _interactSound;
+        [SerializeField]
+        private float _interactSoundVolume = 1f;
 
+        private SoundsManager _soundsManager;
         private ProgressManager _progressManager;
         private IQuestActionHandler _actionHandler;
 
@@ -28,10 +34,12 @@ namespace BigProject.Systems.QuestSystem
             SetTransition(_actionId, _transitionId);
         }
 
-        public void Init(ProgressManager progressManager)
+        public void Init(ProgressManager progressManager, SoundsManager soundsManager)
         {
             _progressManager = progressManager;
+            _soundsManager = soundsManager;
             ExceptionUtilities.ThrowIfNull(_progressManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Progress manager"));
+            ExceptionUtilities.ThrowIfNull(_soundsManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Sounds manager"));
         }
 
         public void SetTransition(int actionId, int transitionId)
@@ -49,6 +57,11 @@ namespace BigProject.Systems.QuestSystem
         public void Interact()
         {
             _actionHandler.MakeTransition(_transitionId);
+
+            if (_interactSound != null)
+            {
+                _soundsManager.PlaySound(_interactSound, volume: _interactSoundVolume);
+            }
 
             if (_destroyAfterInteract)
             {

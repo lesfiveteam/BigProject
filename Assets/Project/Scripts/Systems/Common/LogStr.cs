@@ -27,6 +27,7 @@ namespace BigProject.Systems
         public const string WARNING_QUEST = "Quest warning: {0}.";
         public const string WARNING_CANT_FIND_PATH = "The: {0} can't find path in {1}.";
         public const string WARNING_EMPTY_COLLECTION = "Collection is empty";
+        public const string WARNING_NO_CINEMATIC_CAMERA = "No cinematic camera in Scene: {0}";
 
         public const string ERROR_WRITE_FAILED = "Logger write failed: {0}.";
         public const string ERROR_FILE_DELETE_FAILED = "Failed to delete {0}: {1}.";
@@ -34,11 +35,13 @@ namespace BigProject.Systems
             "\n\n Will be created in Persistent Data Path: " +
             "\n\t %userprofile%\\AppData\\LocalLow\\{1}\\{2}\\";
         public const string ERROR_QUEST = "Quest error: {0}.";
+        public const string ERROR_NULL_COMPONENT = "Component: {0} is null!";
 
         public const string CRITICAL_UNABLE_GET_SERVICE = "{0}: can't get {1} service.";
         public const string CRITICAL_NOT_SERIALIZED_FIELD = "{0}: has not serialized field [{1}].";
         public const string CRITICAL_NULL_REFERENCE = "{0}: get null reference [{1}].";
         public const string CRITICAL_EMPTY_COLLECTION = "Collection is empty";
+        public const string CRITICAL_WRONG_ARGUMENT = "{0}: wrong argument [{1}].";
 
         public const string INFO_SYSTEM = "System \"{0}\" info: {1}.";
         public const string WARNING_SYSTEM = "System \"{0}\" warning: {1}.";

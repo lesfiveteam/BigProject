@@ -10,16 +10,20 @@ namespace BigProject.Gameplay.Church
         private AudioClip _audioClip;
         
         private SoundsManager _soundsManager;
+        private Animator _animator;
 
         public void Init(SoundsManager soundsManager)
         {
             _soundsManager = soundsManager;
+            _animator = GetComponent<Animator>();
         }
 
         public void Ring()
         {
             _soundsManager.PlaySound(_audioClip);
-            Debug.Log("Колокльчик #" + Id + " звенит!!!");
+            Debug.Log("РљРѕР»РѕРєР»СЊС‡РёРє #" + Id + " Р·РІРµРЅРёС‚!!!");
+            //_animator.SetTrigger("Ring");
+            _animator.Play("Scene", 0, 0f);
         }
     }
 }

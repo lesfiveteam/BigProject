@@ -1,3 +1,4 @@
+using BigProject.Settings;
 using BigProject.Systems;
 using BigProject.UI.Chat;
 using BigProject.Utilities;
@@ -11,32 +12,21 @@ namespace BigProject.Managers
 {
     public class ReplicaManager
     {
-        private const float REPLICA_LIFE_TIME = 3f;
         private static PlayerChatController _chatController;
         private static Coroutine _currentCoroutine;
         private static ManualLoop _manualLoop;
         private static AsyncOperationHandle<string> _currentHandle;
         private static Action<AsyncOperationHandle<string>> _entryLoadedHandler;
-        private static bool _isInitialized;
+        private static PlayerConfig _config;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-        private static void Clear()
+        public ReplicaManager(PlayerChatController chatController, ManualLoop manualLoop, PlayerConfig config)
         {
-            _isInitialized = false;
-        }
-
-        public ReplicaManager(PlayerChatController chatController, ManualLoop manualLoop)
-        {
-            //if (_isInitialized)
-            //{
-            //    throw new InvalidOperationException(string.Format(LogStr.CRITICAL_SYSTEM, "ReplicaManager", "try duplicate instance"));
-            //}
-
-            _isInitialized = true;
             _chatController = chatController;
             _manualLoop = manualLoop;
+            _config = config;
             ExceptionUtilities.ThrowIfNull(_chatController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "ReplicaManager", "PlayerChatController"));
             ExceptionUtilities.ThrowIfNull(_manualLoop, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "ReplicaManager", "ManualLoop"));
+            ExceptionUtilities.ThrowIfNull(_config, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "ReplicaManager", "PlayerConfig"));
             _chatController.HideChat();
         }
 
@@ -77,14 +67,15 @@ namespace BigProject.Managers
         private static void ShowReplica(string text, float delay)
         {
             _chatController.SetText(text);
-            _currentCoroutine = _manualLoop.StartCoroutine(ShowReplicaRoutine(delay));
+            float lifeTime = _config.MinSpeachTime + _config.TimeCorrectionPerLetter * Mathf.Max(0, text.Length - _config.SpeachLengthForMinTime);
+            _currentCoroutine = _manualLoop.StartCoroutine(ShowReplicaRoutine(delay, lifeTime));
         }
 
-        private static IEnumerator ShowReplicaRoutine(float delay)
+        private static IEnumerator ShowReplicaRoutine(float delay, float lifeTime)
         {
             yield return new WaitForSeconds(delay);
             _chatController.ShowChat();
-            yield return new WaitForSeconds(REPLICA_LIFE_TIME);
+            yield return new WaitForSeconds(lifeTime);
             _chatController.HideChat();
         }
     }
