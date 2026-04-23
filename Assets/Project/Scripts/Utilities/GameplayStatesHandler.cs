@@ -48,12 +48,14 @@ namespace BigProject.Utilities
                     _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
                     _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
                     _hud.ShowWidget(_hudConfig.HUDCancelWidgetId);
+                    ReplicaManager.HideReplica();
                     _input.SwitchToMiniGameActionMap();
                     break;
                 case GameplayState.RunesJagsaw:
                     _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
                     _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
                     _hud.ShowWidget(_hudConfig.HUDRunesJigsawWidgetId);
+                    ReplicaManager.HideReplica();
                     _input.SwitchToMiniGameActionMap();
                     break;
                 case GameplayState.Dialogue:
@@ -61,6 +63,7 @@ namespace BigProject.Utilities
                     _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
                     _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
                     _hud.HideWidget(_hudConfig.HUDInventoryWidgetId);
+                    ReplicaManager.HideReplica();
                     _input.SwitchToMiniGameActionMap();
                     break;
                 default:
