@@ -35,7 +35,9 @@ namespace BigProject.Managers
 
             for (int i = 0; i < resolutions.Length; i++)
             {
-                if ((float)resolutions[i].refreshRateRatio.value == currentRefreshRate)
+                float refreshRate = (float)resolutions[i].refreshRateRatio.value;
+
+                if (refreshRate == currentRefreshRate || float.IsNaN(refreshRate))
                 {
                     _filteredResolutions.Add(resolutions[i]);
                 }
