@@ -6,8 +6,8 @@ namespace BigProject.UI
 {
     public class MainMenuPanelManager : MonoBehaviour
     {
-        [SerializeField] private MainMenuPanel _menuPanel;
-        [SerializeField] private MainMenuPanel _settingsPanel;
+        [SerializeField] private GameObject _menuPanel;
+        [SerializeField] private SettingsPanelMenuUI _settingsPanel;
         [SerializeField] private GameObject _studioLogo;
         [SerializeField] private GameObject _blurScreen;
         [SerializeField] private Camera _sceneCamera;
@@ -16,8 +16,6 @@ namespace BigProject.UI
         private UniversalAdditionalCameraData _cameraData;
         private void Awake()
         {
-            _menuPanel.SetMainMenuPanelManager(this);
-            _settingsPanel.SetMainMenuPanelManager(this);
             if (!_blurVolume.profile.TryGet(out _blurDepthOfField))
             {
                 Debug.LogError("Global Volume for blur wasn't set in MainMenuPanelManager");
@@ -38,8 +36,8 @@ namespace BigProject.UI
             _cameraData = _sceneCamera.GetComponent<UniversalAdditionalCameraData>();
         }
 
-        public MainMenuPanel GetMenuPanel() { return _menuPanel; }
-        public MainMenuPanel GetSettingsPanel() { return _settingsPanel; }
+        public GameObject GetMenuPanel() { return _menuPanel; }
+        public SettingsPanelMenuUI GetSettingsPanel() { return _settingsPanel; }
         public GameObject GetStudioLogo() { return _studioLogo; }
         public GameObject GetBlurScreen() { return _blurScreen; }
 
@@ -48,15 +46,6 @@ namespace BigProject.UI
             _cameraData.renderPostProcessing = isBlurOn;
             _blurDepthOfField.focusDistance.value = isBlurOn ? 0.8f : 10f;
             _blurScreen.SetActive(isBlurOn);
-        }
-    }
-
-    public class MainMenuPanel : MonoBehaviour
-    {
-        protected MainMenuPanelManager _mainMenuPanelManager;
-        public void SetMainMenuPanelManager(MainMenuPanelManager mainMenuPanelManager)
-        {
-            _mainMenuPanelManager = mainMenuPanelManager;
         }
     }
 }

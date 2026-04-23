@@ -8,7 +8,7 @@ namespace BigProject.UI
     public class PauseMenuManager : MonoBehaviour
     {
         [SerializeField] private PauseMenuUI _pausePanel;
-        [SerializeField] private SettingsMenuUI _settingsPanel;
+        [SerializeField] private SettingsPauseMenuUI _settingsPanel;
         private PlayerInputHandler _playerInputHandler;
         private GameplayState _previousState;
         private bool _isPaused = false;
@@ -16,8 +16,6 @@ namespace BigProject.UI
         private void Awake()
         {
             this.gameObject.SetActive(false);
-            _settingsPanel.Init(this);
-            _pausePanel.Init(this);
         }
 
         private void OnDestroy()
@@ -26,10 +24,13 @@ namespace BigProject.UI
                 _playerInputHandler.PressPause -= PressPause;
         }
 
-        public void Init(PlayerInputHandler playerInputHandler)
+        public void Init(PlayerInputHandler playerInputHandler, SettingsManager settingsManager)
         {
             _playerInputHandler = playerInputHandler;
             ExceptionUtilities.ThrowIfNull(_playerInputHandler, gameObject.name, "Player input handler is null!");
+
+            _settingsPanel.Init(settingsManager, this);
+            _pausePanel.Init(this);
 
             if (_playerInputHandler != null)
                 _playerInputHandler.PressPause += PressPause;
