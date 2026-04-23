@@ -4,6 +4,8 @@ using BigProject.Systems.HUD;
 using UnityEngine;
 using BigProject.Systems.QuestSystem;
 using BigProject.Settings;
+using UnityEngine.Assertions;
+using BigProject.Systems;
 
 namespace BigProject.Gameplay.VillageChurchQuest
 {
@@ -13,14 +15,32 @@ namespace BigProject.Gameplay.VillageChurchQuest
         private GameObject _questObjects;
         [SerializeField]
         private QuestActions _questActions;
+        [SerializeField]
+        private GameObject _priest;
+        [SerializeField]
+        private Collider _churchDoor;
+        [SerializeField]
+        private float _churchDoorOpenAngleDelta = -15f; 
 
         [field: SerializeField]
         public int QuestId { get; private set; }
+
+        private void Awake()
+        {
+            Assert.IsNotNull(_questObjects, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Objects"));
+            Assert.IsNotNull(_questActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Actions"));
+            Assert.IsNotNull(_priest, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Priest"));
+        }
 
         public void InitOnSceneEntry()
         {
             _questObjects.SetActive(true);
             _questActions.Init(ServiceLocator.GetService<InventorySystem>());
+            _priest.SetActive(false);
+            _churchDoor.enabled = true;
+            Vector3 doorAngles = _churchDoor.transform.localEulerAngles;
+            doorAngles.y += _churchDoorOpenAngleDelta;
+            _churchDoor.transform.localEulerAngles = doorAngles;
         }
 
         public void Begin()
