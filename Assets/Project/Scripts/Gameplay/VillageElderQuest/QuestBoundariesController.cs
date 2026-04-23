@@ -22,6 +22,8 @@ namespace BigProject.Gameplay.VillageElderQuest
         [SerializeField]
         private GameObject _questTownhallObjects;
 
+        private float _watermillDoorInitAngle;
+
         [field: SerializeField]
         public int QuestId { get; private set; }
 
@@ -40,12 +42,19 @@ namespace BigProject.Gameplay.VillageElderQuest
             _questTownhallObjects.SetActive(true);
             _ambassadorDialogueManager.Init(ServiceLocator.GetService<PlayerController>(), ServiceLocator.GetService<DialogueManager>(), gameplayManager);
             _watermillDoor.enabled = false;
+            Vector3 doorAngles = _watermillDoor.transform.localEulerAngles;
+            _watermillDoorInitAngle = doorAngles.y;
+            doorAngles.y = 0f;
+            _watermillDoor.transform.localEulerAngles = doorAngles;
         }
 
         public void End()
         {
             _questTownhallObjects.SetActive(false);
             _watermillDoor.enabled = true;
+            Vector3 doorAngles = _watermillDoor.transform.localEulerAngles;
+            doorAngles.y = _watermillDoorInitAngle;
+            _watermillDoor.transform.localEulerAngles = doorAngles;
         }
     }
 }
