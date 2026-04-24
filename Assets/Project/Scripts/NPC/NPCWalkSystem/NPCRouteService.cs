@@ -59,24 +59,33 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         public Queue<NPCRootPoint> GetRandomRouteFrom(string startId)
         {
             List<NPCAttractionPoint> availablePoints = AllAttractionPoints.Where(point => point.Id != startId).ToList();
+            string endId;
 
-            int totalWeight = availablePoints.Sum(point => point.Weight);
-            float randomValue = Random.Range(0f, totalWeight);
-            float accumulated = 0f;
-
-            NPCAttractionPoint selectedPoint = null;
-
-            foreach (NPCAttractionPoint point in availablePoints)
+            if (availablePoints.Count > 1)
             {
-                accumulated += point.Weight;
-                if (randomValue <= accumulated)
-                {
-                    selectedPoint = point;
-                    break;
-                }
-            }
+                int totalWeight = availablePoints.Sum(point => point.Weight);
+                float randomValue = Random.Range(0f, totalWeight);
+                float accumulated = 0f;
 
-            string endId = selectedPoint.Id;
+                NPCAttractionPoint selectedPoint = null;
+
+                foreach (NPCAttractionPoint point in availablePoints)
+                {
+                    accumulated += point.Weight;
+
+                    if (randomValue <= accumulated)
+                    {
+                        selectedPoint = point;
+                        break;
+                    }
+                }
+
+                endId = selectedPoint.Id;
+            }
+            else
+            {
+                endId = availablePoints[0].Id;
+            }
 
             return GetRoute(startId, endId);
         }

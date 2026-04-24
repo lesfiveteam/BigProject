@@ -6,6 +6,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
     public class NPCRootPoint : MonoBehaviour
     {
         [SerializeField] public bool IsVisible;
+        [SerializeField] public bool IsSnap = true;
 
         public Vector3 Position => transform.position;
 
@@ -40,6 +41,9 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         private void SnapToTerrain()
         {
+            if (!IsSnap)
+                return;
+
             RaycastHit hit;
             Vector3 origin = transform.position + Vector3.up * 100f;
 
