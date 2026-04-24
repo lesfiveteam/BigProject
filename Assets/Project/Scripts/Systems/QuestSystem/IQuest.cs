@@ -51,6 +51,7 @@ namespace BigProject.Systems.QuestSystem
         public int ID { get; }
         public string Name { get; }
         public QuestState CurrentState { get; }
+        public bool IsSavingAllowed { get; }
 
         /// <summary>
         /// To track the progress of any activity in the quest.

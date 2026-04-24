@@ -1,26 +1,19 @@
 {
     "id":1,
     "name":"Quest1_town_hall",
-    "currentState":1,
+    "currentState":0,
+    "isSavingAllowed":false,
     "actions":
-    [
+    [   
         {
-            "id":0,
-            "name":"Intro",
-            "currentState":3,
-            "manualTransitions":
-            [
-                {
-                    "id":0,
-                    "fromState":2,
-                    "toState":3
-                }
-            ]
-        },
+            "id":1000,
+            "name":"StartQuest",
+            "currentState":1
+        }, 
         {
             "id":1,
             "name":"ForgottenBagTalk",
-            "currentState":1,
+            "currentState":2,
             "conditions":
             [
                 {
@@ -48,7 +41,7 @@
                     "toState":3
                 }
             ]
-        },     
+        },
         {
             "id":2,
             "name":"TakeBag",
@@ -859,6 +852,11 @@
     ],
     "questStates":
     [
+        {
+            "state":1,
+            "actionId":1000,
+            "actionState":5
+        },
         {
             "state":2,
             "actionId":23,

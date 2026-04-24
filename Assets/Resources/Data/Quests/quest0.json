@@ -1,0 +1,30 @@
+{
+    "id":0,
+    "name":"Quest0_intro",
+    "currentState":1,
+    "isSavingAllowed":false,
+    "actions":
+    [
+        {
+            "id":0,
+            "name":"Intro",
+            "currentState":2,
+            "manualTransitions":
+            [
+                {
+                    "id":0,
+                    "fromState":2,
+                    "toState":5
+                }
+            ]
+        }  
+    ],
+    "questStates":
+    [
+        {
+            "state":2,
+            "actionId":0,
+            "actionState":5
+        }
+    ]
+}

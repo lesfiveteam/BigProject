@@ -69,6 +69,7 @@ namespace BigProject.Player
         private Coroutine _walkOnHoldingCoroutine;
         private WaitForSeconds _walkOnHolingCheckWait;
         private Coroutine _interactCoroutine;
+        private Coroutine _autopilotCoroutine;
         private float _animSpeed;
         private int _layerMask;
         private float _boredTimer;
@@ -96,11 +97,21 @@ namespace BigProject.Player
 
         public void AutoTarget(IInteractable interactable)
         {
-            OnClickRelease();
-            IsAutopilot = true;
-            SetInterableObject(interactable);
-            SetDestination(interactable != null && interactable.NeedComeUp ? interactable.TargetPosition : transform.position);
-            Move();
+            if (!_navMeshAgent.isOnNavMesh)
+            {
+                if (_autopilotCoroutine != null)
+                {
+                    StopCoroutine(_autopilotCoroutine);
+                    _autopilotCoroutine = null;
+                }
+
+                _autopilotCoroutine = StartCoroutine(GameplayUtilities.DoAfterConditionRoutine
+                    (() => _navMeshAgent.isOnNavMesh, () => SetAutoTarget(interactable)));
+            }
+            else
+            {
+                SetAutoTarget(interactable);
+            }
         }
 
         /// <summary>
@@ -459,6 +470,15 @@ namespace BigProject.Player
             }
 
             _interactable = interactableObject;
+        }
+
+        private void SetAutoTarget(IInteractable interactable)
+        {
+            OnClickRelease();
+            IsAutopilot = true;
+            SetInterableObject(interactable);
+            SetDestination(interactable != null && interactable.NeedComeUp ? interactable.TargetPosition : transform.position);
+            Move();
         }
     }
 }

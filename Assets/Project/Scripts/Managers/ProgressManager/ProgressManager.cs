@@ -370,7 +370,7 @@ namespace BigProject.Managers
                 return;
             }
 
-            if (AutoSave)
+            if (AutoSave && quest.IsSavingAllowed)
             {
                 Debug.Log(String.Format(LogStr.INFO_SYSTEM, "ProgressManager", "Autosaving..."));
                 SaveProgress();

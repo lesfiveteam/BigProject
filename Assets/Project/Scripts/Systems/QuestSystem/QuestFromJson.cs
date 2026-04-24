@@ -21,6 +21,8 @@ namespace BigProject.Systems.QuestSystem
         [SerializeField]
         private QuestState currentState;
         [SerializeField]
+        private bool isSavingAllowed = true;
+        [SerializeField]
         private List<Action> actions;
         [SerializeField]
         private List<QuestCondition> questStates;
@@ -116,6 +118,7 @@ namespace BigProject.Systems.QuestSystem
             private set => currentState = value;
         }
 
+        public bool IsSavingAllowed => isSavingAllowed;
         public event Action<IQuest> Progressed;
         public event Action<IQuest> StateChanged;
 
