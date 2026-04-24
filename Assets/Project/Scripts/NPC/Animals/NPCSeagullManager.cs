@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Project.Scripts.NPC.Animals
 {
-    public class SeagullManager : MonoBehaviour
+    public class NPCSeagullManager : MonoBehaviour
     {
         [SerializeField] private Transform[] _waypoints;
         [SerializeField] private NPCSeagull[] _seagulls;

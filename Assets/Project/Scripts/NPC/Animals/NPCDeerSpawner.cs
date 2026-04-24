@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Project.Scripts.NPC.Animals
 {
-    public class DeerFactory : MonoBehaviour
+    public class NPCDeerSpawner : MonoBehaviour
     {
         [SerializeField] private NPCDeer _deerPrefab;
         [SerializeField] private List<Transform> _spawnPoints;
