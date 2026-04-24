@@ -38,6 +38,33 @@ namespace Assets.Project.Scripts.Utilities
 
                     if (NavMesh.CalculatePath(currentPosition, hit.position, NavMesh.AllAreas, path))
                     {
+                        if (path.status == NavMeshPathStatus.PathComplete && path.corners.Length >= 2)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool TryGetRandomPointInCircle(Vector3 currentPosition, Vector3 targetPosition, float searchRadius, Vector3 restrictPoint, float restrictionRadius, NavMeshPath path, int maxAttempts = 30)
+        {
+            float maxDistance = 50f;
+
+            for (int i = 0; i < maxAttempts; i++)
+            {
+                Vector2 randomOffset = Random.insideUnitCircle * searchRadius;
+                Vector3 pointToCheck = targetPosition + new Vector3(randomOffset.x, 0, randomOffset.y);
+
+                if (NavMesh.SamplePosition(pointToCheck, out NavMeshHit hit, maxDistance, NavMesh.AllAreas)
+                    && pointToCheck.IsInCircle(restrictPoint, restrictionRadius))
+                {
+                    path.ClearCorners();
+
+                    if (NavMesh.CalculatePath(currentPosition, hit.position, NavMesh.AllAreas, path))
+                    {
                         if (path.status == NavMeshPathStatus.PathComplete)
                         {
                             return true;

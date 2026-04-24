@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Seagull
 {
     public class NPCSeagullManager : MonoBehaviour
     {
@@ -29,7 +29,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             if (_sendCoroutine != null)
                 StopCoroutine(_sendCoroutine);
 
-            _sendCoroutine = StartCoroutine(SendSeagull());
+            _sendCoroutine = StartCoroutine(SendSeagullRoutine());
         }
 
         private void InitSeagulls()
@@ -58,7 +58,7 @@ namespace Assets.Project.Scripts.NPC.Animals
                 _maxSeagullsInAir = _seagulls.Length;
         }
 
-        private IEnumerator SendSeagull()
+        private IEnumerator SendSeagullRoutine()
         {
             while (_isRunning)
             {
@@ -85,19 +85,5 @@ namespace Assets.Project.Scripts.NPC.Animals
             if (_sendCoroutine != null)
                 StopCoroutine(_sendCoroutine);
         }
-
-        // FOR DEBUG
-        //[SerializeField] private bool TestFly = false;
-        //private void Update()
-        //{
-        //    if (TestFly)
-        //    {
-        //        foreach (NPCSeagull seagull in _seagulls)
-        //        {
-        //            if (!seagull.InFly)
-        //                seagull.StartFlight(seagull.transform.forward);
-        //        }
-        //    }
-        //}
     }
 }

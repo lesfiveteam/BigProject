@@ -2,7 +2,7 @@
 using DG.Tweening;
 using UnityEngine;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Mouse
 {
     public class NPCMouse : MonoBehaviour, IScared
     {
@@ -19,7 +19,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             ExceptionUtilities.ThrowIfNullFormat(_escapePoint);
         }
 
-        public void Scare(Vector3 dangerPosition)
+        public void Scare(Transform danger)
         {
             _animator.SetTrigger(RunTrigger);
 

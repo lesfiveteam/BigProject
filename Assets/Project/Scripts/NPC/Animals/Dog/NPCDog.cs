@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Dog
 {
     public class NPCDog : MonoBehaviour, IScared, IUnscared
     {
@@ -8,7 +8,7 @@ namespace Assets.Project.Scripts.NPC.Animals
 
         [SerializeField] private Animator _animator;
 
-        public void Scare(Vector3 dangerPosition) => _animator.SetBool(ActionBool, true);
+        public void Scare(Transform danger) => _animator.SetBool(ActionBool, true);
 
         public void Unscare() => _animator.SetBool(ActionBool, false);
     }
