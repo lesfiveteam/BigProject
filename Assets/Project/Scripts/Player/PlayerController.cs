@@ -22,6 +22,7 @@ namespace BigProject.Player
         private const float MIN_WALK_SPEED_COEFF = 0.1f;
         private const float MIN_ANIM_SPEED_COEFF = 0.5f;
         private const float MAX_TARGET_ANGLE_OFFSET = 3f;
+        private const float CLICK_EFFECT_LIFETIME = 3f;
 
         private const float LINK_SPEED = 4f;
         private const float JUMP_SPEED = 7f;
