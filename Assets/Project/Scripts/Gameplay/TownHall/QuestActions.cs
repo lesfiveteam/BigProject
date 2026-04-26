@@ -1,10 +1,12 @@
 using BigProject.Managers;
+using BigProject.Settings;
 using BigProject.Systems;
 using BigProject.Systems.Inventory;
 using BigProject.UI;
 using BigProject.Utilities;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Localization;
@@ -28,6 +30,8 @@ namespace BigProject.Gameplay.TownHall
         private float _checkTownhallClueTime;
         [SerializeField]
         private GameObject _rune;
+        [SerializeField]
+        private int _questId = 1;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -50,18 +54,21 @@ namespace BigProject.Gameplay.TownHall
         private Coroutine _firstInteractionClue;
         private Coroutine _interactPillarsClue;
         private GameplayManager _gameplayManager;
-        private RunesSystem _runesSystem;
+        private RuneShardsSystem _runesSystem;
+        private RunesConfig _runesConfig;
 
-        public void Init(InventorySystem inventory, InventoryUI inventoryUI, GameplayManager gameplayManager, RunesSystem runesSystem)
+        public void Init(InventorySystem inventory, InventoryUI inventoryUI, GameplayManager gameplayManager, RuneShardsSystem runesSystem, RunesConfig runesConfig)
         {
             _inventory = inventory;
             _inventoryUI = inventoryUI;
             _gameplayManager = gameplayManager;
             _runesSystem = runesSystem;
+            _runesConfig = runesConfig;
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory System"));
             ExceptionUtilities.ThrowIfNull(_inventoryUI, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory UI"));
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Gameplay Manager"));
-            ExceptionUtilities.ThrowIfNull(_runesSystem, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Runes System"));
+            ExceptionUtilities.ThrowIfNull(_runesSystem, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "RuneShardsSystem"));
+            ExceptionUtilities.ThrowIfNull(_runesConfig, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "RunesConfig"));
         }
 
         private void Awake()
@@ -181,9 +188,13 @@ namespace BigProject.Gameplay.TownHall
 
         public void GetRune()
         {
-            _runesSystem.AddRune(1);
-            _runesSystem.AddRune(3);
-            _runesSystem.ChangeRunebarBackgroundBasedOnQuest(1);
+            IReadOnlyList<int> rewardRunes = _runesConfig.GetQuestRewardRunes(_questId);
+            ExceptionUtilities.ThrowIfNullFormat(rewardRunes, "unable to get reward runes");
+
+            foreach (int rewardRuneId in rewardRunes)
+            {
+                _runesSystem.AddRunesSegment(rewardRuneId);
+            }
         }
 
         //private IEnumerator InteractionClueRoutune()

@@ -1,3 +1,4 @@
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Systems;
 using BigProject.Systems.Inventory;
@@ -21,9 +22,12 @@ namespace BigProject.Gameplay.Watermill
         private int _brokenLeverItemId;
         private bool _isRemovingLever;
         private InventorySystem _inventory;
+        private SoundsManager _soundsManager;
+        private AudioClip _leverTakeSound;
 
         public ControlPanelStateBroken(ControlPanel controlPanel, PlayerInputHandler input, GameObject brokenLever, float brokenLeverOffset,
-            float brokenLeverRemoveTime, int brokenLeverItemId, IQuestActionHandler getBrokenLeverAction, InventorySystem inventory)
+            float brokenLeverRemoveTime, int brokenLeverItemId, IQuestActionHandler getBrokenLeverAction, InventorySystem inventory, 
+            SoundsManager soundsManager, AudioClip leverTakeSound)
         {
             _controlPanel = controlPanel;
             _input = input;
@@ -35,6 +39,8 @@ namespace BigProject.Gameplay.Watermill
             _getBrokenLeverAction.StateChanged += OnStateChanged;
             _isRemovingLever = false;
             _inventory = inventory;
+            _soundsManager = soundsManager;
+            _leverTakeSound = leverTakeSound;
         }
 
         public bool IsReady => _getBrokenLeverAction.CurrentState == QuestActionState.Active;
@@ -60,6 +66,7 @@ namespace BigProject.Gameplay.Watermill
 
         private async Awaitable RemoveLever(CancellationToken ct)
         {
+            _soundsManager.PlaySound(_leverTakeSound, is2D: true);
             _isRemovingLever = true;
             Vector3 _targetPosition = _brokenLever.transform.localPosition;
             _targetPosition.z += _brokenLeverOffset;

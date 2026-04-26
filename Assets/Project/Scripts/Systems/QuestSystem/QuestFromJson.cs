@@ -2,6 +2,7 @@ using BigProject.Managers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace BigProject.Systems.QuestSystem
@@ -19,6 +20,8 @@ namespace BigProject.Systems.QuestSystem
         private string name;
         [SerializeField]
         private QuestState currentState;
+        [SerializeField]
+        private bool isSavingAllowed = true;
         [SerializeField]
         private List<Action> actions;
         [SerializeField]
@@ -115,6 +118,7 @@ namespace BigProject.Systems.QuestSystem
             private set => currentState = value;
         }
 
+        public bool IsSavingAllowed => isSavingAllowed;
         public event Action<IQuest> Progressed;
         public event Action<IQuest> StateChanged;
 
@@ -243,6 +247,7 @@ namespace BigProject.Systems.QuestSystem
 
             // Update all states (possibly there are conditions that are met immediately).
             ResetActions();
+            questStates.Sort((x, y) => y.state.CompareTo(x.state));
             ResetQuestState();
 
             // After loading, all activities represent the latest changes.
@@ -507,7 +512,7 @@ namespace BigProject.Systems.QuestSystem
         {
             foreach (QuestCondition questState in questStates)
             {
-                if (CurrentState == questState.state)
+                if (CurrentState >= questState.state)
                 {
                     continue;
                 }

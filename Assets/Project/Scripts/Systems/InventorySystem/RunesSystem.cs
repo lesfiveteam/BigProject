@@ -1,47 +1,80 @@
 using BigProject.Managers;
+using BigProject.Settings;
+using BigProject.Utilities;
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 
 namespace BigProject.Systems.Inventory
 {
-    public class RunesSystem
+    public class RunesSystem : IDisposable
     {
-        private int _numberOfRunes;
+        private RuneShardsSystem _runeShardsSystem;
+        private RunesConfig _runesConfig;
+
         public event Action<int> OnRuneAdded;
         public event Action<int> OnQuestChanged;
+        public event Action OnCleared;
+        public List<int> _unlockedSegments = new();
 
-        /// <summary>
-        /// <para>IDs for the first quest: 0, 4</para>
-        /// <para>IDs for the second quest: 1, 3</para>
-        /// <para>IDs for the third quest: 2, 5</para>
-        /// </summary>
-        /// <param name="runeId"></param>
-        public void AddRune(int runeID)
+        public RunesSystem(RuneShardsSystem runeShardsSystem, RunesConfig runesConfig)
         {
-            if (_numberOfRunes >= 6)
+            _runeShardsSystem = runeShardsSystem;
+            _runesConfig = runesConfig;
+            ExceptionUtilities.ThrowIfNull(_runeShardsSystem, "RunesSystem", "RuneShardsSystem");
+            ExceptionUtilities.ThrowIfNull(_runesConfig, "RunesSystem", "RunesConfig");
+            _runeShardsSystem.OnSegmentFilled += OnSegmentFilled;
+            _runeShardsSystem.OnUpdated += OnUpdated;
+        }
+
+        public void Dispose()
+        {
+            _runeShardsSystem.OnSegmentFilled -= OnSegmentFilled;
+            _runeShardsSystem.OnUpdated -= OnUpdated;
+        }
+
+        private void CheckQuestRunesAssemble()
+        {
+            List<int> rewardedQuests = _runesConfig.GetRewardedQuests();
+            rewardedQuests.Sort((a, b) => b.CompareTo(a));
+
+            foreach (int questId in rewardedQuests)
             {
-                Debug.LogError("Rune bar is already full, new rune wasn't added");
-                return;
+                bool isPassed = true;
+
+                foreach (int runesSegmentId in _runesConfig.GetQuestRewardRunes(questId))
+                {
+                    if (!_unlockedSegments.Contains(runesSegmentId))
+                    {
+                        isPassed = false;
+                        break;
+                    }
+                }
+
+                if (isPassed)
+                {
+                    OnQuestChanged?.Invoke(questId);
+                    break;
+                }
             }
-
-            OnRuneAdded?.Invoke(runeID);
-            _numberOfRunes++;
-            GameLogManager.Info("Added rune");
         }
 
-        /// <summary>
-        /// Used to change Runebar background between quests (see Figma for details). 
-        /// QuestID starts from zero!
-        /// </summary>
-        /// <param name="questID">Starts from zero</param>
-        public void ChangeRunebarBackgroundBasedOnQuest(int questID)
+        private void OnSegmentFilled(int segmentId)
         {
-            OnQuestChanged?.Invoke(questID);
+            _unlockedSegments.Add(segmentId);
+            OnRuneAdded?.Invoke(segmentId);
+            GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, "RunesSystem", $"add runes segment {segmentId}"));
+            CheckQuestRunesAssemble();
         }
 
-        public int GetNumberOfRunes()
+        private void OnUpdated()
         {
-            return _numberOfRunes;
+            _unlockedSegments.Clear();
+            OnCleared?.Invoke();
+
+            foreach (int segmentId in _runeShardsSystem.GetFilledSegmentsIDs())
+            {
+                OnSegmentFilled(segmentId);
+            }
         }
     }
 }

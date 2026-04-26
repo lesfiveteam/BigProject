@@ -15,6 +15,8 @@ namespace BigProject.Settings
         [field: SerializeField]
         public int HUDRunesWidgetId { get; private set; }
         [field: SerializeField]
+        public int HUDRunesJigsawWidgetId { get; private set; }
+        [field: SerializeField]
         public int HUDCancelWidgetId { get; private set; }
         [field: SerializeField]
         public int HUDResetWidgetId { get; private set; }

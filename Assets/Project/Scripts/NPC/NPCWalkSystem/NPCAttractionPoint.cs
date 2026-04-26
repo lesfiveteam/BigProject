@@ -6,7 +6,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
     {
         [field: SerializeField] public float DelayModificator { get; private set; } = 1f;
         [field: SerializeField, Range(0, 10)] public int Weight { get; private set; } = 5;
-        [field: SerializeField] public NPCAnimationAction TargetAnimation { get; private set; } = NPCAnimationAction.Idle;
+        [field: SerializeField] public NPCAnimationAction TargetAnimation { get; private set; } = NPCAnimationAction.Downtime;
 
         public string Id => $"{transform.position.x:F0}_{transform.position.y:F0}_{transform.position.z:F0}";
 

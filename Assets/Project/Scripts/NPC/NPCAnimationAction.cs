@@ -11,5 +11,6 @@ namespace Assets.Project.Scripts.NPC
         WomanIdle,
         WomanTalk1,
         WomanTalk2,
+        Downtime,
     }
 }

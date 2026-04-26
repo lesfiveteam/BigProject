@@ -28,4 +28,6 @@ public class BoatRocking : MonoBehaviour
             .SetLoops(-1, LoopType.Yoyo)
             .SetEase(Ease.InOutSine);
     }
+
+    private void OnDestroy() => DOTween.Kill(transform);
 }

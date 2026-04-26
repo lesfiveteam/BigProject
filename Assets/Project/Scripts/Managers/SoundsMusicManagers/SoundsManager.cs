@@ -43,6 +43,11 @@ namespace BigProject.Managers.SoundsMusicManagers
             }
         }
 
+        public AudioMixerGroup GetMixer()
+        { 
+            return _mixerMappings[0].MixerGroup;
+        }
+
         /// <summary>
         /// Spawns a sound object.
         /// <param name = "owner"> If there is an owner, the next sounds spawned with this owner will stop the previous one </param>

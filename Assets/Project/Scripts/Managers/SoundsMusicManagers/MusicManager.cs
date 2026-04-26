@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace BigProject.Managers.SoundsMusicManagers
 {
@@ -10,6 +11,11 @@ namespace BigProject.Managers.SoundsMusicManagers
 
         private bool _isSource1Active = true;
         private Coroutine _fadeCoroutine;
+
+        public List<AudioSource> GetAudioSources()
+        {
+            return new List<AudioSource>{_musicSource1, _musicSource2};
+        }
 
         /// <summary>
         /// Plays music with smooth transition.

@@ -59,6 +59,12 @@ namespace BigProject.Initializers
         private GameObject _cursorManagerPrefab;
         [SerializeField]
         private CutscenesConfig _cutscenesConfig;
+        [SerializeField]
+        private RuneShardsDatabaseSO _runeShardsDatabase;
+        [SerializeField]
+        private RuneSegmentsDatabaseSO _runeSegmentsDatabase;
+        [SerializeField]
+        private RunesConfig _runesConfig;
 
         [field: SerializeField]
         public Scenes _sceneToLoad; // For feature load progress
@@ -70,6 +76,7 @@ namespace BigProject.Initializers
         private QuestJournal _questJournal;
         private InventorySystem _inventory;
         private RunesSystem _runesSystem;
+        private RuneShardsSystem _runesShardsSystem;
         private JournalUI _journalView;
         private InventoryUI _inventoryUI;
         private RunePanelUI _runeUI;
@@ -81,6 +88,7 @@ namespace BigProject.Initializers
         private QuestsBoundariesTracker _questsTracker;
         private PlayerSpawner _playerSpawner;
         private CutsceneManager _cutsceneManager;
+        private SettingsManager _settingsManager;
 
         private static bool _isInstantiated;
 
@@ -110,7 +118,8 @@ namespace BigProject.Initializers
             Assert.IsNotNull(_cursorManagerPrefab, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Gameplay Entry Point", "CursorManager Prefab"));
             Assert.IsNotNull(_cutscenesConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Gameplay Entry Point", "CutscenesConfig"));
             Assert.IsNotNull(_playerConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Gameplay Entry Point", "PlayerConfig"));
-            
+            Assert.IsNotNull(_runesConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Gameplay Entry Point", "RunesConfig"));
+
             GameObject gameplayServices = new GameObject("GameplayServices");
             transform.parent = gameplayServices.transform; // For dispose after gameplay exit
             DontDestroyOnLoad(gameplayServices);
@@ -126,18 +135,22 @@ namespace BigProject.Initializers
             _hud = new();
             _playerInput = new();
             _questJournal = new QuestJournal(progressManager, _journalConfig);
-            _runesSystem = new();
+            _runesShardsSystem = new(_runesConfig, _runeShardsDatabase, _runeSegmentsDatabase, progressManager);
+            _runesSystem = new(_runesShardsSystem, _runesConfig);
             ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
             GameplayManager gameplayManager = new(ServiceLocator.GetService<ManualLoop>());
             _statesHandler = new(_hudConfig, gameplayManager, _playerInput, _hud);
             _questsTracker = new(progressManager, _questTrackerConfig.QuestsIds.ToList());
             SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
             PlayerController playerController = Instantiate(_playerControllerPrefab);
+            _settingsManager = ServiceLocator.GetService<SettingsManager>();
             CreatePlayer(playerController, sceneLoader);
             InitDialogue();
 
             ServiceLocator.AddService(_questJournal);
             ServiceLocator.AddService(_runesSystem);
+            ServiceLocator.AddService(_runesShardsSystem);
+            ServiceLocator.AddService(_runesConfig);
             ServiceLocator.AddService(_inventory);
             ServiceLocator.AddService(_hud);
             ServiceLocator.AddService(_playerInput);
@@ -155,6 +168,7 @@ namespace BigProject.Initializers
             InitPauseMenu();
 
             _questJournal.Init();
+            progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
             AddQuestsSwitches(progressManager);
             CreateCursorManager(sceneLoader);
             CreateCutsceneManager(sceneLoader);
@@ -179,7 +193,7 @@ namespace BigProject.Initializers
         private void InitPauseMenu()
         {
             _pauseMenuViewObj = Instantiate(_pauseView);
-            _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput);
+            _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput, _settingsManager);
             DontDestroyOnLoad(_pauseMenuViewObj);
         }
 
@@ -192,25 +206,32 @@ namespace BigProject.Initializers
             _inventoryUI = _hudObj.GetComponentInChildren<InventoryUI>();
             CancelUI cancelUI = _hudObj.GetComponentInChildren<CancelUI>();
             ResetUI resetUI = _hudObj.GetComponentInChildren<ResetUI>();
+            RunesJigsawUI runesJigsawUI = _hudObj.GetComponentInChildren<RunesJigsawUI>(true);
             ServiceLocator.AddService(_inventoryUI);
 
             DontDestroyOnLoad(_hudObj);
 
             _journalView.Init(_questJournal);
             _inventoryUI.Init(_inventory);
-            _runeUI.Init(_runesSystem);
+            GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
+            _runeUI.Init(_runesSystem, gameplayManager);
+            runesJigsawUI.Init(_runesShardsSystem, gameplayManager);
             _hud = ServiceLocator.GetService<HUD>();
             _hud.AddWidget(_hudConfig.HUDInventoryWidgetId, _inventoryUI);
             _hud.AddWidget(_hudConfig.HUDJournalWidgetId, _journalView);
             _hud.AddWidget(_hudConfig.HUDRunesWidgetId, _runeUI);
             _hud.AddWidget(_hudConfig.HUDCancelWidgetId, cancelUI);
             _hud.AddWidget(_hudConfig.HUDResetWidgetId, resetUI);
+            _hud.AddWidget(_hudConfig.HUDRunesJigsawWidgetId, runesJigsawUI);
             _hud.HideWidget(_hudConfig.HUDInventoryWidgetId);
             _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
             _hud.HideWidget(_hudConfig.HUDCancelWidgetId);
             _hud.HideWidget(_hudConfig.HUDResetWidgetId);
+            _hud.HideWidget(_hudConfig.HUDRunesJigsawWidgetId);
+            _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
             _hud.ShowWidget(_hudConfig.HUDInventoryWidgetId, 2f);
             _hud.ShowWidget(_hudConfig.HUDJournalWidgetId, 2f);
+            _hud.ShowWidget(_hudConfig.HUDRunesWidgetId, 2f);
             GameLogManager.Info(LogStr.INFO_INITIALIZING_HUD_COMPLETED);
         }
 
@@ -317,6 +338,8 @@ namespace BigProject.Initializers
 
             ServiceLocator.ReleaseService<QuestJournal>();
             ServiceLocator.ReleaseService<RunesSystem>();
+            ServiceLocator.ReleaseService<RuneShardsSystem>();
+            ServiceLocator.ReleaseService<RunesConfig>();
             ServiceLocator.ReleaseService<InventorySystem>();
             ServiceLocator.ReleaseService<HUD>();
             ServiceLocator.ReleaseService<InventoryUI>();
@@ -338,6 +361,7 @@ namespace BigProject.Initializers
             _questsTracker?.Dispose();
             _playerSpawner?.Dispose();
             _cutsceneManager?.Dispose();
+            _runesSystem?.Dispose();
             Destroy(transform.parent.gameObject);
         }
 

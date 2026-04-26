@@ -116,11 +116,11 @@ namespace BigProject.Managers
         /// <summary>
         /// Subscribe to quest.
         /// </summary>
-        public bool AddQuestStateListener(int quiestId, Action<IQuest> callback)
+        public bool AddQuestStateListener(int questId, Action<IQuest> callback)
         {
-            if (!_quests.TryGetValue(quiestId, out IQuest quest))
+            if (!_quests.TryGetValue(questId, out IQuest quest))
             {
-                Debug.LogError(String.Format(LogStr.ERROR_SYSTEM, "ProgressManager", $"unable to add state listener, has no quest [{quiestId}]"));
+                Debug.LogError(String.Format(LogStr.ERROR_SYSTEM, "ProgressManager", $"unable to add state listener, has no quest [{questId}]"));
                 return false;
             }
 
@@ -131,15 +131,15 @@ namespace BigProject.Managers
         /// <summary>
         /// Unsubscribe from quest.
         /// </summary>
-        public void RemoveQuestStateListener(int quiestId, Action<IQuest> callback)
+        public void RemoveQuestStateListener(int questId, Action<IQuest> callback)
         {
-            if (_quests.TryGetValue(quiestId, out IQuest quest))
+            if (_quests.TryGetValue(questId, out IQuest quest))
             {
                 quest.StateChanged -= callback;
             }
             else
             {
-                Debug.LogError(String.Format(LogStr.ERROR_SYSTEM, "ProgressManager", $"unable to remove state listener, has no quest [{quiestId}]"));
+                Debug.LogError(String.Format(LogStr.ERROR_SYSTEM, "ProgressManager", $"unable to remove state listener, has no quest [{questId}]"));
             }
         }
 
@@ -288,7 +288,7 @@ namespace BigProject.Managers
         /// Add additional data.
         /// </summary>
         /// <returns>True when success.</returns>
-        public bool SaveAdditionalData(ISavable savable)
+        public bool SaveAdditionalData(ISavable savable, bool trackRelevance = true)
         {
             bool result;
 
@@ -306,9 +306,16 @@ namespace BigProject.Managers
             {
                 if (_additionalRelevance.ContainsKey(savable.Key))
                 {
-                    _additionalRelevance[savable.Key] = false;
+                    if (trackRelevance)
+                    {
+                        _additionalRelevance[savable.Key] = false;
+                    }
+                    else
+                    {
+                        _additionalRelevance.Remove(savable.Key);
+                    }
                 }
-                else
+                else if (trackRelevance)
                 {
                     _additionalRelevance.Add(savable.Key, false);
                 }
@@ -363,7 +370,7 @@ namespace BigProject.Managers
                 return;
             }
 
-            if (AutoSave)
+            if (AutoSave && quest.IsSavingAllowed)
             {
                 Debug.Log(String.Format(LogStr.INFO_SYSTEM, "ProgressManager", "Autosaving..."));
                 SaveProgress();
