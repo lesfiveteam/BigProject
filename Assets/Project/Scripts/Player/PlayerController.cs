@@ -20,6 +20,7 @@ namespace BigProject.Player
 
         [SerializeField] private NavMeshAgent _navMeshAgent;
         [SerializeField] private Animator _animatorController;
+        [SerializeField] private GameObject _clickEffect;
 
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
@@ -48,6 +49,7 @@ namespace BigProject.Player
         private const float MIN_WALK_SPEED_COEFF = 0.1f;
         private const float MIN_ANIM_SPEED_COEFF = 0.5f;
         private const float MAX_TARGET_ANGLE_OFFSET = 3f;
+        private const float CLICK_EFFECT_LIFETIME = 3f;
 
         public bool IsAutopilot { private set; get;}
 
@@ -70,7 +72,7 @@ namespace BigProject.Player
             OnClickRelease();
             IsAutopilot = true;
             SetInterableObject(interactable);
-            SetDestination(interactable != null && interactable.NeedComeUp ? interactable.TargetPosition : transform.position);
+            SetDestination(interactable != null && interactable.NeedComeUp ? interactable.TargetPosition : transform.position, false);
             Move();
         }
 
@@ -175,6 +177,8 @@ namespace BigProject.Player
 
         private IEnumerator CalculateMovementRoutine()
         {
+            bool isFirstInteration = true;
+
             do
             {
                 Vector2 mousePosition = _inputHandler.GetMousePosition();
@@ -192,7 +196,8 @@ namespace BigProject.Player
                             break;
                         }
 
-                        SetDestination(navMeshHit.position);
+                        SetDestination(navMeshHit.position, interactableObject == null && isFirstInteration);
+                        isFirstInteration = false;
                         Move();
                     }
                 }
@@ -339,10 +344,15 @@ namespace BigProject.Player
                 Math.Max(_interactable.MaxDistance, _navMeshAgent.stoppingDistance);
         }
 
-        private void SetDestination(Vector3 destination)
+        private void SetDestination(Vector3 destination, bool spawnEffect = true)
         {
             _destination = (_interactable != null && _interactable.NeedComeUp) ?
                     _interactable.TargetPosition : destination;
+
+            if (spawnEffect)
+            {
+                Destroy(Instantiate(_clickEffect, destination, _clickEffect.transform.rotation), CLICK_EFFECT_LIFETIME);
+            }
         }
 
         private void SetInterableObject(IInteractable interactableObject)
