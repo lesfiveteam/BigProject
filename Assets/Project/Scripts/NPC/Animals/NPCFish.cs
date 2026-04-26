@@ -12,10 +12,11 @@ namespace Assets.Project.Scripts.NPC.Animals
         [SerializeField] private float _rotateSpeed = 600f;
 
         private Queue<NPCRootPoint> _currentRoute;
-        private Sequence _currentSequence = DOTween.Sequence();
+        private Sequence _currentSequence;
 
         public void Init(Queue<NPCRootPoint> currentRoute)
         {
+            _currentSequence = DOTween.Sequence();
             _currentRoute = currentRoute;
 
             SwimToSea();
