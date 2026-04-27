@@ -48,6 +48,11 @@ namespace BigProject.Gameplay.VillageElderQuest
             _watermillDoor.transform.localEulerAngles = doorAngles;
         }
 
+        public void Begin()
+        {
+            InitOnSceneEntry();
+        }
+
         public void End()
         {
             _questTownhallObjects.SetActive(false);

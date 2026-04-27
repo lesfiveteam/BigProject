@@ -23,6 +23,7 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
         public event Action<Scenes> SceneLoaded;
         public event Action SceneLoadingStarted;
         public event Action SceneLoadingCompleted;
+        public bool IsLoading => _isLoading;
 
         private const string FADER_PREFAB_PATH = "Prefabs/Fader";
 

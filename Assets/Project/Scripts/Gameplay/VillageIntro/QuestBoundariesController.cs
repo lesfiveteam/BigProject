@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Managers;
 using BigProject.Player;
 using BigProject.Systems;
@@ -25,7 +26,7 @@ namespace BigProject.Gameplay.VillageIntro
 
         public void InitOnSceneEntry()
         {
-            _questActions.Init(ServiceLocator.GetService<PlayerController>(), ServiceLocator.GetService<GameplayManager>());
+            _questActions.Init(ServiceLocator.GetService<PlayerController>(), ServiceLocator.GetService<GameplayManager>(), ServiceLocator.GetService<SceneLoadManager>());
             _questObjects.SetActive(true);
         }
 
