@@ -12,7 +12,26 @@
         {
             "id":0,
             "name":"FirstTalkMiller",
-            "currentState":2,
+            "currentState":1,
+            "conditions":
+            [
+                {
+                    "fromState":1,
+                    "toState":2,
+                    "dependencyPacks":
+                    [
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":1000,
+                                    "state":5
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
             "manualTransitions":
             [
                 {
