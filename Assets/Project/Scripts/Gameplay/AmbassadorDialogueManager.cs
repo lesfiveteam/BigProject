@@ -18,9 +18,10 @@ namespace Managers.Gameplay
         [SerializeField] private DialogNPC _nextDialogueNPC;
         [SerializeField] private Fader _faderPrefab;
         [SerializeField] private int _spawnPointId;
-        [SerializeField] private Transform _ambassadorNearElderPosition;
         [SerializeField] private Collider _trigger;
         [SerializeField] private QuestActionHandlerMono _takeToElderActionHandler;
+        [SerializeField] private Collider _dialogueCollider;
+        [SerializeField] private Collider _commentHandlerCollider;
 
         private PlayerController _player;
         private PlayerSpawner _playerSpawner;
@@ -41,9 +42,9 @@ namespace Managers.Gameplay
 
         public void MoveToElder()
         {
-            _ambassador.transform.position = _ambassadorNearElderPosition.position;
-            _ambassador.transform.rotation = _ambassadorNearElderPosition.rotation;
             Destroy(_trigger);
+            _dialogueCollider.enabled = false;
+            _commentHandlerCollider.enabled = true;
         }
 
         private void Awake()
@@ -57,9 +58,10 @@ namespace Managers.Gameplay
             Assert.IsNotNull(_ambassador, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador Dialogue"));
             Assert.IsNotNull(_nextDialogueNPC, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Next Dialogue"));
             Assert.IsNotNull(_faderPrefab, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Fader"));
-            Assert.IsNotNull(_ambassadorNearElderPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador near elder position"));
             Assert.IsNotNull(_trigger, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Trigger Collider"));
             Assert.IsNotNull(_takeToElderActionHandler, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Trigger Collider"));
+            Assert.IsNotNull(_dialogueCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Dialogue Collider"));
+            Assert.IsNotNull(_commentHandlerCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Comment Handler Collider"));
         }
 
         /// <summary>

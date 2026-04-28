@@ -19,7 +19,11 @@ namespace BigProject.Gameplay.VillageElderQuest
         [SerializeField]
         private GameObject _bag;
         [SerializeField]
+        private GameObject _delegation;
+        [SerializeField]
         private AmbassadorDialogueManager _ambassador;
+        [SerializeField]
+        private Transform _delegationNearElderPosition;
         [SerializeField]
         private List<string> _keysItemsNames;
         [SerializeField]
@@ -47,10 +51,12 @@ namespace BigProject.Gameplay.VillageElderQuest
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(gameObject.name, "Gameplay Manager"));
         }
 
-        private void Start()
+        private void Awake()
         {
             Assert.IsNotNull(_bag, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Bag"));
+            Assert.IsNotNull(_delegation, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Delegation"));
             Assert.IsNotNull(_ambassador, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador"));
+            Assert.IsNotNull(_delegationNearElderPosition, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Delegation Near Elder Position"));
         }
 
         public void ShowBag()
@@ -75,12 +81,14 @@ namespace BigProject.Gameplay.VillageElderQuest
         public void AmbassadorAppearance()
         {
             _inventoryUI.SetNoteVisibility(false);
-            _ambassador.gameObject.SetActive(true);
+            _delegation.SetActive(true);
         }
 
         public void AmbassadorNearElder()
         {
-            _ambassador.gameObject.SetActive(true);
+            _delegation.SetActive(true);
+            _delegation.transform.position = _delegationNearElderPosition.position;
+            _delegation.transform.rotation = _delegationNearElderPosition.rotation;
             _ambassador.MoveToElder();
         }
 
