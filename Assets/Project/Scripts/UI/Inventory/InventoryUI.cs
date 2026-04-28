@@ -97,7 +97,11 @@ namespace BigProject.UI
             if (_noteImage.sprite != null)
             {
                 _noteImage.gameObject.SetActive(isVisible);
-                _noteAnimator.SetTrigger(NOTE_ANIM_TRIGGER);    
+
+                if (_noteAnimator != null)
+                {
+                    _noteAnimator.SetTrigger(NOTE_ANIM_TRIGGER);
+                }
             }
         }
 
