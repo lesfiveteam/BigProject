@@ -570,6 +570,38 @@
             ]
         },
         {
+            "id":24,
+            "name":"AmbassadorNearElder",
+            "currentState":1,
+            "conditions":
+            [
+                {
+                    "fromState":2,
+                    "toState":5,
+                    "dependencyPacks":
+                    [
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":18,
+                                    "state":3
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "manualTransitions":
+            [
+                {
+                    "id":0,
+                    "fromState":1,
+                    "toState":2
+                }
+            ]
+        },
+        {
             "id":16,
             "name":"RoyalDecreeTalk",
             "currentState":1,

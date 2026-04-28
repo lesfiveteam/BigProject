@@ -2,6 +2,7 @@ using BigProject.Managers;
 using BigProject.NPC;
 using BigProject.Player;
 using BigProject.Systems;
+using BigProject.Systems.QuestSystem;
 using BigProject.Utilities;
 using System;
 using System.Collections;
@@ -19,6 +20,7 @@ namespace Managers.Gameplay
         [SerializeField] private int _spawnPointId;
         [SerializeField] private Transform _ambassadorNearElderPosition;
         [SerializeField] private Collider _trigger;
+        [SerializeField] private QuestActionHandlerMono _takeToElderActionHandler;
 
         private PlayerController _player;
         private PlayerSpawner _playerSpawner;
@@ -37,13 +39,27 @@ namespace Managers.Gameplay
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "AmbassadorDialogueManager", "GameplayManager"));
         }
 
+        public void MoveToElder()
+        {
+            _ambassador.transform.position = _ambassadorNearElderPosition.position;
+            _ambassador.transform.rotation = _ambassadorNearElderPosition.rotation;
+            Destroy(_trigger);
+        }
+
         private void Awake()
         {
+            if (_takeToElderActionHandler.CurrentState == QuestActionState.Released)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             Assert.IsNotNull(_ambassador, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador Dialogue"));
             Assert.IsNotNull(_nextDialogueNPC, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Next Dialogue"));
             Assert.IsNotNull(_faderPrefab, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Fader"));
             Assert.IsNotNull(_ambassadorNearElderPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador near elder position"));
             Assert.IsNotNull(_trigger, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Trigger Collider"));
+            Assert.IsNotNull(_takeToElderActionHandler, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Trigger Collider"));
         }
 
         /// <summary>
@@ -51,7 +67,7 @@ namespace Managers.Gameplay
         /// </summary>
         private void OnTriggerEnter(Collider other)
         {
-            if (!other.CompareTag(_playerTag))
+            if (!other.CompareTag(_playerTag) || _player.IsAutopilot)
             {
                 return;
             }
@@ -62,7 +78,6 @@ namespace Managers.Gameplay
 
         private IEnumerator AmbassadorDialogueRoutine()
         {
-            Destroy(_trigger);
             _player.AutoTarget(_ambassador);
 
             while (_dialogueManager.IsDialogue || _player.IsAutopilot)
@@ -71,16 +86,13 @@ namespace Managers.Gameplay
             }
             
             _gameplayManager.ChangeState(GameplayState.Dialogue);
-
             Fader fader = Instantiate(_faderPrefab);
             bool isWaiting = true;
             fader.FadeIn(() => isWaiting = false);
             yield return new WaitUntil(() => !isWaiting);
-
             _playerSpawner.PositionPlayer(_spawnPointId);
             _player.AutoTarget(_nextDialogueNPC);
-            _ambassador.transform.position = _ambassadorNearElderPosition.position;
-            _ambassador.transform.eulerAngles = _ambassadorNearElderPosition.eulerAngles;
+            _takeToElderActionHandler.MakeTransition(0);
             isWaiting = true;
             fader.FadeOut(() => isWaiting = false);
             yield return new WaitUntil(() => !isWaiting);

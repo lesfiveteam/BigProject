@@ -3,6 +3,7 @@ using BigProject.Systems;
 using BigProject.Systems.Inventory;
 using BigProject.UI;
 using BigProject.Utilities;
+using Managers.Gameplay;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace BigProject.Gameplay.VillageElderQuest
         [SerializeField]
         private GameObject _bag;
         [SerializeField]
-        private GameObject _ambassador;
+        private AmbassadorDialogueManager _ambassador;
         [SerializeField]
         private List<string> _keysItemsNames;
         [SerializeField]
@@ -74,7 +75,13 @@ namespace BigProject.Gameplay.VillageElderQuest
         public void AmbassadorAppearance()
         {
             _inventoryUI.SetNoteVisibility(false);
-            _ambassador.SetActive(true);
+            _ambassador.gameObject.SetActive(true);
+        }
+
+        public void AmbassadorNearElder()
+        {
+            _ambassador.gameObject.SetActive(true);
+            _ambassador.MoveToElder();
         }
 
         public void RemoveAmbassador()
