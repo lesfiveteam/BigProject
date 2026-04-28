@@ -41,6 +41,12 @@ namespace BigProject.Managers
                 HideReplica();
             }
 
+            if (localizedString == null)
+            {
+                Debug.LogWarning(string.Format(LogStr.WARNING_SYSTEM, "ReplicaManager", "LocalizedString is null. Cannot show replica"));
+                return;
+            }
+
             _currentHandle = localizedString.GetLocalizedStringAsync();
             _entryLoadedHandler = (handle) =>
             {

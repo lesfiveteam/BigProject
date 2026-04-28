@@ -43,6 +43,8 @@ namespace BigProject.Gameplay.TownHall
         [SerializeField]
         private LocalizedString _examinePillarsRemark;
         [SerializeField]
+        private LocalizedString _drawSymbolRemark;
+        [SerializeField]
         private LocalizedString _needFatherRemark;
         [SerializeField]
         private LocalizedString _openChestRemark;
@@ -167,6 +169,7 @@ namespace BigProject.Gameplay.TownHall
             else if (_interactPillarsClue != null)
             {
                 StopCoroutine(_interactPillarsClue);
+                ReplicaManager.ShowReplica(_drawSymbolRemark);
             }
         }
 
@@ -205,8 +208,11 @@ namespace BigProject.Gameplay.TownHall
 
         private IEnumerator CheckPillarsRoutine()
         {
-            yield return new WaitForSeconds(_checkPillarsClueTime);
-            ReplicaManager.ShowReplica(_examinePillarsRemark);// "На колоннах видны странные символы, стоит посмотреть поближе...");
+            while (true)
+            {
+                yield return new WaitForSeconds(_checkPillarsClueTime);
+                ReplicaManager.ShowReplica(_examinePillarsRemark);// "На колоннах видны странные символы, стоит посмотреть поближе...");
+            }
         }
     }
 }
