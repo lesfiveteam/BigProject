@@ -5,7 +5,6 @@ using BigProject.Systems;
 using BigProject.Utilities;
 using System;
 using System.Collections;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -15,20 +14,25 @@ namespace Managers.Gameplay
     {
         [SerializeField] private string _playerTag = "Player";
         [SerializeField] private DialogNPC _ambassador;
-        [SerializeField] private Transform _villageCentre;
         [SerializeField] private DialogNPC _nextDialogueNPC;
         [SerializeField] private Fader _faderPrefab;
+        [SerializeField] private int _spawnPointId;
+        [SerializeField] private Transform _ambassadorNearElderPosition;
+        [SerializeField] private Collider _trigger;
 
         private PlayerController _player;
+        private PlayerSpawner _playerSpawner;
         private DialogueManager _dialogueManager;
         private GameplayManager _gameplayManager;
 
-        public void Init(PlayerController player, DialogueManager dialogueManager, GameplayManager gameplayManager)
+        public void Init(PlayerController player, PlayerSpawner playerSpawner, DialogueManager dialogueManager, GameplayManager gameplayManager)
         {
             _player = player;
+            _playerSpawner = playerSpawner;
             _dialogueManager = dialogueManager;
             _gameplayManager = gameplayManager;
             ExceptionUtilities.ThrowIfNull(_player, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "AmbassadorDialogueManager", "PlayerController"));
+            ExceptionUtilities.ThrowIfNull(_playerSpawner, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "AmbassadorDialogueManager", "PlayerSpawner"));
             ExceptionUtilities.ThrowIfNull(_dialogueManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "AmbassadorDialogueManager", "DialogueManager"));
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "AmbassadorDialogueManager", "GameplayManager"));
         }
@@ -36,8 +40,10 @@ namespace Managers.Gameplay
         private void Awake()
         {
             Assert.IsNotNull(_ambassador, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador Dialogue"));
-            Assert.IsNotNull(_villageCentre, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Village Centre"));
             Assert.IsNotNull(_nextDialogueNPC, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Next Dialogue"));
+            Assert.IsNotNull(_faderPrefab, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Fader"));
+            Assert.IsNotNull(_ambassadorNearElderPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador near elder position"));
+            Assert.IsNotNull(_trigger, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Trigger Collider"));
         }
 
         /// <summary>
@@ -56,6 +62,7 @@ namespace Managers.Gameplay
 
         private IEnumerator AmbassadorDialogueRoutine()
         {
+            Destroy(_trigger);
             _player.AutoTarget(_ambassador);
 
             while (_dialogueManager.IsDialogue || _player.IsAutopilot)
@@ -70,13 +77,15 @@ namespace Managers.Gameplay
             fader.FadeIn(() => isWaiting = false);
             yield return new WaitUntil(() => !isWaiting);
 
-            _player.transform.position = _villageCentre.position;
+            _playerSpawner.PositionPlayer(_spawnPointId);
             _player.AutoTarget(_nextDialogueNPC);
+            _ambassador.transform.position = _ambassadorNearElderPosition.position;
+            _ambassador.transform.eulerAngles = _ambassadorNearElderPosition.eulerAngles;
             isWaiting = true;
             fader.FadeOut(() => isWaiting = false);
             yield return new WaitUntil(() => !isWaiting);
             DestroyImmediate(fader.gameObject);
-            Destroy(gameObject);
+            Destroy(this);
         }
     }
 }

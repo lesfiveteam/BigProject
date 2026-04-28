@@ -40,7 +40,8 @@ namespace BigProject.Gameplay.VillageElderQuest
             GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
             _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<InventoryUI>(), gameplayManager);
             _questTownhallObjects.SetActive(true);
-            _ambassadorDialogueManager.Init(ServiceLocator.GetService<PlayerController>(), ServiceLocator.GetService<DialogueManager>(), gameplayManager);
+            _ambassadorDialogueManager.Init(ServiceLocator.GetService<PlayerController>(), ServiceLocator.GetService<PlayerSpawner>(), 
+                ServiceLocator.GetService<DialogueManager>(), gameplayManager);
             _watermillDoor.enabled = false;
             Vector3 doorAngles = _watermillDoor.transform.localEulerAngles;
             _watermillDoorInitAngle = doorAngles.y;
