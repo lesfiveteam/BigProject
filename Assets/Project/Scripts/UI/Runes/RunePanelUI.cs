@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
-using static Unity.Collections.Unicode;
 
 namespace BigProject.UI
 {
@@ -13,9 +12,11 @@ namespace BigProject.UI
     {
         [SerializeField] private Image _backgroundImage;
         [SerializeField] private List<RuneSlotUI> _runeSlots;
-        [SerializeField] private List<Sprite> _backgroundSprites;
+        [SerializeField] private List<RunesJigsawUI.BackingImage> _backgrounds;
         private RunesSystem _runesSystem;
         private GameplayManager _gameplayManager;
+        private bool _isVisible;
+        private bool _isPlayable;
 
         public void Init(RunesSystem runesSystem, GameplayManager gameplayManager)
         {
@@ -28,20 +29,21 @@ namespace BigProject.UI
             _runesSystem = runesSystem;
             _gameplayManager = gameplayManager;
             _runesSystem.OnRuneAdded += AddRune;
-            _runesSystem.OnQuestChanged += ChangeBackgroundBasedOnQuest;
+            _runesSystem.OnSegmentUnlocked += ChangeBackground;
             _runesSystem.OnCleared += OnCleared;
         }
         
-        private void Start()
+        private void Awake()
         {
             Assert.AreEqual(6, _runeSlots.Count, "You should add 6 rune slots in RunePanelUI");
-            Assert.AreEqual(3, _backgroundSprites.Count, "You should add 3 background sprites in RunePanelUI");
+            Assert.AreEqual(3, _backgrounds.Count, "You should add 3 background sprites in RunePanelUI");
+            _backgrounds.Sort((a, b) => b.unlockedSegmentsThreshold.CompareTo(a.unlockedSegmentsThreshold));
         }
 
         private void OnDestroy()
         {
             _runesSystem.OnRuneAdded -= AddRune;
-            _runesSystem.OnQuestChanged -= ChangeBackgroundBasedOnQuest;
+            _runesSystem.OnSegmentUnlocked -= ChangeBackground;
             _runesSystem.OnCleared -= OnCleared;
         }
 
@@ -50,24 +52,44 @@ namespace BigProject.UI
             _runeSlots[runeId].ShowRune();
         }
 
-        private void ChangeBackgroundBasedOnQuest(int questID)
+        private void ChangeBackground(int segmentsCount)
         {
-            if (questID < 1 || questID > 3)
+            foreach (RunesJigsawUI.BackingImage background in _backgrounds)
             {
-                Debug.LogError("You're trying to change runebar background using a wrong questID (must be in range [0; 2]). Background wasn't changed");
-                return;
+                if (segmentsCount >= background.unlockedSegmentsThreshold)
+                {
+                    _backgroundImage.sprite = background.sprite;
+
+                    if (!_isPlayable)
+                    {
+                        _isPlayable = true;
+
+                        if (_isVisible)
+                        {
+                            Show();
+                        }
+                    }
+
+                    return;
+                }
             }
 
-            _backgroundImage.sprite = _backgroundSprites[questID - 1];
+            _isPlayable = false;
         }
 
         public void Show()
         {
-            gameObject.SetActive(true);
+            _isVisible = true;
+
+            if (_isPlayable)
+            {
+                gameObject.SetActive(true);
+            }
         }
 
         public void Hide()
         {
+            _isVisible = false;
             gameObject.SetActive(false);
         }
 

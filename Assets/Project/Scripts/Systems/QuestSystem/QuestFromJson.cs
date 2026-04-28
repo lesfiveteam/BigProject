@@ -247,7 +247,7 @@ namespace BigProject.Systems.QuestSystem
 
             // Update all states (possibly there are conditions that are met immediately).
             ResetActions();
-            questStates.Sort((x, y) => y.state.CompareTo(x.state));
+            //questStates.Sort((x, y) => y.state.CompareTo(x.state));
             ResetQuestState();
 
             // After loading, all activities represent the latest changes.

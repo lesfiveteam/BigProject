@@ -136,7 +136,7 @@ namespace BigProject.Initializers
             _playerInput = new();
             _questJournal = new QuestJournal(progressManager, _journalConfig);
             _runesShardsSystem = new(_runesConfig, _runeShardsDatabase, _runeSegmentsDatabase, progressManager);
-            _runesSystem = new(_runesShardsSystem, _runesConfig);
+            _runesSystem = new(_runesShardsSystem);
             ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
             GameplayManager gameplayManager = new(ServiceLocator.GetService<ManualLoop>());
             _statesHandler = new(_hudConfig, gameplayManager, _playerInput, _hud);

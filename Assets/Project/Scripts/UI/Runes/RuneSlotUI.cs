@@ -5,6 +5,9 @@ namespace BigProject.UI
     public class RuneSlotUI : MonoBehaviour
     {
         [SerializeField] private GameObject _runeImage;
+
+        public bool IsActive => _runeImage.activeSelf;
+
         public void ShowRune()
         {
             _runeImage.SetActive(true);
