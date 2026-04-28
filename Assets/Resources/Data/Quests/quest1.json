@@ -848,38 +848,6 @@
                     "toState":3
                 }
             ]
-        },
-        {
-            "id":23,
-            "name":"ReturnToVillage",
-            "currentState":1,
-            "conditions":
-            [
-                {
-                    "fromState":1,
-                    "toState":2,
-                    "dependencyPacks":
-                    [
-                        {
-                            "dependencies":
-                            [
-                                {
-                                    "id":22,
-                                    "state":3
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
-            "manualTransitions":
-            [
-                {
-                    "id":0,
-                    "fromState":2,
-                    "toState":3
-                }
-            ]
         }
     ],
     "questStates":
@@ -891,7 +859,7 @@
         },
         {
             "state":2,
-            "actionId":23,
+            "actionId":22,
             "actionState":3
         }
     ]
