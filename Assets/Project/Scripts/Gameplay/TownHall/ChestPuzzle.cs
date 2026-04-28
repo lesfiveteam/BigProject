@@ -63,6 +63,8 @@ namespace BigProject.Gameplay.TownHall
         [Header("Player remarks")]
         [SerializeField]
         private LocalizedString _puzzleRemark;
+        [SerializeField]
+        private LocalizedString _incorrectKeysRemark;
 
         private InventorySystem _inventory;
         private InventoryUI _inventoryUI;
@@ -82,7 +84,7 @@ namespace BigProject.Gameplay.TownHall
         private readonly Vector3 BROKEN_KEY_PART_2_MOVING_OFFSET = new(0f, -0.1f, 0f);
         private readonly Vector3 BROKEN_KEY_PART_2_ROTATION_OFFSET = new(0f, -90f, 0f);
         private readonly Vector3 CHEST_CUP_OPEN_ROTATION_OFFSET = new(110f, 0f, 0f);
-        private readonly Vector3 KEYS_ROTATION_OFFSET = new(180f, 0f, 0f);
+        private readonly Vector3 KEYS_ROTATION_OFFSET = new(-180f, 0f, 0f);
 
 
         [Serializable]
@@ -129,6 +131,8 @@ namespace BigProject.Gameplay.TownHall
             Assert.IsNotNull(_chestCup, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chest cup"));
             Assert.IsNotNull(_actionHandlers, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest action handler"));
             Assert.IsNotNull(_hudConfig, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD Config"));
+            Assert.IsNotNull(_puzzleRemark, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Puzzle Remark"));
+            Assert.IsNotNull(_incorrectKeysRemark, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Incorrect Keys Remark"));
             _keysIds = Enumerable.Repeat(-1, _keysHolders.Count).ToList();
         }
 
@@ -287,22 +291,38 @@ namespace BigProject.Gameplay.TownHall
             {
                 _hud.HideWidget(_hudConfig.HUDResetWidgetId);
                 _soundsManager.PlaySound(_chestOpenSound, volume: _chestOpenSoundVolume);
-                MoveElement(_chestCup, Vector3.zero, CHEST_CUP_OPEN_ROTATION_OFFSET, _openChestMovingTime);
+                //MoveElement(_chestCup, Vector3.zero, CHEST_CUP_OPEN_ROTATION_OFFSET, _openChestMovingTime);
 
-                foreach (GameObject key in _keys)
-                {
-                    MoveElement(key.transform, Vector3.zero, KEYS_ROTATION_OFFSET, _keysMovingTime);
-                }
+                //foreach (GameObject key in _keys)
+                //{
+                //    MoveElement(key.transform, Vector3.zero, KEYS_ROTATION_OFFSET, _keysMovingTime);
+                //}
 
                 _inventory.RemoveItemByName(_noteItemName);
                 _actionHandlers[_actionOpenName].MakeTransition(0);
                 _returnToInventory = false;
-                _activator.DeactivateMiniGame();
+                StartCoroutine(OpenChestAnimationRoutine());
+                //_activator.DeactivateMiniGame();
             }
             else
             {
+                ReplicaManager.ShowReplica(_incorrectKeysRemark);
                 ResetKeys();
             }
+        }
+
+        private IEnumerator OpenChestAnimationRoutine()
+        {
+            foreach (GameObject key in _keys)
+            {
+                MoveElement(key.transform, Vector3.zero, KEYS_ROTATION_OFFSET, _keysMovingTime);
+            }
+
+            yield return new WaitForSeconds(_keysMovingTime);
+            _activator.DeactivateMiniGame();
+            MoveElement(_chestCup, Vector3.zero, CHEST_CUP_OPEN_ROTATION_OFFSET, _openChestMovingTime);
+
+
         }
 
         private void ResetKeysIds()
@@ -366,11 +386,14 @@ namespace BigProject.Gameplay.TownHall
 
         private IEnumerator ClueRoutine()
         {
-            yield return new WaitForSeconds(_timeBeforeClue);
-
-            if (_activator.IsActivated)
+            while (true)
             {
-                ReplicaManager.ShowReplica(_puzzleRemark);
+                yield return new WaitForSeconds(_timeBeforeClue);
+
+                if (_activator.IsActivated)
+                {
+                    ReplicaManager.ShowReplica(_puzzleRemark);
+                }
             }
         }
 
