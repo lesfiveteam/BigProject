@@ -27,6 +27,8 @@ namespace BigProject.Gameplay.VillageElderQuest
         [SerializeField]
         private List<string> _keysItemsNames;
         [SerializeField]
+        private GameObject _inspectMillTrigger;
+        [SerializeField]
         private GameObject _enterVillageTrigger;
 
         [Header("Player remarks")]
@@ -57,6 +59,8 @@ namespace BigProject.Gameplay.VillageElderQuest
             Assert.IsNotNull(_delegation, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Delegation"));
             Assert.IsNotNull(_ambassador, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador"));
             Assert.IsNotNull(_delegationNearElderPosition, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Delegation Near Elder Position"));
+            Assert.IsNotNull(_inspectMillTrigger, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Inspect Mill Trigger"));
+            Assert.IsNotNull(_enterVillageTrigger, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Enter Village Trigger"));
         }
 
         public void ShowBag()
@@ -106,6 +110,16 @@ namespace BigProject.Gameplay.VillageElderQuest
             {
                 _inventory.AddItemByName(key);
             }
+        }
+
+        public void OpenMillInspection()
+        {
+            _inspectMillTrigger.SetActive(true);
+        }
+
+        public void InspectMill()
+        {
+            ReplicaManager.ShowReplica(_watermillRemark);
         }
 
         public void EnterVillage()
