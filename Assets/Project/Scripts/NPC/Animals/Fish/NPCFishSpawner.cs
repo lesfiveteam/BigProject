@@ -1,12 +1,11 @@
 ﻿using Assets.Project.Scripts.NPC.NPCWalkSystem;
-using BigProject.Systems;
 using BigProject.Utilities;
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Fish
 {
     public class NPCFishSpawner : MonoBehaviour
     {
@@ -41,7 +40,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             }
 
             _isSpawn = true;
-            _spawnCoroutine = StartCoroutine(Spawn());
+            _spawnCoroutine = StartCoroutine(SpawnRoutine());
         }
 
         public void StopSpawning()
@@ -55,7 +54,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             }
         }
 
-        private IEnumerator Spawn()
+        private IEnumerator SpawnRoutine()
         {
             while (_isSpawn)
             {

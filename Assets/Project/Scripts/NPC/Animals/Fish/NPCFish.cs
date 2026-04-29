@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Fish
 {
     public class NPCFish : MonoBehaviour
     {
@@ -29,7 +29,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             for (int i = 0; i < points.Count; i++)
             {
                 Vector3 targetPos = points[i].Position;
-                Vector3 startPos = (i == 0) ? transform.position : points[i - 1].Position;
+                Vector3 startPos = i == 0 ? transform.position : points[i - 1].Position;
                 Vector3 direction = (targetPos - startPos).normalized;
 
                 float moveDuration = Vector3.Distance(startPos, targetPos) / _moveSpeed;

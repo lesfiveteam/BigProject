@@ -7,7 +7,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Deer
 {
     public class NPCDeer : MonoBehaviour, IScared
     {
@@ -39,17 +39,15 @@ namespace Assets.Project.Scripts.NPC.Animals
             _agent.updateRotation = false;
         }
 
-        public void Scare(Vector3 dangerPosition)
+        public void Scare(Transform danger)
         {
             if (_runCoroutine != null)
                 return;
 
-            Vector3 directionFromDanger = (transform.position - dangerPosition).normalized;
-
-            _runCoroutine = StartCoroutine(ScaredRun(directionFromDanger));
+            _runCoroutine = StartCoroutine(ScaredRunRoutine(danger));
         }
 
-        private IEnumerator ScaredRun(Vector3 direction)
+        private IEnumerator ScaredRunRoutine(Transform danger)
         {
             NavMeshPath path = new();
 
@@ -59,9 +57,9 @@ namespace Assets.Project.Scripts.NPC.Animals
 
                 bool pointFound = false;
 
-                yield return StartCoroutine(TryFindJumpPointCoroutine(direction, path, (isFound) => pointFound = isFound));
+                Vector3 directionFromDanger = (transform.position - danger.position).normalized;
 
-                direction = (path.corners.Last() - transform.position).normalized;
+                yield return StartCoroutine(TryFindJumpPointRoutine(directionFromDanger, path, (isFound) => pointFound = isFound));
 
                 if (pointFound)
                 {
@@ -91,7 +89,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             Destroy(gameObject);
         }
 
-        private IEnumerator TryFindJumpPointCoroutine(Vector3 direction, NavMeshPath path, Action<bool> callback)
+        private IEnumerator TryFindJumpPointRoutine(Vector3 direction, NavMeshPath path, Action<bool> callback)
         {
             Vector3 origin = transform.position;
             int attemptsCount = 0;
