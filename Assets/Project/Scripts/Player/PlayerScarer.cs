@@ -9,7 +9,7 @@ namespace Assets.Project.Scripts.Player
         {
             if (other.TryGetComponent(out IScared victim))
             {
-                victim.Scare(transform.position);
+                victim.Scare(transform);
             }
         }
 

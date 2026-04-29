@@ -8,7 +8,7 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Seagull
 {
     public class NPCSeagull : MonoBehaviour, IScared
     {
@@ -71,10 +71,10 @@ namespace Assets.Project.Scripts.NPC.Animals
 
             _clipJump = _animator.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == JUMP_CLIP_NAME);
 
-            _coroutines.Add(StartCoroutine(BorringTime()));
+            _coroutines.Add(StartCoroutine(BorringTimeRoutine()));
         }
 
-        private IEnumerator BorringTime()
+        private IEnumerator BorringTimeRoutine()
         {
             while (_animator != null)
             {
@@ -86,12 +86,12 @@ namespace Assets.Project.Scripts.NPC.Animals
             }
         }
 
-        public void Scare(Vector3 dangerPosition)
+        public void Scare(Transform danger)
         {
             if (InFly)
                 return;
 
-            Vector3 direction = (transform.position - dangerPosition).normalized;
+            Vector3 direction = (transform.position - danger.position).normalized;
             StartFlight(direction);
         }
 
@@ -136,7 +136,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             {
                 for (int i = 0; i < airPoints.Count; i++)
                 {
-                    coroutine = StartCoroutine(FlyToPoint(airPoints[i]));
+                    coroutine = StartCoroutine(FlyToPointRoutine(airPoints[i]));
                     _coroutines.Add(coroutine);
                     yield return coroutine;
                     _coroutines.Remove(coroutine);
@@ -144,7 +144,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             }
 
             // Go home
-            coroutine = StartCoroutine(FlyToHome(GetAirPoint(_startPoint)));
+            coroutine = StartCoroutine(FlyToHomeRoutine(GetAirPoint(_startPoint)));
             _coroutines.Add(coroutine);
             yield return coroutine;
             _coroutines.Remove(coroutine);
@@ -190,7 +190,7 @@ namespace Assets.Project.Scripts.NPC.Animals
 
                 if (currentDistance < distanceForScale)
                 {
-                    float progress = 1f - (currentDistance / distanceForScale);
+                    float progress = 1f - currentDistance / distanceForScale;
                     transform.localScale = Vector3.Lerp(_defaultScale, _flyScale, progress * progress);
                 }
             }
@@ -199,7 +199,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             transform.position = pointToTakeOff;
         }
 
-        private IEnumerator FlyToPoint(Vector3 target)
+        private IEnumerator FlyToPointRoutine(Vector3 target)
         {
             _animator.SetFloat(FlySpeedModifier, LOW_FLY_SPEED_MODIFIER);
 
@@ -222,7 +222,7 @@ namespace Assets.Project.Scripts.NPC.Animals
             }
         }
 
-        private IEnumerator FlyToHome(Vector3 target)
+        private IEnumerator FlyToHomeRoutine(Vector3 target)
         {
             bool passed = false;
             bool landingPointGenerated = false;
@@ -283,7 +283,7 @@ namespace Assets.Project.Scripts.NPC.Animals
 
                 if (currentDistance < distanceForScale)
                 {
-                    float progress = 1f - (currentDistance / distanceForScale);
+                    float progress = 1f - currentDistance / distanceForScale;
                     transform.localScale = Vector3.Lerp(_flyScale, _defaultScale, progress * progress);
                 }
 

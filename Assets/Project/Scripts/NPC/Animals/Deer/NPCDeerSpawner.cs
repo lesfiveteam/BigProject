@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Deer
 {
     public class NPCDeerSpawner : MonoBehaviour
     {

@@ -4,6 +4,6 @@ namespace Assets.Project.Scripts.NPC.Animals
 {
     public interface IScared
     {
-        public void Scare(Vector3 dangerPosition);
+        public void Scare(Transform danger);
     }
 }

@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Assets.Project.Scripts.NPC.Animals
+namespace Assets.Project.Scripts.NPC.Animals.Cow
 {
     public class NPCCow : MonoBehaviour
     {
@@ -24,10 +24,10 @@ namespace Assets.Project.Scripts.NPC.Animals
         {
             Assert.IsNotNull(_animator, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "Animator"));
 
-            _animationCoroutine = StartCoroutine(StartAnimations());
+            _animationCoroutine = StartCoroutine(StartAnimationsRoutine());
         }
 
-        private IEnumerator StartAnimations()
+        private IEnumerator StartAnimationsRoutine()
         {
             yield return new WaitForSeconds(Random.Range(0, _timeToAlive));
 

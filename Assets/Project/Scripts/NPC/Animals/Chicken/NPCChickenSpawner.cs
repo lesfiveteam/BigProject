@@ -1,0 +1,98 @@
+﻿using BigProject.Utilities;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.AI;
+
+namespace Assets.Project.Scripts.NPC.Animals.Chicken
+{
+    public class NPCChickenSpawner : MonoBehaviour
+    {
+        [SerializeField] private NPCCock _cockPrefab;
+        [SerializeField] private NPCChicken _chickenPrefab;
+
+        [SerializeField] private Transform _chickenContainer;
+        [SerializeField] private List<NPCPeckPoint> _peckPoints;
+
+        private List<NPCCock> _cocks = new();
+
+        private float _chickenSpawnDistance = 3f;
+        private int _spawnCountTry = 30;
+
+        private void Start()
+        {
+            ExceptionUtilities.ThrowIfNullFormat(_cockPrefab);
+            ExceptionUtilities.ThrowIfNullFormat(_chickenPrefab);
+            ExceptionUtilities.ThrowIfNullFormat(_chickenContainer);
+            ExceptionUtilities.ThrowIfEmptyCollection(_peckPoints, "_peckPoints");
+
+            SpawnProcess();
+        }
+
+        private void SpawnProcess()
+        {
+            if (_peckPoints.Count < 1)
+                return;
+
+            foreach (NPCPeckPoint peckPoint in _peckPoints)
+            {
+                if (peckPoint != null && peckPoint.IsSpawnPoin)
+                {
+                    SpawnCock(peckPoint);
+                    peckPoint.IsOccupied = true;
+                }
+            }
+        }
+
+        private void SpawnCock(NPCPeckPoint spawnPoint)
+        {
+            NPCCock cock = Instantiate(_cockPrefab, spawnPoint.transform.position, Quaternion.identity, _chickenContainer);
+            cock.Init(spawnPoint, this);
+            _cocks.Add(cock);
+
+            for (int i = 0; i < spawnPoint.ChickenCount; i++)
+                if (!SpawnChicken(cock, spawnPoint))
+                    Debug.LogError("Can't find spawn point for chicken");
+        }
+
+        private bool SpawnChicken(NPCCock cock, NPCPeckPoint spawnPoint)
+        {
+            for (int i = 0; i < _spawnCountTry; i++)
+            {
+                Vector2 randomOffset = Random.insideUnitCircle * _chickenSpawnDistance;
+                Vector3 pointToCheck = cock.transform.position + new Vector3(randomOffset.x, 0, randomOffset.y);
+
+                int walkableMask = 1 << 0;
+
+                if (NavMesh.SamplePosition(pointToCheck, out NavMeshHit hit, _chickenSpawnDistance, walkableMask))
+                {
+                    NPCChicken chicken = Instantiate(_chickenPrefab, hit.position, Quaternion.identity, _chickenContainer);
+                    chicken.Init(cock, spawnPoint);
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public NPCPeckPoint GetNewPeckPoint(NPCPeckPoint currentPeckPoint)
+        {
+            NPCPeckPoint newPeckPoint = null;
+            List<NPCPeckPoint> freePeckPoints = new(_peckPoints.Where(peckPoint => peckPoint.IsOccupied == false));
+
+            if (freePeckPoints.Count == 0) 
+                return newPeckPoint;
+
+            if (freePeckPoints.Count == 1)
+                newPeckPoint = freePeckPoints[0];
+            else if (freePeckPoints.Count > 1)
+                newPeckPoint = freePeckPoints[Random.Range(0, freePeckPoints.Count)];
+
+            currentPeckPoint.IsOccupied = false;
+            newPeckPoint.IsOccupied = true;
+
+            return newPeckPoint;
+        }
+    }
+}
