@@ -13,7 +13,7 @@ namespace BigProject.Gameplay
         {
             if (_dialog.StartDialogLine != null)
             {
-                _cursorManager.SetCursor(_highlightCursorTexture, _highlightCursorHotspot);
+                _cursorManager.SetCursor(_cursorType);
             }
         }
 
@@ -21,7 +21,7 @@ namespace BigProject.Gameplay
         {
             if (_dialog.StartDialogLine != null)
             {
-                _cursorManager.SetCursor(_pressedCursorTexture, _pressedCursorHotspot, true);
+                _cursorManager.SetCursor(_cursorType, true, true);
             }
         }
     }

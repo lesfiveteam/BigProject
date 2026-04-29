@@ -7,12 +7,7 @@ namespace BigProject.Intercatable.HighlightedObjects
 {
     public class CursorChangingEffect : MonoBehaviour, IHighlightEffect, IPressableEffect
     {
-        [SerializeField] protected Texture2D _highlightCursorTexture;
-        [Tooltip ("Should be equal to half the size of a sprite")]
-        [SerializeField] protected Vector2 _highlightCursorHotspot = Vector2.zero; 
-        [SerializeField] protected Texture2D _pressedCursorTexture;
-        [Tooltip ("Should be equal to half the size of a sprite")]
-        [SerializeField] protected Vector2 _pressedCursorHotspot = Vector2.zero; 
+        [SerializeField] protected CursorType _cursorType;
 
         protected CursorManager _cursorManager;
 
@@ -24,7 +19,7 @@ namespace BigProject.Intercatable.HighlightedObjects
 
         public virtual void EnableEffect()
         {
-            _cursorManager.SetCursor(_highlightCursorTexture, _highlightCursorHotspot);
+            _cursorManager.SetCursor(_cursorType);
         }
 
         public void DisableEffect()
@@ -34,7 +29,7 @@ namespace BigProject.Intercatable.HighlightedObjects
 
         public virtual void SetPressableEffect()
         {
-            _cursorManager.SetCursor(_pressedCursorTexture, _pressedCursorHotspot, true);
+            _cursorManager.SetCursor(_cursorType, true, true);
         }
     }
 }
