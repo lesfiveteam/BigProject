@@ -31,6 +31,8 @@ namespace BigProject.Gameplay.TownHall
         [SerializeField]
         private GameObject _rune;
         [SerializeField]
+        private Transform _runesInitialPoint;
+        [SerializeField]
         private int _questId = 1;
 
         [Header("Player remarks")]
@@ -56,21 +58,17 @@ namespace BigProject.Gameplay.TownHall
         private Coroutine _firstInteractionClue;
         private Coroutine _interactPillarsClue;
         private GameplayManager _gameplayManager;
-        private RuneShardsSystem _runesSystem;
-        private RunesConfig _runesConfig;
+        private RunesDriver _runesDriver;
 
-        public void Init(InventorySystem inventory, InventoryUI inventoryUI, GameplayManager gameplayManager, RuneShardsSystem runesSystem, RunesConfig runesConfig)
+        public void Init(InventorySystem inventory, InventoryUI inventoryUI, GameplayManager gameplayManager, RuneShardsSystem runesSystem, RunesConfig runesConfig, RunePanelUI runesPanel)
         {
             _inventory = inventory;
             _inventoryUI = inventoryUI;
             _gameplayManager = gameplayManager;
-            _runesSystem = runesSystem;
-            _runesConfig = runesConfig;
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory System"));
             ExceptionUtilities.ThrowIfNull(_inventoryUI, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory UI"));
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Gameplay Manager"));
-            ExceptionUtilities.ThrowIfNull(_runesSystem, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "RuneShardsSystem"));
-            ExceptionUtilities.ThrowIfNull(_runesConfig, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "RunesConfig"));
+            _runesDriver = new(runesSystem, runesConfig, runesPanel, _questId, _runesInitialPoint);
         }
 
         private void Awake()
@@ -78,6 +76,7 @@ namespace BigProject.Gameplay.TownHall
             Assert.IsNotNull(_firstTouchChestTrigger, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "First touch trigger"));
             Assert.IsNotNull(_chestCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chest collider"));
             Assert.IsNotNull(_rune, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Rune"));
+            Assert.IsNotNull(_runesInitialPoint, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Runes Initial Point Transform"));
         }
 
         // Draw clue to note texture.
@@ -191,13 +190,14 @@ namespace BigProject.Gameplay.TownHall
 
         public void GetRune()
         {
-            IReadOnlyList<int> rewardRunes = _runesConfig.GetQuestRewardRunes(_questId);
-            ExceptionUtilities.ThrowIfNullFormat(rewardRunes, "unable to get reward runes");
+            //IReadOnlyList<int> rewardRunes = _runesConfig.GetQuestRewardRunes(_questId);
+            //ExceptionUtilities.ThrowIfNullFormat(rewardRunes, "unable to get reward runes");
 
-            foreach (int rewardRuneId in rewardRunes)
-            {
-                _runesSystem.AddRunesSegment(rewardRuneId);
-            }
+            //foreach (int rewardRuneId in rewardRunes)
+            //{
+            //    _runesSystem.AddRunesSegment(rewardRuneId);
+            //}
+            _runesDriver.Deliver(Camera.main);
         }
 
         //private IEnumerator InteractionClueRoutune()

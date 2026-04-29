@@ -208,6 +208,7 @@ namespace BigProject.Initializers
             ResetUI resetUI = _hudObj.GetComponentInChildren<ResetUI>();
             RunesJigsawUI runesJigsawUI = _hudObj.GetComponentInChildren<RunesJigsawUI>(true);
             ServiceLocator.AddService(_inventoryUI);
+            ServiceLocator.AddService(_runeUI);
 
             DontDestroyOnLoad(_hudObj);
 
@@ -343,6 +344,7 @@ namespace BigProject.Initializers
             ServiceLocator.ReleaseService<InventorySystem>();
             ServiceLocator.ReleaseService<HUD>();
             ServiceLocator.ReleaseService<InventoryUI>();
+            ServiceLocator.ReleaseService<RunePanelUI>();
             ServiceLocator.ReleaseService<PlayerInputHandler>();
             ServiceLocator.ReleaseService<GameplayManager>();
             ServiceLocator.ReleaseService<DialogueManager>();
