@@ -1,4 +1,3 @@
-using Assets.Project.Scripts.Interactable;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Intercatable;
 using BigProject.Managers.SoundsMusicManagers;
@@ -467,7 +466,7 @@ namespace BigProject.Player
 
             if (spawnEffect)
             {
-                Destroy(Instantiate(_clickEffect, destination, _clickEffect.transform.rotation), CLICK_EFFECT_LIFETIME);
+                Destroy(Instantiate(_clickEffect, destination, _clickEffect.transform.rotation * Quaternion.Euler(new Vector3(0,0, UnityEngine.Random.Range(0,360)))), CLICK_EFFECT_LIFETIME);
             }
         }
 
