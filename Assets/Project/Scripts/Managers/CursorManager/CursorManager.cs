@@ -1,15 +1,36 @@
 using BigProject.Player;
+using System;
+using System.Linq;
 using UnityEngine;
 
 namespace BigProject.Managers.CursorManager
 {
+    public enum CursorType
+    {
+        Default,
+        Dialogue,
+        Outline,
+        Hand,
+        Door,
+    }
+
+
+    [Serializable]
+    public struct CursorData
+    {
+        public CursorType CursorType;
+        public Texture2D DefaultCursorTexture;
+        public Vector2 DefaultCursorHotspot;
+        public Texture2D PressedCursorTexture;
+        public Vector2 PressedCursorHotspot;
+    }
+
     public class CursorManager : MonoBehaviour
     {
+        [SerializeField] private CursorType _defaultCursorType;
         [SerializeField] private Texture2D _pressedCursorTexture;
-        [SerializeField] private Vector2 _pressedCursorHotspot;
         [SerializeField] private Texture2D _defaultCursorTexture;
-        [SerializeField] private Vector2 _defaultCursorHotspot;
-        [SerializeField] private CursorMode _cursorMode;
+        [SerializeField] private CursorsConfig _cursorsConfig;
 
         private PlayerInputHandler _inputHandler;
         private Texture2D _currentTexture;
@@ -51,8 +72,7 @@ namespace BigProject.Managers.CursorManager
 
         private void SetDefaultCursor()
         {
-            SetCursor(_isPressing ? _pressedCursorTexture : _defaultCursorTexture,
-                _isPressing ? _pressedCursorHotspot : _defaultCursorHotspot);
+            SetCursor(_defaultCursorType, _isPressing);
         }
 
         /// <summary>
@@ -61,15 +81,17 @@ namespace BigProject.Managers.CursorManager
         /// <param name="hotspot">Cursor offset</param>
         /// <param name="isOverriding">If true cursor will be changed, regardless of it's current texture. If false, it will be changed only if it's default</param>
         /// </summary>
-        public void SetCursor(Texture2D cursorTexture, Vector2 hotspot = default, bool isOverriding = false)
+        public void SetCursor(CursorType cursorType, bool isPressed = false, bool isOverriding = false)
         {
             if(_currentTexture != _defaultCursorTexture && _currentTexture != _pressedCursorTexture && !isOverriding)
             {
                 return;
             }
 
-            _currentTexture = cursorTexture;
-            Cursor.SetCursor(_currentTexture, hotspot, _cursorMode);
+            CursorData newCursorData = _cursorsConfig.CursorDatas.First(cursorData => cursorData.CursorType == cursorType);
+            _currentTexture = isPressed ? newCursorData.PressedCursorTexture : newCursorData.DefaultCursorTexture;
+            Vector2 hotSpot = isPressed ? newCursorData.PressedCursorHotspot : newCursorData.DefaultCursorHotspot;
+            Cursor.SetCursor(_currentTexture, hotSpot, CursorMode.Auto);
         }
 
         /// <summary>
