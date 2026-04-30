@@ -1,5 +1,6 @@
 using BigProject.Systems.Inventory;
 using BigProject.Systems.Inventory.ItemsModifiers;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -32,6 +33,8 @@ namespace BigProject.UI
             _isEmpty = false;
             _isSelected = false;
         }
+
+        public InventoryItemUI GetInventoryItemUI() { return _inventoryItemUI; }
 
         public void ClearSlot()
         {
@@ -75,6 +78,32 @@ namespace BigProject.UI
                 _isSelected = false;
                 _slotImage.sprite = _defaultSprite;
             }
+        }
+
+        public Image GetItemImage()
+        { 
+            return _inventoryItemUI.GetImage();
+        }
+
+        public IEnumerator PlayAddToSlotAnimation(Vector2 startPosition, Vector2 targetPosition, float animStepTime)
+        {
+            _inventoryItemUI.SetIsPlayingAnimation(true);
+            Image spriteImage = _inventoryItemUI.GetImage();
+            spriteImage.gameObject.SetActive(true);
+            _inventoryItemUI.SetCurrentPosition(startPosition);
+            yield return (_inventoryItemUI.PlayPopAnim());
+            
+            Vector3 currentPosition;
+            float t = 0.0f;
+            while (t <= 1.0f)
+            {
+                currentPosition = Vector3.Lerp(startPosition, targetPosition, t);
+                _inventoryItemUI.SetCurrentPosition(currentPosition);
+                t += 0.01f;
+                yield return new WaitForSeconds(animStepTime * 0.01f);
+            }
+            spriteImage.transform.position = targetPosition;
+            _inventoryItemUI.SetIsPlayingAnimation(false);
         }
     }
 }

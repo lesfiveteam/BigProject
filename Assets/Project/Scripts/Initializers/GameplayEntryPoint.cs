@@ -158,7 +158,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(gameplayManager);
             ServiceLocator.AddService(_questsTracker);
 
-            InitHUD();
+            InitHUD(playerController.transform);
             ChatPanelController playerChatWorld = playerController.GetComponentInChildren<ChatPanelController>(true);
             ExceptionUtilities.ThrowIfNull(playerChatWorld, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "GameplayEntryPoint", "Player ChatPanelController"));
             playerChatWorld.GetComponentInChildren<TMP_Text>();
@@ -197,7 +197,7 @@ namespace BigProject.Initializers
             DontDestroyOnLoad(_pauseMenuViewObj);
         }
 
-        private void InitHUD()
+        private void InitHUD(Transform player)
         {
             GameLogManager.Info(LogStr.INFO_INITIALIZING_HUD);
             _hudObj = Instantiate(_hudPrefab);
@@ -213,7 +213,7 @@ namespace BigProject.Initializers
             DontDestroyOnLoad(_hudObj);
 
             _journalView.Init(_questJournal);
-            _inventoryUI.Init(_inventory);
+            _inventoryUI.Init(_inventory, player);
             GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
             _runeUI.Init(_runesSystem, gameplayManager);
             runesJigsawUI.Init(_runesShardsSystem, gameplayManager);

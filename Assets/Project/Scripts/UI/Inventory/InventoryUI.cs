@@ -1,7 +1,6 @@
 using BigProject.Managers;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
-using BigProject.Systems.Inventory.ItemsModifiers;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -13,12 +12,14 @@ namespace BigProject.UI
     {
         [SerializeField] private List<InventorySlotUI> _inventorySlots;
         [SerializeField] private Image _noteImage;
+        [SerializeField] private float _addAnimationStepTime = 0.1f;
         private InventorySystem _inventorySystem;
-
+        private int _previousHeldItemsCount = 0;
         private const string NOTE_ANIM_TRIGGER = "Appear";
         private Animator _noteAnimator;
-        
-        public void Init(InventorySystem inventorySystem)
+        private Transform _playerTransform;
+
+        public void Init(InventorySystem inventorySystem, Transform playerTransform)
         {
             if (inventorySystem == null)
             {
@@ -26,6 +27,7 @@ namespace BigProject.UI
                 throw new System.ArgumentNullException(nameof(inventorySystem), "InventorySystem cannot be null");
             }
 
+            _playerTransform = playerTransform;
             _inventorySystem = inventorySystem;
             _inventorySystem.OnInventoryUpdated += UpdateInventory;
         }
@@ -67,23 +69,54 @@ namespace BigProject.UI
                 }
                 
                 _noteImage.gameObject.SetActive(false);
+                _previousHeldItemsCount = 0;
                 return;
             }
 
-            for (int i = 0; i < heldItems.Count; i++)
+            //if item was added
+            if (_previousHeldItemsCount < heldItems.Count)
             {
-                _inventorySlots[i].SetSlot(heldItems[i], Camera.main, _noteImage, _inventorySystem.GetHeldItemModifiers(heldItems[i]._name));
+                for (int i = 0; i < heldItems.Count-1; i++)
+                {
+                    _inventorySlots[i].SetSlot(heldItems[i], Camera.main, _noteImage, _inventorySystem.GetHeldItemModifiers(heldItems[i]._name));
 
-                if (heldItems[i]._noteSprite != null)
+                    if (heldItems[i]._noteSprite != null)
+                    {
+                        hasNote = true;
+                    }
+                }
+
+                _inventorySlots[heldItems.Count - 1].SetSlot(heldItems[heldItems.Count - 1], Camera.main, _noteImage, _inventorySystem.GetHeldItemModifiers(heldItems[heldItems.Count - 1]._name));
+
+                if (heldItems[heldItems.Count - 1]._noteSprite != null)
                 {
                     hasNote = true;
                 }
+
+                Vector2 startPos = Camera.main.WorldToScreenPoint(_playerTransform.position + _playerTransform.forward * 0.5f);
+                Vector2 targetpos = _inventorySlots[heldItems.Count - 1].transform.position;
+                _inventorySlots[heldItems.Count - 1].GetItemImage().gameObject.SetActive(false);
+                StartCoroutine(_inventorySlots[heldItems.Count - 1].PlayAddToSlotAnimation(startPos, targetpos, _addAnimationStepTime));
+            }
+            else //it item was removed or we just need to update inventory
+            {
+                for (int i = 0; i < heldItems.Count; i++)
+                {
+                    _inventorySlots[i].SetSlot(heldItems[i], Camera.main, _noteImage, _inventorySystem.GetHeldItemModifiers(heldItems[i]._name));
+
+                    if (heldItems[i]._noteSprite != null)
+                    {
+                        hasNote = true;
+                    }
+                }
+
+                for (int i = heldItems.Count; i < _inventorySlots.Count; i++)
+                {
+                    _inventorySlots[i].ClearSlot();
+                }
             }
 
-            for (int i = heldItems.Count; i < _inventorySlots.Count; i++)
-            {
-                _inventorySlots[i].ClearSlot();
-            }
+            _previousHeldItemsCount = heldItems.Count;
 
             // hides note image if there is no corresponding item
             if (!hasNote)

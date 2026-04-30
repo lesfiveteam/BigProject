@@ -1,8 +1,8 @@
 using BigProject.Systems.Inventory;
 using BigProject.Systems.Inventory.ItemsModifiers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -13,10 +13,14 @@ namespace BigProject.UI
     public class InventoryItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
     {
         [SerializeField] private Image _image;
+        [SerializeField] private Animator _itemAnimator;
+        [SerializeField] private Material _itemShineMaterial;
+        [SerializeField] private float _shineTime = 0.3f;
+        private const string ITEM_POP_TRIGGER = "Pop";
 
         private const string NOTE_ANIM_TRIGGER = "Appear";
         private Animator _noteAnimator;
-
+        
         private Transform _defaultParent;
         private Camera _camera;
         private Item _item;
@@ -24,9 +28,47 @@ namespace BigProject.UI
 
         public event Action<bool> OnStartDrag;
 
+        private bool isPlayingAnimation = false;
+
+        private Vector3 _currentPosition;
+        private Material _currentMaterial;
+
+        private void Update()
+        {
+            if (!isPlayingAnimation)
+                return;
+
+            _image.transform.position = _currentPosition;
+        }
+
         private void Awake()
         {
             _defaultParent = transform.parent;
+        }
+
+        public Image GetImage()
+        { 
+            return _image;
+        }
+
+        public void SetIsPlayingAnimation(bool val)
+        { 
+            isPlayingAnimation = val; 
+        }
+
+        public void SetCurrentPosition(Vector3 currentPos)
+        {
+            _currentPosition = currentPos;
+        }
+
+        public IEnumerator PlayPopAnim()
+        {
+            _itemAnimator.SetTrigger(ITEM_POP_TRIGGER);
+            yield return new WaitForSeconds(_shineTime);
+            _currentMaterial.SetInt("_ShouldPlay", 1);    
+            yield return new WaitForSeconds(_shineTime);
+            _currentMaterial.SetInt("_ShouldPlay", 0);
+            yield return new WaitForSeconds(_shineTime);
         }
 
         public void SetItem(Item item, Camera camera, Image noteImage, IReadOnlyList<ItemModifier> modifiers)
@@ -34,6 +76,10 @@ namespace BigProject.UI
             _image.sprite = item._itemSprite;
             _camera = camera;
             _item = item;
+
+            _currentMaterial = Instantiate(_itemShineMaterial);
+            _image.material = _currentMaterial;
+            _currentMaterial.SetTexture("_MainText", item._itemSprite.texture);
 
             if (item._noteSprite != null && noteImage != null)
             {
@@ -47,6 +93,8 @@ namespace BigProject.UI
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            if (isPlayingAnimation)
+                return;
             transform.SetParent(transform.root); //, false); - leads to change of scale
             transform.SetAsLastSibling();
             _image.raycastTarget = false;
@@ -55,11 +103,17 @@ namespace BigProject.UI
 
         public void OnDrag(PointerEventData eventData)
         {
+            if (isPlayingAnimation)
+                return;
+
             transform.position = Mouse.current.position.ReadValue();
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            if (isPlayingAnimation)
+                return;
+
             Vector2 mousePosition = Mouse.current.position.ReadValue();
             Ray ray = _camera.ScreenPointToRay(mousePosition);
             
@@ -85,6 +139,9 @@ namespace BigProject.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            if (isPlayingAnimation)
+                return;
+
             if (_noteObject == null)
             {
                 return;
