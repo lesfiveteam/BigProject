@@ -59,6 +59,8 @@ namespace BigProject.Gameplay.TownHall
         private AudioClip _chestOpenSound;
         [SerializeField]
         private float _chestOpenSoundVolume = 1f;
+        [SerializeField]
+        private Collider _maskCollider;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -79,10 +81,6 @@ namespace BigProject.Gameplay.TownHall
         private Coroutine _clueCoroutine;
         private SoundsManager _soundsManager;
 
-        private readonly Vector3 BROKEN_KEY_PART_1_MOVING_OFFSET = new(0.24f, -0.3f, 0f);
-        private readonly Vector3 BROKEN_KEY_PART_1_ROTATION_OFFSET = new(-0f, 270f, 360f);
-        private readonly Vector3 BROKEN_KEY_PART_2_MOVING_OFFSET = new(0f, -0.1f, 0f);
-        private readonly Vector3 BROKEN_KEY_PART_2_ROTATION_OFFSET = new(0f, -90f, 0f);
         private readonly Vector3 CHEST_CUP_OPEN_ROTATION_OFFSET = new(110f, 0f, 0f);
         private readonly Vector3 KEYS_ROTATION_OFFSET = new(-180f, 0f, 0f);
 
@@ -106,6 +104,13 @@ namespace BigProject.Gameplay.TownHall
         public object SavingData => _dataToSave;
 
         public Vector3 TargetPosition => _target.position;
+
+        [field: SerializeField]
+        public float MaxDistance { get; private set; }
+
+        public bool NeedLookAt => true;
+
+        public Vector3 TargetLookAt => transform.position;
 
         public void Init(InventorySystem inventory, InventoryUI inventoryUI, ProgressManager progressManager, HUD hud, PlayerInputHandler inputHandler, SoundsManager soundsManager)
         {
@@ -133,6 +138,7 @@ namespace BigProject.Gameplay.TownHall
             Assert.IsNotNull(_hudConfig, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD Config"));
             Assert.IsNotNull(_puzzleRemark, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Puzzle Remark"));
             Assert.IsNotNull(_incorrectKeysRemark, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Incorrect Keys Remark"));
+            Assert.IsNotNull(_maskCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Mask Collider"));
             _keysIds = Enumerable.Repeat(-1, _keysHolders.Count).ToList();
         }
 
@@ -223,17 +229,21 @@ namespace BigProject.Gameplay.TownHall
 
         private IEnumerator RemoveBrokenKeyRoutine(Transform key)
         {
-            Transform partOne = key.GetChild(0);
-            Transform partTwo = key.GetChild(1);
+            //Transform partOne = key.GetChild(0);
+            //Transform partTwo = key.GetChild(1);
+            Animator animator = key.GetComponentInChildren<Animator>();
+            ExceptionUtilities.ThrowIfNullFormat(animator, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "Broken key Animator"));
 
-            if (partOne == null || partTwo == null)
-            {
-                Debug.LogError(String.Format(LogStr.ERROR_QUEST, "unable to get broken key part"));
-                yield break;
-            }
+            //if (partOne == null || partTwo == null)
+            //{
+            //    Debug.LogError(String.Format(LogStr.ERROR_QUEST, "unable to get broken key part"));
+            //    yield break;
+            //}
 
-            MoveElement(partOne, BROKEN_KEY_PART_1_MOVING_OFFSET, BROKEN_KEY_PART_1_ROTATION_OFFSET, _brokenKeyMovingTime);
-            MoveElement(partTwo, BROKEN_KEY_PART_2_MOVING_OFFSET, BROKEN_KEY_PART_2_ROTATION_OFFSET, _brokenKeyMovingTime);
+            animator.SetTrigger("Broken");
+
+            //MoveElement(partOne, BROKEN_KEY_PART_1_MOVING_OFFSET, BROKEN_KEY_PART_1_ROTATION_OFFSET, _brokenKeyMovingTime);
+            //MoveElement(partTwo, BROKEN_KEY_PART_2_MOVING_OFFSET, BROKEN_KEY_PART_2_ROTATION_OFFSET, _brokenKeyMovingTime);
             _actionHandlers[_actionTryBrokenKeyName].MakeTransition(0);
             yield return new WaitForSeconds(_brokenKeyMovingTime + 0.1f);
             Destroy(key.gameObject);
@@ -291,18 +301,11 @@ namespace BigProject.Gameplay.TownHall
             {
                 _hud.HideWidget(_hudConfig.HUDResetWidgetId);
                 _soundsManager.PlaySound(_chestOpenSound, volume: _chestOpenSoundVolume);
-                //MoveElement(_chestCup, Vector3.zero, CHEST_CUP_OPEN_ROTATION_OFFSET, _openChestMovingTime);
-
-                //foreach (GameObject key in _keys)
-                //{
-                //    MoveElement(key.transform, Vector3.zero, KEYS_ROTATION_OFFSET, _keysMovingTime);
-                //}
-
                 _inventory.RemoveItemByName(_noteItemName);
                 _actionHandlers[_actionOpenName].MakeTransition(0);
                 _returnToInventory = false;
+                _maskCollider.enabled = true;
                 StartCoroutine(OpenChestAnimationRoutine());
-                //_activator.DeactivateMiniGame();
             }
             else
             {
@@ -321,8 +324,6 @@ namespace BigProject.Gameplay.TownHall
             yield return new WaitForSeconds(_keysMovingTime);
             _activator.DeactivateMiniGame();
             MoveElement(_chestCup, Vector3.zero, CHEST_CUP_OPEN_ROTATION_OFFSET, _openChestMovingTime);
-
-
         }
 
         private void ResetKeysIds()
@@ -415,7 +416,6 @@ namespace BigProject.Gameplay.TownHall
         {
             if (_actionHandlers[_actionOpenName].CurrentState == QuestActionState.Completed)
             {
-                //ReplicaManager.ShowReplica("Ура!!!");
                 _progressManager.SaveAdditionalData(this);
             }
         }
