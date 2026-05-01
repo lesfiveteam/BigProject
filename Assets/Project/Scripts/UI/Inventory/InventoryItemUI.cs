@@ -30,16 +30,15 @@ namespace BigProject.UI
 
         private bool isPlayingAnimation = false;
 
-        private Vector3 _currentPosition;
         private Material _currentMaterial;
 
-        private void Update()
-        {
-            if (!isPlayingAnimation)
-                return;
+        //private void Update()
+        //{
+        //    if (!isPlayingAnimation)
+        //        return;
 
-            _image.transform.position = _currentPosition;
-        }
+        //    _image.transform.position = _currentPosition;
+        //}
 
         private void Awake()
         {
@@ -53,12 +52,12 @@ namespace BigProject.UI
 
         public void SetIsPlayingAnimation(bool val)
         { 
-            isPlayingAnimation = val; 
+            isPlayingAnimation = val;
         }
 
-        public void SetCurrentPosition(Vector3 currentPos)
+        public void SetImageTransformPosition(Vector3 currentPos)
         {
-            _currentPosition = currentPos;
+            _image.transform.position = currentPos;
         }
 
         public IEnumerator PlayPopAnim()

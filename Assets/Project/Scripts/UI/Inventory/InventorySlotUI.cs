@@ -89,20 +89,30 @@ namespace BigProject.UI
         {
             _inventoryItemUI.SetIsPlayingAnimation(true);
             Image spriteImage = _inventoryItemUI.GetImage();
+
+            Transform originalParent = spriteImage.transform.parent;
+            spriteImage.transform.SetParent(transform.root);
+            spriteImage.transform.SetAsLastSibling();
+
             spriteImage.gameObject.SetActive(true);
-            _inventoryItemUI.SetCurrentPosition(startPosition);
-            yield return (_inventoryItemUI.PlayPopAnim());
-            
-            Vector3 currentPosition;
+            _inventoryItemUI.SetImageTransformPosition(startPosition);
+
+            yield return _inventoryItemUI.PlayPopAnim();
+
             float t = 0.0f;
+
             while (t <= 1.0f)
             {
-                currentPosition = Vector3.Lerp(startPosition, targetPosition, t);
-                _inventoryItemUI.SetCurrentPosition(currentPosition);
+                Vector3 currentPosition = Vector3.Lerp(startPosition, targetPosition, t);
+                _inventoryItemUI.SetImageTransformPosition(currentPosition);
                 t += 0.01f;
                 yield return new WaitForSeconds(animStepTime * 0.01f);
             }
-            spriteImage.transform.position = targetPosition;
+
+            spriteImage.transform.SetParent(originalParent);
+            spriteImage.transform.localPosition = Vector3.zero;
+            spriteImage.transform.localScale = Vector3.one;
+
             _inventoryItemUI.SetIsPlayingAnimation(false);
         }
     }
