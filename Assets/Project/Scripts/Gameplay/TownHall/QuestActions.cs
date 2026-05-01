@@ -34,6 +34,8 @@ namespace BigProject.Gameplay.TownHall
         private Transform _runesInitialPoint;
         [SerializeField]
         private int _questId = 1;
+        [SerializeField]
+        private Collider _maskCollider;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -77,6 +79,7 @@ namespace BigProject.Gameplay.TownHall
             Assert.IsNotNull(_chestCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chest collider"));
             Assert.IsNotNull(_rune, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Rune"));
             Assert.IsNotNull(_runesInitialPoint, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Runes Initial Point Transform"));
+            Assert.IsNotNull(_maskCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Mask Collider"));
         }
 
         // Draw clue to note texture.
@@ -178,6 +181,7 @@ namespace BigProject.Gameplay.TownHall
                 () =>
                 {
                     _chestCollider.enabled = false;
+                    _maskCollider.enabled = false;
                     ReplicaManager.ShowReplica(_openChestRemark);// "Да! Получилось! Что же скрывал этот сундук за такими хитрыми замками?");
                 }
                 ));
