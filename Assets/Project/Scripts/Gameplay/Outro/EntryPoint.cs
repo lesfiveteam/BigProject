@@ -17,13 +17,13 @@ namespace Assets.Project.Scripts.Gameplay.Outro
             ExceptionUtilities.ThrowIfNullFormat(_slideManager);
             ServiceLocator.GetService<ManualLoop>().AddTickable(_slideManager);
 
-            _slideManager.OutroEnded += OnOpeningEnded;
-            _slideManager.StartSlideShow(OutroVariant.First); // !Hardcode! Need to set valid outro enum from ServiceLocator
+            _slideManager.SlideShowEnded += OnOpeningEnded;
+            _slideManager.StartSlideShow(OutroSlideManager.OutroVariant.First); // !Hardcode! Need to set valid outro enum from ServiceLocator
         }
 
         private void OnOpeningEnded()
         {
-            _slideManager.OutroEnded -= OnOpeningEnded;
+            _slideManager.SlideShowEnded -= OnOpeningEnded;
 
             Bootstrapper.SetStage(GameExecutionStage.Launch);
             ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.MainMenu);
