@@ -76,7 +76,7 @@ namespace BigProject.Gameplay.VillageElderQuest
 
         public void RemoveBag()
         {
-            RemoveAmbassador();
+            //RemoveAmbassador();
             _inventory.RemoveItemByName(_bagItemName);
             GameplayUtilities.DoAfterConditionRoutine(() => _gameplayManager.State == GameplayState.Play, () =>
             ReplicaManager.ShowReplica(_needFatherRemark, 1f));
