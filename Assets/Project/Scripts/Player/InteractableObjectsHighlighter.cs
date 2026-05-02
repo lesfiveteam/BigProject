@@ -68,13 +68,7 @@ namespace BigProject.Intercatable.HighlightedObjects
 
                     if (newUIObject != _currentObject)
                     {
-                        if (_currentObject != null)
-                        {
-                            _currentObject.Unhighlight();
-                        }
-
-                        newUIObject.Highlight();
-                        _currentObject = newUIObject;
+                        SetNewObject(newUIObject);
                     }
                 }
 
@@ -90,13 +84,7 @@ namespace BigProject.Intercatable.HighlightedObjects
                         {
                             if (newObject != _currentObject)
                             {
-                                if (_currentObject != null)
-                                {
-                                    _currentObject.Unhighlight();
-                                }
-
-                                newObject.Highlight();
-                                _currentObject = newObject;
+                                SetNewObject(newObject);
                             }
                         }
                         else if (_currentObject != null)
@@ -122,6 +110,30 @@ namespace BigProject.Intercatable.HighlightedObjects
             StopAllCoroutines();
             _cursorManager.ResetToDefault();
             StartCoroutine(ObjectCheckRoutine());
+        }
+
+        private void SetNewObject(HighlightedObject highlightedObject)
+        {
+            if (_currentObject != null)
+            {
+                _currentObject.Unhighlight();
+                _currentObject.OnDeactivate -= OnObjectDeactivate;
+            }
+
+            highlightedObject.Highlight();
+            _currentObject = highlightedObject;
+            _currentObject.OnDeactivate += OnObjectDeactivate;
+        }
+
+        private void OnObjectDeactivate(HighlightedObject highlightedObject)
+        {
+            if(highlightedObject != _currentObject)
+            {
+                return;
+            }
+
+            _currentObject.Unhighlight();
+            _currentObject = null;
         }
 
         private void OnClick()
