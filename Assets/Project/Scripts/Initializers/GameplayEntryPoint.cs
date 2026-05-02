@@ -150,7 +150,7 @@ namespace BigProject.Initializers
             PlayerController playerController = Instantiate(_playerControllerPrefab);
             _settingsManager = ServiceLocator.GetService<SettingsManager>();
             CreatePlayer(playerController, sceneLoader);
-            InitDialogue();
+            InitDialogue(gameplayManager);
 
             ServiceLocator.AddService(_questJournal);
             ServiceLocator.AddService(_runesSystem);
@@ -181,10 +181,10 @@ namespace BigProject.Initializers
             GameLogManager.Info(LogStr.INFO_INITIALIZING_GAMEPLAY_SERVICES_COMPLETED);
         }
 
-        private void InitDialogue()
+        private void InitDialogue(GameplayManager gameplayManager)
         {
             _dialogueViewObj = Instantiate(_dialogueView);
-            _dialogueManager = new DialogueManager(_dialogueViewObj.GetComponent<DialogueUI>());
+            _dialogueManager = new DialogueManager(_dialogueViewObj.GetComponent<DialogueUI>(), gameplayManager);
             _dialogueManager.Init();
             DontDestroyOnLoad(_dialogueViewObj);
         }

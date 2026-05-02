@@ -19,11 +19,12 @@ namespace BigProject.Managers
         private DialogueUI _dialogueView;
 
         private HashSet<string> _chosenAnswers = new HashSet<string>();
+        private GameplayManager _gameplayManager;
 
-
-        public DialogueManager(DialogueUI dialogueView)
+        public DialogueManager(DialogueUI dialogueView, GameplayManager gameplayManager)
         {
             _dialogueView = dialogueView;
+            _gameplayManager = gameplayManager;
         }
         
         public void Init()
@@ -48,6 +49,12 @@ namespace BigProject.Managers
             if (dialogueLine.DialogueNPCPhrases.Count == 0 && dialogueLine.DialogueAnswerOptions.Count == 0)
             {
                 Debug.LogWarning("Не проинициализировали диалог");
+                return;
+            }
+
+            if (_gameplayManager.State != GameplayState.Play)
+            {
+                // Can start dialogue only if game state == Play
                 return;
             }
 
