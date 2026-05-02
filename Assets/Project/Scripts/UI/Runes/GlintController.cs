@@ -36,5 +36,13 @@ namespace BigProject.UI
             Vector4 selector = new(r ? 1 : 0, g ? 1 : 0, b ? 1 : 0, 0);
             _glintMat.SetVector("_ChannelSelector", selector);
         }
+
+        private void OnDestroy()
+        {
+            if (_image.material != null)
+            {
+                Destroy(_image.material);
+            }
+        }
     }
 }

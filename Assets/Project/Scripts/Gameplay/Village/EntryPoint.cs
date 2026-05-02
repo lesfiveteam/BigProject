@@ -19,6 +19,8 @@ namespace BigProject.Gameplay.Village
         private List<MonoBehaviour> _questsControllers;
         [SerializeField]
         private NPCChatsDatabasesController _chatsDatabasesController;
+        [SerializeField]
+        private WatermillHandler _watermillHandler;
 
         private QuestsBoundariesTracker _questsTracker;
 
@@ -38,8 +40,9 @@ namespace BigProject.Gameplay.Village
             _questsTracker.OnSceneEntry();
 
             //_chestSound.Init(ServiceLocator.GetService<SoundsManager>());
-            _chatsDatabasesController.Init(ServiceLocator.GetService<ProgressManager>());
-
+            ProgressManager progressManager = ServiceLocator.GetService<ProgressManager>();
+            _chatsDatabasesController.Init(progressManager);
+            _watermillHandler.Init(progressManager);
             SwithOnOutline(player);
         }
 
