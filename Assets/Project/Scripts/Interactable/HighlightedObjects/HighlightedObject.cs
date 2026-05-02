@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 namespace BigProject.Intercatable.HighlightedObjects
 {
@@ -8,6 +9,8 @@ namespace BigProject.Intercatable.HighlightedObjects
     public class HighlightedObject : MonoBehaviour
     {
         [SerializeField] private List<MonoBehaviour> _highlightEffects;
+
+        public Action<HighlightedObject> OnDeactivate;
 
         public void Highlight()
         {
@@ -40,6 +43,16 @@ namespace BigProject.Intercatable.HighlightedObjects
                     pressableEffect.SetPressableEffect();
                 }
             }
+        }
+
+        private void OnDisable()
+        {
+            OnDeactivate?.Invoke(this);
+        }
+
+        private void OnDestroy()
+        {
+            OnDeactivate?.Invoke(this);
         }
     }
 }
