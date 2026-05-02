@@ -1,5 +1,6 @@
 using BigProject.Managers;
 using BigProject.Systems;
+using BigProject.Utilities;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -20,15 +21,16 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
 
     public class SceneLoadManager : IDisposable
     {
+        private const float PRELOADER_MIN_DURATION = 2f;
+        private const string FADER_PREFAB_PATH = "Prefabs/Fader";
+
         public event Action<Scenes> SceneLoaded;
         public event Action SceneLoadingStarted;
         public event Action SceneLoadingCompleted;
-        public bool IsLoading => _isLoading;
-
-        private const string FADER_PREFAB_PATH = "Prefabs/Fader";
-
+        
         private readonly MonoBehaviour _coroutineStarter;
         private readonly Fader _fader;
+        private readonly Preloader _preloader;
 
         private bool _isLoading;
         private string _currentSceneName;
@@ -41,17 +43,21 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
             {
                 Fader faderPrefab = Resources.Load<Fader>(FADER_PREFAB_PATH);
                 _fader = UnityEngine.Object.Instantiate(faderPrefab);
+                _preloader = _fader.GetComponent<Preloader>();
 
                 UnityEngine.Object.DontDestroyOnLoad(_fader.gameObject);
             }
+
+            ExceptionUtilities.ThrowIfNullFormat(_fader);
+            ExceptionUtilities.ThrowIfNullFormat(_preloader);
         }
+
+        public bool IsLoading => _isLoading;
 
         public void LoadScene(Scenes scene)
         {
             if (_isLoading)
-            {
                 return;
-            }
 
             string currentSceneName = SceneManager.GetActiveScene().name;
             string newSceneName = scene.ToString();
@@ -79,11 +85,13 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
                 if (name == sceneName)
                     return true;
             }
+
             return false;
         }
 
         private IEnumerator LoadSceneRoutine(Scenes scene, string sceneName)
         {
+            
             _isLoading = true;
             _currentSceneName = sceneName;
 
@@ -92,25 +100,21 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
             _fader.FadeIn(() => waitFading = false);
 
             while (waitFading)
-            {
                 yield return null;
-            }
+
+            // Show preloader
+            bool waitPreloader = true;
+            _preloader.Play(PRELOADER_MIN_DURATION, () => waitPreloader = false);
 
             SceneLoadingStarted?.Invoke();
 
             // Loading scene
             AsyncOperation async = SceneManager.LoadSceneAsync(_currentSceneName);
-            async.allowSceneActivation = false;
+
             SceneManager.sceneLoaded += NotifyLoadingCompleted;
 
-            while (async.progress < 0.9f)
-            {
-                yield return null;
-            }
-
-            async.allowSceneActivation = true;
-
-            yield return new WaitUntil(() => SceneManager.GetActiveScene().name == _currentSceneName);
+            // Waiting for fully scene load & preloader min duration
+            yield return new WaitUntil(() => SceneManager.GetActiveScene().name == _currentSceneName & !waitPreloader);
 
             // Notification
             Debug.Log(string.Format(LogStr.INFO_SCENE_LOADING, scene));
@@ -121,9 +125,7 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
             _fader.FadeOut(() => waitFading = false);
 
             while (waitFading)
-            {
                 yield return null;
-            }
 
             _isLoading = false;
         }
