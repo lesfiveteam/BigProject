@@ -137,7 +137,7 @@ namespace BigProject.Player
                 {
                     ""name"": """",
                     ""id"": ""75f82815-79dc-4233-9551-580c4331aaf2"",
-                    ""path"": ""<Keyboard>/tab"",
+                    ""path"": ""<Keyboard>/m"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",

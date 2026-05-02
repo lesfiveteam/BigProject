@@ -25,6 +25,8 @@ using UnityEngine.SceneManagement;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using TMPro;
 using BigProject.Managers.SoundsMusicManagers;
+using UnityEditor.Experimental.GraphView;
+using BigProject.UI.Map;
 
 namespace BigProject.Initializers
 {
@@ -47,6 +49,8 @@ namespace BigProject.Initializers
         private GameObject _dialogueView;
         [SerializeField]
         private GameObject _pauseView;
+        [SerializeField]
+        private GameObject _mapView;
         [SerializeField]
         private QuestSwitchConfig _questSwitchConfig;
         [SerializeField]
@@ -73,6 +77,7 @@ namespace BigProject.Initializers
         private GameObject _hudObj;
         private GameObject _dialogueViewObj;
         private GameObject _pauseMenuViewObj;
+        private GameObject _mapViewObj;
         private QuestJournal _questJournal;
         private InventorySystem _inventory;
         private RunesSystem _runesSystem;
@@ -166,6 +171,7 @@ namespace BigProject.Initializers
                 _hudObj.GetComponentInChildren<PlayerChatUI>(true), gameplayManager, manualLoop);
             ServiceLocator.AddService(_replicaManager);
             InitPauseMenu();
+            InitMap(gameplayManager);
 
             _questJournal.Init();
             progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
@@ -195,6 +201,15 @@ namespace BigProject.Initializers
             _pauseMenuViewObj = Instantiate(_pauseView);
             _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput, _settingsManager);
             DontDestroyOnLoad(_pauseMenuViewObj);
+        }
+
+        private void InitMap(GameplayManager gameplayManager)
+        {
+            _mapViewObj = Instantiate(_mapView);
+            MapUI mapUI = _mapViewObj.GetComponent<MapUI>();
+            MapManager mapManager = new MapManager(mapUI, _playerInput, gameplayManager, _hud, _hudConfig);
+            mapManager.Init();
+            DontDestroyOnLoad(_mapViewObj);
         }
 
         private void InitHUD(Transform player)
@@ -336,6 +351,7 @@ namespace BigProject.Initializers
             Destroy(_hudObj);
             Destroy(_dialogueViewObj);
             Destroy(_pauseMenuViewObj);
+            Destroy(_mapViewObj);
 
             ServiceLocator.ReleaseService<QuestJournal>();
             ServiceLocator.ReleaseService<RunesSystem>();
