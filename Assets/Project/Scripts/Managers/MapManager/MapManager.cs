@@ -48,7 +48,10 @@ namespace BigProject.Managers
             }
             else
             {
-                _mapUI.StartCoroutine(WaitAndCloseMap());
+                if (_gameplayManager.State == GameplayState.Map)
+                {
+                    _mapUI.StartCoroutine(WaitAndCloseMap());
+                }
             }
         }
 
