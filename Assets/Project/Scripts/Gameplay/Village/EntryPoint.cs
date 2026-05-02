@@ -18,8 +18,6 @@ namespace BigProject.Gameplay.Village
         [SerializeField]
         private List<MonoBehaviour> _questsControllers;
         [SerializeField]
-        private ChestSound _chestSound;
-        [SerializeField]
         private NPCChatsDatabasesController _chatsDatabasesController;
 
         private QuestsBoundariesTracker _questsTracker;
