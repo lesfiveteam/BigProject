@@ -4,9 +4,12 @@ using BigProject.Systems;
 using BigProject.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Playables;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.Timeline;
 
 namespace BigProject.Managers.CutsceneManager
@@ -16,40 +19,45 @@ namespace BigProject.Managers.CutsceneManager
         private PlayableDirector _director;
         private SceneLoadManager _sceneLoader;
         private CutscenesConfig _config;
+        private GameplayManager _gameplayManager;
         private Dictionary<string, CutsceneActor> _actors = new();
         private GameObject _cutscenePrefabs;
+        private AsyncOperationHandle<TimelineAsset> _handle;
+        private GameplayState _cutsceneState;
+        private GameplayState _previousState = GameplayState.Play;
 
         public bool IsPlaying { get; private set; } = false;
 
-        public CutsceneManager(PlayableDirector director, SceneLoadManager sceneLoader, CutscenesConfig config)
+        public CutsceneManager(PlayableDirector director, SceneLoadManager sceneLoader, CutscenesConfig config, GameplayManager gameplayManager)
         {
             _director = director;
             _sceneLoader = sceneLoader;
             _config = config;
+            _gameplayManager = gameplayManager;
             ExceptionUtilities.ThrowIfNull(_director, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "CutsceneManager", "PlayableDirector"));
             ExceptionUtilities.ThrowIfNull(_sceneLoader, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "CutsceneManager", "SceneLoadManager"));
             ExceptionUtilities.ThrowIfNull(_config, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "CutsceneManager", "CutsceneConfig"));
+            ExceptionUtilities.ThrowIfNull(_config, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "CutsceneManager", "GameplayManager"));
             _director.stopped += Stop;
             _sceneLoader.SceneLoadingStarted += ClearActors;
             _sceneLoader.SceneLoadingCompleted += FindActors;
         }
 
-        public void Play(TimelineAsset timeline)
+        public void Play(AssetReferenceT<TimelineAsset> timelineAssetRef, GameplayState cutsceneState = GameplayState.Cutscene)
         {
-            ExceptionUtilities.ThrowIfNull(timeline, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "CutsceneManager", "TimelineAsset"));
+            ExceptionUtilities.ThrowIfNull(timelineAssetRef, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "CutsceneManager", "TimelineAsset"));
 
             if (IsPlaying)
             {
-                Debug.LogWarning(string.Format(LogStr.WARNING_SYSTEM, $"CutsceneManager", $"unable to play {timeline.name}, already playing clip"));
+                Debug.LogWarning(string.Format(LogStr.WARNING_SYSTEM, $"CutsceneManager", $"unable to play timeline, already playing clip"));
                 return;
             }
 
             IsPlaying = true;
-            GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, $"CutsceneManager", $"start playing {timeline.name}"));
-            _director.playableAsset = timeline;
-            AddCutscenePrefabs(timeline);
-            InitTimeline(timeline);
-            _director.Play();
+            _previousState = _gameplayManager.State;
+            _cutsceneState = cutsceneState;
+            _handle = timelineAssetRef.LoadAssetAsync();
+            _handle.Completed += OnTimelineLoaded;
         }
 
         /// <summary>
@@ -68,6 +76,12 @@ namespace BigProject.Managers.CutsceneManager
             _director.stopped -= Stop;
             _sceneLoader.SceneLoadingStarted -= ClearActors;
             _sceneLoader.SceneLoadingCompleted -= FindActors;
+
+            if (_handle.IsValid())
+            {
+                _handle.Completed -= OnTimelineLoaded;
+                Addressables.Release(_handle);
+            }
         }
 
         /// <summary>
@@ -78,6 +92,24 @@ namespace BigProject.Managers.CutsceneManager
             ClearActors();
             GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, $"CutsceneManager", $"searching new actors..."));
             AddActors(GameObject.FindObjectsByType<CutsceneActor>(FindObjectsSortMode.None));
+        }
+
+        private void OnTimelineLoaded(AsyncOperationHandle<TimelineAsset> handle)
+        {
+            if (handle.Status != AsyncOperationStatus.Succeeded || _director == null)
+            {
+                Debug.LogError(string.Format(LogStr.ERROR_SYSTEM, "CtsceneManager", $"unable to load timeline"));
+                ResetPlayer();
+                return;
+            }
+
+            TimelineAsset timeline = handle.Result;
+            GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, $"CutsceneManager", $"start playing {timeline.name}"));
+            _director.playableAsset = timeline;
+            AddCutscenePrefabs(timeline);
+            InitTimeline(timeline);
+            _gameplayManager.ChangeState(GameplayState.Cutscene);
+            _director.Play();
         }
 
         private void ClearActors()
@@ -184,7 +216,13 @@ namespace BigProject.Managers.CutsceneManager
 
         private void AddPrefabsActors() => AddActors(_cutscenePrefabs.GetComponentsInChildren<CutsceneActor>());
 
-        private void RemovePrefabsActors() => RemoveActors(_cutscenePrefabs.GetComponentsInChildren<CutsceneActor>());
+        private void RemovePrefabsActors()
+        {
+            if (_cutscenePrefabs != null)
+            {
+                RemoveActors(_cutscenePrefabs.GetComponentsInChildren<CutsceneActor>());
+            }
+        }
 
         private void AddActors(CutsceneActor[] actorsArray)
         {
@@ -227,6 +265,17 @@ namespace BigProject.Managers.CutsceneManager
             RemovePrefabsActors();
             GameObject.Destroy(_cutscenePrefabs);
             _cutscenePrefabs = null;
+            ResetPlayer();
+        }
+
+        private void ResetPlayer()
+        {
+            if (_handle.IsValid())
+            {
+                Addressables.Release(_handle);
+            }
+
+            _gameplayManager.ChangeState(_previousState);
             IsPlaying = false;
         }
     }
