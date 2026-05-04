@@ -5,6 +5,7 @@ using BigProject.Systems.Inventory;
 using BigProject.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Localization;
 
 namespace BigProject.Gameplay.Church
 {
@@ -20,6 +21,14 @@ namespace BigProject.Gameplay.Church
         [SerializeField]
         private int _questId;
 
+        [Header("Player remarks")]
+        [SerializeField]
+        private LocalizedString _firstEnterRemark;
+        [SerializeField]
+        private LocalizedString _touchStillageRemark;
+        [SerializeField]
+        private LocalizedString _findNoteRemark;
+
         public void Init(InventorySystem inventory, RuneShardsSystem runesSystem, RunesConfig runesConfig)
         {
             _inventory = inventory;
@@ -33,6 +42,7 @@ namespace BigProject.Gameplay.Church
         public void AddNoteOne()
         {
             _inventory.AddItemByName(_noteOne);
+            ReplicaManager.ShowReplica(_findNoteRemark);
         }
 
         public void AddNoteFour()
@@ -58,6 +68,15 @@ namespace BigProject.Gameplay.Church
         private void StartOutro()
         {
             ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.Outro);
-        }    
+        }
+
+        public void FirstVillageStepAction()
+        {
+            ReplicaManager.ShowReplica(_firstEnterRemark); // При первом ЛКМ в деревне
+        }
+        public void TouchStillageAction()
+        {
+            ReplicaManager.ShowReplica(_touchStillageRemark); // При начале обыске стиллажа
+        }
     }
 }

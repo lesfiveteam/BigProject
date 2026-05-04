@@ -1,6 +1,8 @@
+using BigProject.Managers;
 using BigProject.Systems.Inventory;
 using BigProject.Utilities;
 using UnityEngine;
+using UnityEngine.Localization;
 
 namespace BigProject.Gameplay.VillageChurchQuest
 {
@@ -10,6 +12,10 @@ namespace BigProject.Gameplay.VillageChurchQuest
 
         [SerializeField]
         private string _noteOne, _noteTwo, _noteThree;
+
+        [Header("Player remarks")]
+        [SerializeField]
+        private LocalizedString _firstEnterRemark;
 
         public void Init(InventorySystem inventory)
         {
@@ -27,6 +33,12 @@ namespace BigProject.Gameplay.VillageChurchQuest
         {
             _inventory.RemoveItemByName(_noteTwo);
             _inventory.AddItemByName(_noteThree);
+        }
+
+        // При первом ЛКМ в деревне
+        public void FirstVillageStepAction()
+        {
+            ReplicaManager.ShowReplica(_firstEnterRemark);
         }
     }
 }
