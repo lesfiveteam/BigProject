@@ -36,6 +36,9 @@ namespace BigProject.UI
         private string CHECKMARK_APPEAR_ANIM_TRIGGER = "Appear";
         private string CHECKMARK_DISAPPEAR_ANIM_TRIGGER = "Disappear";
 
+        private string _awaitableQuest;
+        private string _awaitableTask;
+
         public void Init(QuestJournal journal)
         {
             Assert.IsNotNull(journal, "Journal view unable to work with null journal.");
@@ -52,20 +55,50 @@ namespace BigProject.UI
         public void Show()
         {
             _journalObj.SetActive(true);
+
+            if (!string.IsNullOrEmpty(_awaitableQuest))
+            {
+                OnQuestStateChanged(_awaitableQuest);
+                _awaitableQuest = null;
+            }
+
+            if (!string.IsNullOrEmpty(_awaitableTask))
+            {
+                OnTaskChanged(_awaitableTask);
+                _awaitableTask = null;
+            }
         }
 
         public void OnQuestStateChanged(string name)
         {
+            if (!_journalObj.activeSelf)
+            {
+                _awaitableQuest = name;
+                return;
+            }
+
             if (_questAnimationCoroutine != null)
+            {
                 StopCoroutine(_questAnimationCoroutine);
+                _questAnimationCoroutine = null;
+            }
 
             _questAnimationCoroutine = StartCoroutine(PlayQuestAnimations(name));
         }
 
         public void OnTaskChanged(string task)
         {
+            if (!_journalObj.activeSelf)
+            {
+                _awaitableTask = task;
+                return;
+            }
+
             if (_taskAnimationCoroutine != null)
+            {
                 StopCoroutine(_taskAnimationCoroutine);
+                _taskAnimationCoroutine = null;
+            }
 
             _taskAnimationCoroutine = StartCoroutine(PlayTaskAnimations(task));
         }
@@ -99,9 +132,14 @@ namespace BigProject.UI
 
         private IEnumerator PlayTaskCrossOutAnimation()
         {
-            _checkmarkAnimator.SetTrigger(CHECKMARK_APPEAR_ANIM_TRIGGER);
             string initialText = _task.text.ToString();
 
+            if (string.IsNullOrEmpty(initialText))
+            {
+                yield break;
+            }
+
+            _checkmarkAnimator.SetTrigger(CHECKMARK_APPEAR_ANIM_TRIGGER);
             WaitForSeconds delay = new WaitForSeconds(_characterTypingTime / initialText.Length);
 
             int currentCharacterIndex = 0;
@@ -121,6 +159,11 @@ namespace BigProject.UI
         {
             string initialText = _name.text.ToString();
 
+            if (string.IsNullOrEmpty(initialText))
+            {
+                yield break;
+            }
+
             WaitForSeconds delay = new WaitForSeconds(_characterTypingTime / initialText.Length);
 
             int currentCharacterIndex = 0;
@@ -137,6 +180,11 @@ namespace BigProject.UI
         }
         private IEnumerator PlayTaskEraseAnimation()
         {
+            if (string.IsNullOrEmpty(_task.text))
+            {
+                yield break;
+            }
+
             WaitForSeconds delay = new WaitForSeconds(_characterTypingTime / _task.text.Length);
 
             _task.maxVisibleCharacters = _task.text.Length;
@@ -152,6 +200,11 @@ namespace BigProject.UI
 
         private IEnumerator PlayQuestEraseAnimation()
         {
+            if (string.IsNullOrEmpty(_name.text))
+            {
+                yield break;
+            }
+
             WaitForSeconds delay = new WaitForSeconds(_characterTypingTime / _name.text.Length);
             _name.maxVisibleCharacters = _name.text.Length;
             _name.text = _name.text.Substring(3, _name.text.Length - 7);
