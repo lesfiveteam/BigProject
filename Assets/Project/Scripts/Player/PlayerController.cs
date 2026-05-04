@@ -422,17 +422,18 @@ namespace BigProject.Player
             if (IsAccessibleTarget())
             {
                 _interactCoroutine = StartCoroutine(InteractRoutine(_interactable));
+                _interactable = null;
                 return true;
             }
 
             return false;
         }
 
-        private IEnumerator InteractRoutine(IInteractable intercatable)
+        private IEnumerator InteractRoutine(IInteractable interactable)
         {
-            if (intercatable.NeedLookAt)
+            if (interactable.NeedLookAt)
             {
-                Vector3 targetDirection = intercatable.TargetLookAt - transform.position;
+                Vector3 targetDirection = interactable.TargetLookAt - transform.position;
                 targetDirection.y = 0f;
                 Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
 
@@ -443,7 +444,7 @@ namespace BigProject.Player
                 }
             }
 
-            intercatable.Interact();
+            interactable.Interact();
             IsAutopilot = false;
         }
 
