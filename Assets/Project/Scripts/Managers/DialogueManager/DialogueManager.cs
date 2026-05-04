@@ -1,3 +1,4 @@
+using BigProject.Systems;
 using BigProject.Systems.DialogueSystem;
 using BigProject.UI.Dialogue;
 using System;
@@ -35,9 +36,10 @@ namespace BigProject.Managers
 
         public void StartDialogue(DialogueLine dialogueLine)
         {
-            if (ServiceLocator.TryGetService(out GameplayManager gameplayManager))
+            if (!IsSuitableState())
             {
-                gameplayManager.ChangeState(GameplayState.Dialogue);
+                Debug.LogWarning(string.Format(LogStr.WARNING_SYSTEM, "DialogueManager", "unsuitable state for dialogue"));
+                return;
             }
 
             if (dialogueLine == null)
@@ -52,13 +54,7 @@ namespace BigProject.Managers
                 return;
             }
 
-            if (_gameplayManager.State != GameplayState.Play)
-            {
-                // Can start dialogue only if game state == Play
-                return;
-            }
-
-            // Close Replicas
+            _gameplayManager.ChangeState(GameplayState.Dialogue);
             ReplicaManager.HideReplica();
 
             _currentDialogueLine = dialogueLine;
@@ -91,6 +87,9 @@ namespace BigProject.Managers
                 EndDialogue();
             }
         }
+
+        private bool IsSuitableState() => _gameplayManager.State == GameplayState.Play ||
+                _gameplayManager.State == GameplayState.Cutscene;
 
         private void ShowNextPhrase()
         {

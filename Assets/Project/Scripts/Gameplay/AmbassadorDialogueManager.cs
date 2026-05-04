@@ -87,7 +87,6 @@ namespace Managers.Gameplay
                 yield return null;
             }
             
-            _gameplayManager.ChangeState(GameplayState.Dialogue);
             Fader fader = Instantiate(_faderPrefab);
             bool isWaiting = true;
             fader.FadeIn(() => isWaiting = false);
