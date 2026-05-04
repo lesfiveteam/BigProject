@@ -1,11 +1,10 @@
 using BigProject.Managers;
 using BigProject.Systems.Inventory;
-using BigProject.Systems.HUD;
 using UnityEngine;
 using BigProject.Systems.QuestSystem;
-using BigProject.Settings;
 using UnityEngine.Assertions;
 using BigProject.Systems;
+using BigProject.Player;
 
 namespace BigProject.Gameplay.VillageChurchQuest
 {
