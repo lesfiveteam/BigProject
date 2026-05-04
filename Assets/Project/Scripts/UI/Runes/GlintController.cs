@@ -22,7 +22,7 @@ namespace BigProject.UI
 
         public void Play()
         {
-            _glintMat.SetFloat("_StartTime", Time.timeSinceLevelLoad);
+            _glintMat.SetFloat("_StartTime", Time.time);
             _glintMat.EnableKeyword("ENABLE_GLINT");
         }
 
