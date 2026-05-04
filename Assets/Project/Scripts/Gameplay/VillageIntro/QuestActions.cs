@@ -52,7 +52,6 @@ namespace BigProject.Gameplay.VillageIntro
         {
             yield return new WaitUntil(() => _isSceneLoaded);
             _player.AutoTarget(_edler);
-            _gameplayManager.ChangeState(GameplayState.Cutscene);
             _actionHandler.MakeTransition(0);
         }
 
