@@ -55,6 +55,7 @@ namespace BigProject.Intercatable.HighlightedObjects
                 foreach (RaycastResult result in results)
                 {
                     newUIObject = result.gameObject.GetComponent<HighlightedObject>();
+                    uiHit = true;
 
                     if (newUIObject != null)
                     {
@@ -64,12 +65,15 @@ namespace BigProject.Intercatable.HighlightedObjects
 
                 if (newUIObject != null)
                 {
-                    uiHit = true;
-
                     if (newUIObject != _currentObject)
                     {
                         SetNewObject(newUIObject);
                     }
+                }
+                else if(uiHit && _currentObject != null)
+                {
+                    _currentObject.Unhighlight();
+                    _currentObject = null;
                 }
 
                 if (!uiHit)
