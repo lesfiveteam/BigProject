@@ -60,7 +60,7 @@ namespace BigProject.Systems.Sound
         /// </summary>
         public void PlaySound()
         {
-            _soundsManager.PlaySound(_audioClip, spawnPosition: transform, isLooped: _shouldPlayLooped);
+            _soundsManager.PlaySound(_audioClip, volume: _volume, spawnPosition: transform, isLooped: _shouldPlayLooped);
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace BigProject.Systems.Sound
                 yield return _playSoundWait;
 
                 if(UnityEngine.Random.Range(0, 1) < _playSoundChance)
-                {
-                    _soundsManager.PlaySound(_audioClip, spawnPosition: transform);
+                { 
+                    _soundsManager.PlaySound(_audioClip, volume: _volume, spawnPosition: transform);
                 }
             }
         }
