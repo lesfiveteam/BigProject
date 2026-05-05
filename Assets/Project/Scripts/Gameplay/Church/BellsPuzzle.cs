@@ -27,7 +27,6 @@ namespace BigProject.Gameplay.Church
         private List<int> _playerBellOrder = new List<int>();
         private MiniGameActivator _activator;
         private PlayerInputHandler _inputHandler;
-        private Bell _clickedBell;
 
         private SoundsManager _soundsManager;
         private IQuestActionHandler _actionHandler;
@@ -70,7 +69,6 @@ namespace BigProject.Gameplay.Church
             if (!_activator.IsActivated)
             {
                 _inputHandler.MiniGameClick += OnClicked;
-                _inputHandler.MiniGameSwipe += OnSwiped;
                 _activator.Activated += OnActivatedMiniGame;
             }
             _activator.ActivateMiniGame();
@@ -88,27 +86,24 @@ namespace BigProject.Gameplay.Church
 
         private void OnClicked()
         {
-            _clickedBell = null;
             if (GameplayUtilities.TryGetClickedObject(_inputHandler.GetMousePosition(), out GameObject go))
             {
-                _clickedBell = go.GetComponent<Bell>();
-            }
-        }
+                Bell clickedBell = go.GetComponent<Bell>();
 
-        private void OnSwiped(Vector2 delta)
-        {
-            if (_clickedBell != null && delta.y < _swipeDownValue)
-            {
-                // Jingle bells! - ringing bellg
-                _clickedBell.Ring();
-
-                if (_actionHandler.CurrentState != QuestActionState.Active)
+                if (clickedBell == null)
                 {
-                    _clickedBell = null;
                     return;
                 }
 
-                _playerBellOrder.Add(_clickedBell.Id);
+                // Jingle bells! - ringing bellg
+                clickedBell.Ring();
+
+                if (_actionHandler.CurrentState != QuestActionState.Active)
+                {
+                    return;
+                }
+
+                _playerBellOrder.Add(clickedBell.Id);
 
                 if (_playerBellOrder.Count > _targetBellOrder.Count)
                 {
@@ -118,10 +113,8 @@ namespace BigProject.Gameplay.Church
 
                 if (_playerBellOrder.Count == _targetBellOrder.Count && BellsOrderIsRight())
                 {
-                   WinMiniGame();
+                    WinMiniGame();
                 }
-
-                _clickedBell = null;
             }
         }
 
@@ -181,7 +174,6 @@ namespace BigProject.Gameplay.Church
         private void ResetActions()
         {
             _inputHandler.MiniGameClick -= OnClicked;
-            _inputHandler.MiniGameSwipe -= OnSwiped;
             _activator.Activated -= OnActivatedMiniGame;
         }
     }
