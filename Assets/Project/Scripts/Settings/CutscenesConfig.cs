@@ -24,8 +24,8 @@ namespace BigProject.Settings
 
         public bool TryGetCutscenePrefabs(TimelineAsset timeline, out List<GameObject> prefabs)
         {
-            CutsceneSettings cutsceneSettings = _cutscenesSettings.First(x =>  x.timeline == timeline);
-            prefabs = cutsceneSettings != null ? cutsceneSettings.prefabs : null;
+            CutsceneSettings cutsceneSettings = _cutscenesSettings.FirstOrDefault(x =>  x.timeline == timeline);
+            prefabs = cutsceneSettings?.prefabs;
             return prefabs != null;
         }
     }

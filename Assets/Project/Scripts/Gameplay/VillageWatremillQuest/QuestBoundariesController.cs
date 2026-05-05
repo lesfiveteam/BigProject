@@ -4,6 +4,9 @@ using BigProject.Systems.HUD;
 using UnityEngine;
 using BigProject.Systems.QuestSystem;
 using BigProject.Settings;
+using BigProject.Managers.CutsceneManager;
+using UnityEngine.Timeline;
+using UnityEngine.AddressableAssets;
 
 namespace BigProject.Gameplay.VillageWatermillQuest
 {
@@ -18,6 +21,8 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         private GameObject _elder;
         [SerializeField]
         private GameObject _questWatermillObjects;
+        [SerializeField]
+        private AssetReferenceT<TimelineAsset> _startCutscene;
 
         [field: SerializeField]
         public int QuestId { get; private set; }
@@ -35,6 +40,7 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         public void Begin()
         {
             InitOnSceneEntry();
+            ServiceLocator.GetService<CutsceneManager>().Play(_startCutscene);
         }
     }
 }

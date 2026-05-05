@@ -1,4 +1,3 @@
-using Assets.Project.Scripts.Interactable;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Intercatable;
 using BigProject.Managers.SoundsMusicManagers;
@@ -22,7 +21,6 @@ namespace BigProject.Player
         private const float MIN_WALK_SPEED_COEFF = 0.1f;
         private const float MIN_ANIM_SPEED_COEFF = 0.5f;
         private const float MAX_TARGET_ANGLE_OFFSET = 3f;
-        private const float CLICK_EFFECT_LIFETIME = 3f;
 
         private const float LINK_SPEED = 4f;
         private const float JUMP_SPEED = 7f;
@@ -38,13 +36,19 @@ namespace BigProject.Player
 
         [SerializeField] private NavMeshAgent _navMeshAgent;
         [SerializeField] private Animator _animatorController;
-        [SerializeField] private GameObject _clickEffect;
+        [SerializeField] private GameObject _clickEffectSplash;
+        [SerializeField] private GameObject _clickEffectWave;
+        [SerializeField] private float _clickEffectWaitTime;
 
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
         [SerializeField] private bool _walkOnHolding = true;
         [SerializeField] private float _walkOnHoldingCheckInterval = 0.2f;
         [SerializeField] private float _timeToBored = 7f;
+
+        private WaitForSeconds _clickEffectWait;
+        private Coroutine _clickEffectRoutine;
+        private Vector3 _lastClickPosition;
 
         private PlayerInputHandler _inputHandler;
         private IInteractable _interactable = null;
@@ -136,6 +140,7 @@ namespace BigProject.Player
         private void Start()
         {
             FindCamera();
+            _clickEffectWait = new(_clickEffectWaitTime);
         }
 
         private void OnEnable()
@@ -422,17 +427,18 @@ namespace BigProject.Player
             if (IsAccessibleTarget())
             {
                 _interactCoroutine = StartCoroutine(InteractRoutine(_interactable));
+                _interactable = null;
                 return true;
             }
 
             return false;
         }
 
-        private IEnumerator InteractRoutine(IInteractable intercatable)
+        private IEnumerator InteractRoutine(IInteractable interactable)
         {
-            if (intercatable.NeedLookAt)
+            if (interactable.NeedLookAt)
             {
-                Vector3 targetDirection = intercatable.TargetLookAt - transform.position;
+                Vector3 targetDirection = interactable.TargetLookAt - transform.position;
                 targetDirection.y = 0f;
                 Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
 
@@ -443,7 +449,7 @@ namespace BigProject.Player
                 }
             }
 
-            intercatable.Interact();
+            interactable.Interact();
             IsAutopilot = false;
         }
 
@@ -467,8 +473,22 @@ namespace BigProject.Player
 
             if (spawnEffect)
             {
-                Destroy(Instantiate(_clickEffect, destination, _clickEffect.transform.rotation), CLICK_EFFECT_LIFETIME);
+                _lastClickPosition = destination;
+                Instantiate(_clickEffectSplash, destination, _clickEffectSplash.transform.rotation * Quaternion.Euler(new Vector3(0,0, UnityEngine.Random.Range(0,360))));
+
+                if(_clickEffectRoutine != null)
+                {
+                    StopCoroutine(_clickEffectRoutine);
+                }
+
+                _clickEffectRoutine = StartCoroutine(ClickEffectRoutine());
             }
+        }
+
+        private IEnumerator ClickEffectRoutine()
+        {
+            yield return _clickEffectWait;
+            Instantiate(_clickEffectWave, _lastClickPosition, _clickEffectWave.transform.rotation);
         }
 
         private void SetInterableObject(IInteractable interactableObject)

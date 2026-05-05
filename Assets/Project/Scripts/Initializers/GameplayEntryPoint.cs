@@ -177,7 +177,7 @@ namespace BigProject.Initializers
             progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
             AddQuestsSwitches(progressManager);
             CreateCursorManager(sceneLoader);
-            CreateCutsceneManager(sceneLoader);
+            CreateCutsceneManager(sceneLoader, gameplayManager);
             GameLogManager.Info(LogStr.INFO_INITIALIZING_GAMEPLAY_SERVICES_COMPLETED);
         }
 
@@ -324,12 +324,12 @@ namespace BigProject.Initializers
             }
         }
 
-        private void CreateCutsceneManager(SceneLoadManager sceneLoader)
+        private void CreateCutsceneManager(SceneLoadManager sceneLoader, GameplayManager gameplayManager)
         {
             GameObject cutsceneManagerObject = new("CutsceneManager");
             cutsceneManagerObject.transform.SetParent(transform.parent);
             PlayableDirector director = cutsceneManagerObject.AddComponent<PlayableDirector>();
-            _cutsceneManager = new(director, sceneLoader, _cutscenesConfig);
+            _cutsceneManager = new(director, sceneLoader, _cutscenesConfig, gameplayManager);
             ServiceLocator.AddService(_cutsceneManager);
 
             // For case when run from gameplay scene.
