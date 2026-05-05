@@ -37,8 +37,6 @@ namespace BigProject.Player
         [SerializeField] private NavMeshAgent _navMeshAgent;
         [SerializeField] private Animator _animatorController;
         [SerializeField] private GameObject _clickEffectSplash;
-        [SerializeField] private GameObject _clickEffectWave;
-        [SerializeField] private float _clickEffectWaitTime;
 
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
@@ -46,8 +44,6 @@ namespace BigProject.Player
         [SerializeField] private float _walkOnHoldingCheckInterval = 0.2f;
         [SerializeField] private float _timeToBored = 7f;
 
-        private WaitForSeconds _clickEffectWait;
-        private Coroutine _clickEffectRoutine;
         private Vector3 _lastClickPosition;
 
         private PlayerInputHandler _inputHandler;
@@ -140,7 +136,6 @@ namespace BigProject.Player
         private void Start()
         {
             FindCamera();
-            _clickEffectWait = new(_clickEffectWaitTime);
         }
 
         private void OnEnable()
@@ -475,20 +470,7 @@ namespace BigProject.Player
             {
                 _lastClickPosition = destination;
                 Instantiate(_clickEffectSplash, destination, _clickEffectSplash.transform.rotation * Quaternion.Euler(new Vector3(0,0, UnityEngine.Random.Range(0,360))));
-
-                if(_clickEffectRoutine != null)
-                {
-                    StopCoroutine(_clickEffectRoutine);
-                }
-
-                _clickEffectRoutine = StartCoroutine(ClickEffectRoutine());
             }
-        }
-
-        private IEnumerator ClickEffectRoutine()
-        {
-            yield return _clickEffectWait;
-            Instantiate(_clickEffectWave, _lastClickPosition, _clickEffectWave.transform.rotation);
         }
 
         private void SetInterableObject(IInteractable interactableObject)
