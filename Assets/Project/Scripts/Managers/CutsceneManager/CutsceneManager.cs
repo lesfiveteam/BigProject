@@ -91,7 +91,7 @@ namespace BigProject.Managers.CutsceneManager
         {
             ClearActors();
             GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, $"CutsceneManager", $"searching new actors..."));
-            AddActors(GameObject.FindObjectsByType<CutsceneActor>(FindObjectsSortMode.None));
+            AddActors(GameObject.FindObjectsByType<CutsceneActor>(FindObjectsInactive.Include, FindObjectsSortMode.None));
         }
 
         private void OnTimelineLoaded(AsyncOperationHandle<TimelineAsset> handle)
@@ -108,7 +108,7 @@ namespace BigProject.Managers.CutsceneManager
             _director.playableAsset = timeline;
             AddCutscenePrefabs(timeline);
             InitTimeline(timeline);
-            _gameplayManager.ChangeState(GameplayState.Cutscene);
+            _gameplayManager.ChangeState(_cutsceneState);
             _director.Play();
         }
 
