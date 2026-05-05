@@ -6,11 +6,9 @@ using BigProject.Player;
 using BigProject.Systems;
 using BigProject.Systems.QuestSystem;
 using BigProject.Utilities;
-using NUnit.Framework;
-using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Localization;
 
 namespace BigProject.Gameplay.Church
 {
@@ -34,6 +32,16 @@ namespace BigProject.Gameplay.Church
         private SoundsManager _soundsManager;
         private IQuestActionHandler _actionHandler;
         private ProgressManager _progressManager;
+
+        [Header("Player remarks")]
+        [SerializeField]
+        private LocalizedString _wrongFirstBellRemark;
+        [SerializeField]
+        private LocalizedString _wrongSecondBellRemark;
+        [SerializeField]
+        private LocalizedString _isValidOrderRemark;
+        [SerializeField]
+        private LocalizedString _wrongFourthBellRemark;
 
         public void Init(
             PlayerInputHandler inputHandler,
@@ -93,6 +101,13 @@ namespace BigProject.Gameplay.Church
             {
                 // Jingle bells! - ringing bellg
                 _clickedBell.Ring();
+
+                if (_actionHandler.CurrentState != QuestActionState.Active)
+                {
+                    _clickedBell = null;
+                    return;
+                }
+
                 _playerBellOrder.Add(_clickedBell.Id);
 
                 if (_playerBellOrder.Count > _targetBellOrder.Count)
@@ -113,15 +128,46 @@ namespace BigProject.Gameplay.Church
         // The order of the bells is correct
         private bool BellsOrderIsRight()
         {
+            bool result = true;
+            // Какой-то из колольчиков неправильный, но не учитываем второй в порядке
+            bool isWrongNotSecondBell = false;
+
             for (int i = 0; i < _targetBellOrder.Count; i++)
             {
                 if (_targetBellOrder[i] != _playerBellOrder[i])
                 {
                     // Find error in order
-                    return false;
+                    result = false;
+                    if (i != 1)
+                    {
+                        isWrongNotSecondBell = true;
+                    }
                 }
             }
-            return true;
+
+            if (!result && !isWrongNotSecondBell)
+            {
+                // Какой-то из колокольчиков неправильный и это именно второй в порядке
+                ShowWrongBellReplica(_playerBellOrder[1]);
+            }
+
+            return result;
+        }
+
+        private void ShowWrongBellReplica(int bellId)
+        {
+            switch (bellId) 
+            {
+                case 1:
+                    ReplicaManager.ShowReplica(_wrongFirstBellRemark);
+                    break;
+                case 2:
+                    ReplicaManager.ShowReplica(_wrongSecondBellRemark);
+                    break;
+                case 4:
+                    ReplicaManager.ShowReplica(_wrongFourthBellRemark);
+                    break;
+            }
         }
 
         private void WinMiniGame()
@@ -129,6 +175,7 @@ namespace BigProject.Gameplay.Church
             _actionHandler.MakeTransition(0);
             _activator.DeactivateMiniGame();
             ResetActions();
+            ReplicaManager.ShowReplica(_isValidOrderRemark);
         }
 
         private void ResetActions()
