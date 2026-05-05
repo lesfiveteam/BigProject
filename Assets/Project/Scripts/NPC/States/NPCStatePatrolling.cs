@@ -37,8 +37,8 @@ namespace BigProject.NPC.States
 
             if (companion != null && IsSuitableStateForChat(companion.State) && WantToChat() && ComanionWantToChat(companion))
             {
-                NPCStateChase chaser = new(_controller, companion, other.transform);
-                companion.ChangeState(new NPCStateWait(companion, chaser, _controller.transform));
+                NPCStateChase chaser = new(_controller, companion, other.transform, _walkController);
+                companion.ChangeState(new NPCStateWait(companion, chaser, _controller.transform, _walkController));
                 _controller.ChangeState(chaser);
             }
         }

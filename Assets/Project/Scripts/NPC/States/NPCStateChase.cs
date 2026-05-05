@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.NPC.NPCWalkSystem;
 using BigProject.Systems;
 using BigProject.Utilities;
 using System;
@@ -13,18 +14,21 @@ namespace BigProject.NPC.States
         private NPCController _target;
         private NPCAgentTransition _transition;
         private CancellationTokenSource _ctSource;
+        private NPCWalkController _walkController;
 
         public Action<NPCStateChat> CameUp;
 
         public NPCState State => NPCState.Chase;
 
-        public NPCStateChase(NPCController controller, NPCController target, Transform targetTransform)
+        public NPCStateChase(NPCController controller, NPCController target, Transform targetTransform, NPCWalkController walkController)
         {
             _controller = controller;
             _target = target;
+            _walkController = walkController;
             ExceptionUtilities.ThrowIfNull(_controller, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateChase", "NPCController"));
             ExceptionUtilities.ThrowIfNull(_target, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateChase", "Target NPCController"));
-            _transition = new(_controller.Agent, targetTransform);
+            ExceptionUtilities.ThrowIfNull(_walkController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWait", "NPCWalkController"));
+            _transition = new(targetTransform, _walkController);
             _ctSource = new();
         }
 
