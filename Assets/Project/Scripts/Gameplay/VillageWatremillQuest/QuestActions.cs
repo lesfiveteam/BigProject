@@ -16,8 +16,6 @@ namespace BigProject.Gameplay.VillageWatermillQuest
     public class QuestActions : MonoBehaviour
     {
         [SerializeField]
-        private int _noteItemId;
-        [SerializeField]
         private int _brokenLeverItemId;
         [SerializeField]
         private int _repairedLeverItemId;
@@ -62,11 +60,6 @@ namespace BigProject.Gameplay.VillageWatermillQuest
             Assert.IsNotNull(_chests, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chests"));
             Assert.IsNotNull(_millWheelHandler, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Wheel"));
             Assert.IsNotNull(_hudConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD config"));
-        }
-
-        public void GetWatermillNote()
-        {
-            _inventory.AddItemByItemID(_noteItemId);
         }
 
         public void GetRepairedLever()
