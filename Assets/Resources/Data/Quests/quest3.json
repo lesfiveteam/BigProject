@@ -1,7 +1,7 @@
 {
     "id": 3,
     "name": "Quest3_church",
-    "currentState": 1,
+    "currentState": 0,
     "actions":
     [
 		{
