@@ -77,7 +77,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
             float currentPeckRadius = _peckRadius;
 
-            PeckTimer();
+            //PeckTimer(); // ToDo: need to check logic and fix
 
             while (_isAlive)
             {
