@@ -40,7 +40,62 @@
                     "toState":3
                 }
             ]
-        }  
+        },
+        {
+            "id":1,
+            "name":"FirstTalkMiller",
+            "currentState":1,
+            "conditions":
+            [
+                {
+                    "fromState":1,
+                    "toState":2,
+                    "dependencyPacks":
+                    [
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":0,
+                                    "state":3
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "manualTransitions":
+            [
+                {
+                    "id":0,
+                    "fromState":2,
+                    "toState":3
+                }
+            ]
+        },
+        {
+            "id":2,
+            "name":"GetMechSketch",
+            "currentState":1,
+            "conditions":
+            [
+                {
+                    "toState":3,
+                    "dependencyPacks":
+                    [
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":1,
+                                    "state":3
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     ],
     "questStates":
     [
@@ -51,7 +106,7 @@
         },
         {
             "state":2,
-            "actionId":0,
+            "actionId":2,
             "actionState":3
         }
     ]
