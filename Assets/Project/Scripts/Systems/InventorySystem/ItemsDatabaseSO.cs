@@ -1,16 +1,24 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using BigProject.Systems.Inventory.ItemsModifiers;
 
 namespace BigProject.Systems.Inventory
 {
     [Serializable]
     public struct Item
     {
+        /// <summary>
+        /// name in English for internal work
+        /// </summary>
         public string _name;
+        /// <summary>
+        /// name in Russian to be displayed in UI elements
+        /// </summary>
+        public string _nameLocalized;
+        public string _verbToUseInDialogueText;
         public Sprite _itemSprite;
         public Sprite _noteSprite;
+        public bool _isAddedAtMiniGame;
     }
 
     [CreateAssetMenu(menuName = "Inventory/ItemDatabase")]

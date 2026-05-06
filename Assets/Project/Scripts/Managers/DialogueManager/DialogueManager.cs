@@ -1,5 +1,6 @@
 using BigProject.Systems;
 using BigProject.Systems.DialogueSystem;
+using BigProject.Systems.Inventory;
 using BigProject.UI.Dialogue;
 using System;
 using System.Collections.Generic;
@@ -28,9 +29,9 @@ namespace BigProject.Managers
             _gameplayManager = gameplayManager;
         }
         
-        public void Init()
+        public void Init(InventorySystem inventorySystem)
         {
-            _dialogueView.Init(this);
+            _dialogueView.Init(this, inventorySystem);
             _dialogueView.HideDialogueWindow();
         }
 

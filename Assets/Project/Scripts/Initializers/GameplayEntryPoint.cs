@@ -185,7 +185,7 @@ namespace BigProject.Initializers
         {
             _dialogueViewObj = Instantiate(_dialogueView);
             _dialogueManager = new DialogueManager(_dialogueViewObj.GetComponent<DialogueUI>(), gameplayManager);
-            _dialogueManager.Init();
+            _dialogueManager.Init(_inventory);
             DontDestroyOnLoad(_dialogueViewObj);
         }
 

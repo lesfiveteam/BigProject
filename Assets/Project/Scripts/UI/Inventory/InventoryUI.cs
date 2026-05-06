@@ -4,6 +4,7 @@ using BigProject.Systems.Inventory;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace BigProject.UI
@@ -74,7 +75,7 @@ namespace BigProject.UI
             }
 
             //if item was added
-            if (_previousHeldItemsCount < heldItems.Count)
+            if (_previousHeldItemsCount < heldItems.Count && this.gameObject.activeInHierarchy)
             {
                 for (int i = 0; i < heldItems.Count-1; i++)
                 {
@@ -93,7 +94,10 @@ namespace BigProject.UI
                     hasNote = true;
                 }
 
-                Vector2 startPos = Camera.main.WorldToScreenPoint(_playerTransform.position + _playerTransform.forward * 0.5f);
+                Vector2 startPos = heldItems[heldItems.Count - 1]._isAddedAtMiniGame ?
+                        Mouse.current.position.ReadValue()  
+                        : Camera.main.WorldToScreenPoint(_playerTransform.position + _playerTransform.forward * 0.5f);
+
                 Vector2 targetpos = _inventorySlots[heldItems.Count - 1].transform.position;
                 _inventorySlots[heldItems.Count - 1].GetItemImage().gameObject.SetActive(false);
                 StartCoroutine(_inventorySlots[heldItems.Count - 1].PlayAddToSlotAnimation(startPos, targetpos, _addAnimationStepTime));
