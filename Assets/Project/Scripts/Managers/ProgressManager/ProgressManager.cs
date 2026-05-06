@@ -370,7 +370,7 @@ namespace BigProject.Managers
                 return;
             }
 
-            if (AutoSave && quest.IsSavingAllowed)
+            if (AutoSave && quest.IsSavingAllowed && quest.CurrentState == QuestState.Active)
             {
                 Debug.Log(String.Format(LogStr.INFO_SYSTEM, "ProgressManager", "Autosaving..."));
                 SaveProgress();
