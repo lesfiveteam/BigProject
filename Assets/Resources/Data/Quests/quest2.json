@@ -253,6 +253,38 @@
             ]
         },
         {
+            "id":12,
+            "name":"Cutscene",
+            "currentState":1,
+            "conditions":
+            [
+                {
+                    "fromState":1,
+                    "toState":2,
+                    "dependencyPacks":
+                    [
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":7,
+                                    "state":3
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "manualTransitions":
+            [
+                {
+                    "id":0,
+                    "fromState":2,
+                    "toState":3
+                }
+            ]
+        },
+        {
             "id":8,
             "name":"FinalTalkMiller",
             "currentState":1,
@@ -347,7 +379,6 @@
             "conditions":
             [
                 {
-                    "fromState":1,
                     "toState":2,
                     "dependencyPacks":
                     [

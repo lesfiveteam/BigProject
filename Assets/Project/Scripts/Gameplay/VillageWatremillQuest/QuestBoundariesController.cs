@@ -4,6 +4,9 @@ using BigProject.Systems.HUD;
 using UnityEngine;
 using BigProject.Systems.QuestSystem;
 using BigProject.Settings;
+using BigProject.UI;
+using BigProject.Managers.CutsceneManager;
+using Assets.Project.Scripts.Managers.SceneLoader;
 
 namespace BigProject.Gameplay.VillageWatermillQuest
 {
@@ -25,7 +28,8 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         public void InitOnSceneEntry()
         {
             _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RunesSystem>(),
-                ServiceLocator.GetService<HUD>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>());
+                ServiceLocator.GetService<HUD>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>(),
+                ServiceLocator.GetService<RunePanelUI>(), ServiceLocator.GetService<CutsceneManager>(), ServiceLocator.GetService<SceneLoadManager>());
 
             _miller.SetActive(true);
             _elder.SetActive(false);

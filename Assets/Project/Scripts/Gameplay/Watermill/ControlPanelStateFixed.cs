@@ -261,16 +261,16 @@ namespace BigProject.Gameplay.Watermill
 
         private void MakeTransition()
         {
-            try
-            {
-                _inventory.RemoveItemById(_noteItemId);
-            }
-            catch (Exception ex)
-            {
-                string msg = $"Some error ocurred while releasing the item from inventory: {ex.Message}";
-                GameLogManager.Critical(msg);
-                Debug.Log(msg);
-            }
+            //try
+            //{
+            //    _inventory.RemoveItemById(_noteItemId);
+            //}
+            //catch (Exception ex)
+            //{
+            //    string msg = $"Some error ocurred while releasing the item from inventory: {ex.Message}";
+            //    GameLogManager.Critical(msg);
+            //    Debug.Log(msg);
+            //}
 
             try
             {
@@ -291,6 +291,7 @@ namespace BigProject.Gameplay.Watermill
                 _hud.HideWidget(_resetWidgetId);
                 _controlPanel.ChangeState(ControlPanelState.Completed);
                 _controlPanel.PlayFixedMusic();
+                _controlPanel.DeactivateOnExit();
                 _controlPanel.Deactivate();
             }
         }

@@ -1,7 +1,6 @@
 using BigProject.Managers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -92,12 +91,12 @@ namespace BigProject.Systems.HUD
                 type |= HUDWidgetRoutineType.Hide;
             }
 
-            if (HasWidgetRoutine(widget, type))
-            {
-                Debug.LogWarning(String.Format(LogStr.WARNING_SYSTEM, "HUD", $"try to start {type} routine for widget {id}, but it already started"));
-                return;
-            }
-
+            //if (HasWidgetRoutine(widget, type))
+            //{
+            //    Debug.LogWarning(String.Format(LogStr.WARNING_SYSTEM, "HUD", $"try to start {type} routine for widget {id}, but it already started"));
+            //    return;
+            //}
+            StopNoActualRoutines(widget);
             _ = WidgetRoutineAsync(widget, type, timeOffset, time);
         }
 
@@ -112,18 +111,7 @@ namespace BigProject.Systems.HUD
             }
 
             IHUDWidget widget = _widgets[id];
-
-            if (_widgetsRoutines.ContainsKey(widget)) //HasWidgetRoutine(widget, HUDWidgetRoutineType.Hide))
-            {
-                //Debug.LogWarning(String.Format(LogStr.WARNING_SYSTEM, "HUD", $"try to start {HUDWidgetRoutineType.Hide} routine for widget {id}, but it already started."));
-                GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, "HUD", $"stop widget {id} no actual routines"));
-                _widgetsRoutines[widget].ForEach(x =>
-                {
-                    x.cts.Cancel();
-                    x.cts.Dispose();
-                });
-                _widgetsRoutines[widget].Clear();
-            }
+            StopNoActualRoutines(widget);
 
             if (timeOffset == 0f)
             {
@@ -193,6 +181,21 @@ namespace BigProject.Systems.HUD
         public void Dispose()
         {
             RemoveAllWidgets();
+        }
+
+        private void StopNoActualRoutines(IHUDWidget widget)
+        {
+            if (_widgetsRoutines.ContainsKey(widget))
+            {
+                
+                GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, "HUD", $"stop widget {widget.GetType()} no actual routines"));
+                _widgetsRoutines[widget].ForEach(x =>
+                {
+                    x.cts.Cancel();
+                    x.cts.Dispose();
+                });
+                _widgetsRoutines[widget].Clear();
+            }
         }
 
         private bool HasWidgetRoutine(IHUDWidget widget, HUDWidgetRoutineType type)

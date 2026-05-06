@@ -1,6 +1,7 @@
 using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
+using BigProject.Settings;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using BigProject.Systems.QuestSystem;
@@ -9,6 +10,7 @@ using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Localization;
 
 namespace BigProject.Gameplay.Watermill
 {
@@ -26,10 +28,16 @@ namespace BigProject.Gameplay.Watermill
         private UnityEvent _incompleteClue;
         private SoundsManager _soundsManager;
         private AudioClip _leverInsertSound;
+        private LocalizedString _moveLeversRemark;
+        private HUD _hud;
+        private HUDConfig _hudConfig;
+
+        private const float SHOW_JOURNAL_TIME = 5f;
+
 
         public ControlPanelStateIncompleted(ControlPanel controlPanel, PlayerInputHandler input, GameObject repairedLeverHolder, GameObject repairedLever,
             float leverInstallTime, IQuestActionHandler installLeverAction, InventorySystem inventory, UnityEvent incompleteClue,
-            SoundsManager soundsManager, AudioClip leverInsertSound)
+            SoundsManager soundsManager, AudioClip leverInsertSound, LocalizedString moveLeversRemark, HUD hud, HUDConfig hudConfig)
         {
             _controlPanel = controlPanel;
             _input = input;
@@ -43,6 +51,9 @@ namespace BigProject.Gameplay.Watermill
             _incompleteClue = incompleteClue;
             _soundsManager = soundsManager;
             _leverInsertSound = leverInsertSound;
+            _moveLeversRemark = moveLeversRemark;
+            _hud = hud;
+            _hudConfig = hudConfig;
         }
 
         public bool IsReady => _installLeverAction.CurrentState == QuestActionState.Active;
@@ -101,6 +112,8 @@ namespace BigProject.Gameplay.Watermill
             SetVisibility();
             await _controlPanel.MoveLever(_repairedLever.transform, _repairedLeverHolder.transform.localPosition, _leverInstallTime, ct);
             MakeTransition();
+            ReplicaManager.ShowReplica(_moveLeversRemark);
+            _hud.ShowWidget(_hudConfig.HUDJournalWidgetId, time: SHOW_JOURNAL_TIME);
         }
 
         private void MakeTransition()

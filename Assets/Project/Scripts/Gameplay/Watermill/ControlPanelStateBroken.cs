@@ -75,6 +75,7 @@ namespace BigProject.Gameplay.Watermill
             _isRemovingLever = true;
             Vector3 _targetPosition = _brokenLever.transform.localPosition;
             _targetPosition.z += _brokenLeverOffset;
+            _controlPanel.DeactivateOnExit();
             await _controlPanel.MoveLever(_brokenLever.transform, _targetPosition, _brokenLeverRemoveTime, ct);
             _brokenLever.SetActive(false);
             MakeTransition();

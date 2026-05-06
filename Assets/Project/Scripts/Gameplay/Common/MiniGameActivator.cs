@@ -24,8 +24,8 @@ namespace BigProject.Gameplay.Common
         private Collider _gameCollider;
         [SerializeField]
         private float _playerDisableFactor = 0.85f;
-        [SerializeField]
-        private bool _activateGameColliderOnDeactivate = true;
+        [field: SerializeField]
+        public bool ActivateGameColliderOnDeactivate { get; set; } = true;
 
         private SkinnedMeshRenderer _playerRenderer;
         private Collider _playerCollider;
@@ -113,7 +113,7 @@ namespace BigProject.Gameplay.Common
             _playerRenderer.enabled = true;
             _playerCollider.enabled = true;
             yield return new WaitForSeconds(GameplayUtilities.CurrentCameraTransitionTime);
-            _gameCollider.enabled = _activateGameColliderOnDeactivate;
+            _gameCollider.enabled = ActivateGameColliderOnDeactivate;
             _gameplayManager.ChangeState(GameplayState.Play);
         }
 

@@ -88,6 +88,8 @@ namespace BigProject.Gameplay.Watermill
         [Header("Player remarkds")]
         [SerializeField]
         private LocalizedString _getBrokenLeverRemark;
+        [SerializeField]
+        private LocalizedString _moveLeversRemark;
 
         private PlayerInputHandler _inputHandler;
         private InventorySystem _inventory;
@@ -130,7 +132,8 @@ namespace BigProject.Gameplay.Watermill
             Assert.IsNotNull(_gearsHandler, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Gears Handler"));
             Assert.IsNotNull(_hudConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD Config"));
             Assert.IsNotNull(_targetPosition, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Target Position"));
-            Assert.IsNotNull(_getBrokenLeverRemark, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Player remark"));
+            Assert.IsNotNull(_getBrokenLeverRemark, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Player get broken lever remark"));
+            Assert.IsNotNull(_moveLeversRemark, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Player move levers remark"));
         }
 
         private void OnDestroy()
@@ -241,7 +244,8 @@ namespace BigProject.Gameplay.Watermill
                     break;
                 case ControlPanelState.Incompleted:
                     _state = new ControlPanelStateIncompleted(this, _inputHandler, _repairedLeverHolder, 
-                        _repairedLever, _repairedLeverInstallTime, _actions["InstallLever"], _inventory, _incompleteClue, _soundsManager, _leverChangeSound);
+                        _repairedLever, _repairedLeverInstallTime, _actions["InstallLever"], _inventory, _incompleteClue, _soundsManager, 
+                        _leverChangeSound, _moveLeversRemark, _hud, _hudConfig);
                     break;
                 case ControlPanelState.Fixed:
                     _state = new ControlPanelStateFixed(this, _inputHandler, _leversPoints, _levers, _leverMoveTime,
@@ -261,6 +265,14 @@ namespace BigProject.Gameplay.Watermill
             if (_activator.IsActivated)
             {
                 _state?.ApplyItem(item);
+            }
+        }
+
+        public void DeactivateOnExit()
+        {
+            if (_activator.IsActivated)
+            {
+                _activator.ActivateGameColliderOnDeactivate = false;
             }
         }
 

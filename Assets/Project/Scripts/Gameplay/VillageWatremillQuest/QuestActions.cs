@@ -1,15 +1,21 @@
+using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Gameplay.Watermill;
 using BigProject.Managers;
+using BigProject.Managers.CutsceneManager;
 using BigProject.Settings;
 using BigProject.Systems;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
+using BigProject.Systems.QuestSystem;
+using BigProject.UI;
 using BigProject.Utilities;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
 using UnityEngine.Localization;
+using UnityEngine.Timeline;
 
 namespace BigProject.Gameplay.VillageWatermillQuest
 {
@@ -31,6 +37,14 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         private HUDConfig _hudConfig;
         [SerializeField]
         private int _questId = 2;
+        [SerializeField]
+        private Transform _runesInitialPoint;
+        [SerializeField]
+        private string _noteItemName;
+        [SerializeField]
+        private AssetReferenceT<TimelineAsset> _finishCutscene;
+        [SerializeField]
+        private QuestActionHandlerMono _cutsceneHandler;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -39,19 +53,28 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         private InventorySystem _inventory;
         private RunesSystem _runes;
         private HUD _hud;
-        private RuneShardsSystem _runesSystem;
         private RunesConfig _runesConfig;
+        private RunesDriver _runesDriver;
+        private CutsceneManager _cutsceneManager;
+        private SceneLoadManager _sceneLoader;
 
-        public void Init(InventorySystem inventory, RunesSystem runes, HUD hud, RuneShardsSystem runesSystem, RunesConfig runesConfig)
+        public void Init(InventorySystem inventory, RunesSystem runes, HUD hud, RuneShardsSystem runesSystem, RunesConfig runesConfig, 
+            RunePanelUI runesPanel, CutsceneManager cutsceneManager, SceneLoadManager sceneLoader)
         {
             _inventory = inventory;
             _runes = runes;
             _hud = hud;
-            _runesSystem = runesSystem;
             _runesConfig = runesConfig;
+            _cutsceneManager = cutsceneManager;
+            _sceneLoader = sceneLoader; 
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(gameObject.name, "Inventory System"));
             ExceptionUtilities.ThrowIfNull(_runes, String.Format(gameObject.name, "Rune System"));
             ExceptionUtilities.ThrowIfNull(_hud, String.Format(gameObject.name, "HUD"));
+            ExceptionUtilities.ThrowIfNull(_runesConfig, String.Format(gameObject.name, "RuneShardsSystem"));
+            ExceptionUtilities.ThrowIfNull(runesPanel, String.Format(gameObject.name, "RunePanelUI"));
+            ExceptionUtilities.ThrowIfNull(_cutsceneManager, String.Format(gameObject.name, "CutsceneManager"));
+            ExceptionUtilities.ThrowIfNull(_cutsceneManager, String.Format(gameObject.name, "SceneLoadManager"));
+            _runesDriver = new(runesSystem, runesConfig, runesPanel, _questId, _runesInitialPoint);
         }
 
         private void Start()
@@ -60,6 +83,9 @@ namespace BigProject.Gameplay.VillageWatermillQuest
             Assert.IsNotNull(_chests, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chests"));
             Assert.IsNotNull(_millWheelHandler, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Wheel"));
             Assert.IsNotNull(_hudConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD config"));
+            Assert.IsNotNull(_runesInitialPoint, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "RunesInitialPoint"));
+            Assert.IsNotNull(_finishCutscene, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Cutscene"));
+            Assert.IsNotNull(_cutsceneHandler, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Cutscene Handler"));
         }
 
         public void GetRepairedLever()
@@ -87,17 +113,28 @@ namespace BigProject.Gameplay.VillageWatermillQuest
             _millWheelHandler.enabled = true;
         }
 
+        public void RemoveNote()
+        {
+            _inventory.RemoveItemByName(_noteItemName);
+        }
+
         public void GetRune()
         {
-            IReadOnlyList<int> rewardRunes = _runesConfig.GetQuestRewardRunes(_questId);
-            ExceptionUtilities.ThrowIfNullFormat(rewardRunes, "unable to get reward runes");
-
-            foreach (int rewardRuneId in rewardRunes)
-            {
-                _runesSystem.AddRunesSegment(rewardRuneId);
-            }
-
             ReplicaManager.ShowReplica(_runeRemark);
+            _runesDriver.Deliver(Camera.main);
+        }
+
+        public void PlayCutscene()
+        {
+
+            _cutsceneHandler.MakeTransition(0);
+            StartCoroutine(PlayCutsceneRoutine());
+        }
+
+        private IEnumerator PlayCutsceneRoutine()
+        {
+            yield return new WaitUntil(() => _sceneLoader.IsLoading);
+            _cutsceneManager.Play(_finishCutscene);
         }
     }
 }
