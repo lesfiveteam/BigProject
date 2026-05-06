@@ -25,6 +25,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
 
         [SerializeField] private Animator _animator;
         [SerializeField] private Transform _body;
+        [SerializeField] private AudioSource _audioSource;
 
         [SerializeField] private float _flySpeed = 6f;
         [SerializeField] private float _rotationSpeed = 50f;
@@ -62,6 +63,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
         {
             ExceptionUtilities.ThrowIfNullFormat(_animator);
             ExceptionUtilities.ThrowIfNullFormat(_body);
+            ExceptionUtilities.ThrowIfNullFormat(_audioSource);
 
             _startPoint = transform.position;
             _startRotation = transform.eulerAngles;
@@ -123,6 +125,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
             Coroutine coroutine;
 
             // Take off
+            _audioSource.Play();
             Vector3 takeoffTarget = GetAirPoint(_startPoint) + startDirection * _takeoffDistance;
             coroutine = StartCoroutine(TakeoffRoutine(takeoffTarget));
             _coroutines.Add(coroutine);
@@ -150,6 +153,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
             _coroutines.Remove(coroutine);
 
             // Landing
+            _audioSource.Play();
             coroutine = StartCoroutine(LandRoutine());
             _coroutines.Add(coroutine);
             yield return coroutine;

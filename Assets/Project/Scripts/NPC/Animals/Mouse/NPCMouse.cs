@@ -10,6 +10,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Mouse
 
         [SerializeField] private Animator _animator;
         [SerializeField] private Transform _escapePoint;
+        [SerializeField] private AudioSource _audioSource;
 
         public float _duration = 1f;
 
@@ -17,10 +18,12 @@ namespace Assets.Project.Scripts.NPC.Animals.Mouse
         {
             ExceptionUtilities.ThrowIfNullFormat(_animator);
             ExceptionUtilities.ThrowIfNullFormat(_escapePoint);
+            ExceptionUtilities.ThrowIfNullFormat(_audioSource);
         }
 
         public void Scare(Transform danger)
         {
+            _audioSource.Play();
             _animator.SetTrigger(RunTrigger);
 
             Vector3 direction = (_escapePoint.position - transform.position).normalized;
