@@ -1,8 +1,10 @@
 using BigProject.Managers;
 using BigProject.Systems.DialogueSystem;
+using BigProject.Systems.Inventory;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +14,7 @@ namespace BigProject.UI.Dialogue
     {
         private const string BOY_NAME = "Эйрик";
         private const string DIALOGUE_ANIM_TRIGGER = "Pressed";
+        private const string ITEM_ANIM_TRIGGER = "Appear";
         // Hack - determine that this is a boy sprite and reduce it if so
         private const string BASE_BOY_SPRITE_NAME = "эмоции_мальчик";
         [SerializeField]
@@ -50,9 +53,20 @@ namespace BigProject.UI.Dialogue
         private float _boyRectTransformHeight = 1240;
         [SerializeField]
         private RectTransform _rectTransform;
-
+        [SerializeField]
+        private Animator _itemBlobAnimator;
+        [SerializeField]
+        private TextMeshProUGUI _itemBlobText;
+        [SerializeField]
+        private Image _itemImage;
+        [SerializeField]
+        private Color _colorForRecievingItem;
+        [SerializeField]
+        private Color _colorForGivingItem;
         [SerializeField]
         private float _speakerImageTone = 0.5f;
+
+        private List<string> _itemsToIgnoreWhenAdding = new List<string>{"church_note_1", "church_note_2", "church_note_3", "church_note_4" };  //needed for the third quest 
 
         [SerializeField]
         private List<Button> _answerOptionButtons = new List<Button>();
@@ -66,7 +80,11 @@ namespace BigProject.UI.Dialogue
         private bool _answerWasShownPreviousFrame = false;
         private bool _isFirstLine;
         private bool _isAnimating = false;
-        public void Init(DialogueManager dialogueManager)
+        private InventorySystem _inventorySystem;
+
+        private List<Item> _previouslyheldItems = new List<Item>();
+
+        public void Init(DialogueManager dialogueManager, InventorySystem inventorySystem)
         {
             for (int i = 0; i < _answerOptionButtons.Count; i++)
             {
@@ -91,6 +109,36 @@ namespace BigProject.UI.Dialogue
             _dialogueManager = dialogueManager;
             // Обработчик нажатия на кнопку "Продолжить"
             _nextButton.onClick.AddListener(ShowNextStep);
+
+            _inventorySystem = inventorySystem;
+            _inventorySystem.OnInventoryUpdated += InventoryUpdated;
+        }
+
+        private void InventoryUpdated()
+        {
+            List<Item> heldItems = _inventorySystem.GetAllHeldItems();
+
+            if (_dialogueWindow.gameObject.activeInHierarchy)
+            {
+                if (_previouslyheldItems.Count < heldItems.Count) //Added something
+                {
+                    Item addedItem = heldItems[heldItems.Count - 1];
+                    if (!_itemsToIgnoreWhenAdding.Contains(addedItem._name))
+                    {
+                        _itemImage.sprite = addedItem._itemSprite;
+                        _itemBlobText.text = $"{addedItem._verbToUseInDialogueText} <color=#{_colorForRecievingItem.ToHexString()}>{addedItem._nameLocalized}</color>";
+                        _itemBlobAnimator.SetTrigger(ITEM_ANIM_TRIGGER);
+                    }
+                }
+                else if (_previouslyheldItems.Count > heldItems.Count) //Removed something
+                {
+                    Item removedItem = _previouslyheldItems[_previouslyheldItems.Count - 1];
+                    _itemImage.sprite = removedItem._itemSprite;
+                    _itemBlobText.text = $"{removedItem._verbToUseInDialogueText} <color=#{_colorForGivingItem.ToHexString()}>{removedItem._nameLocalized}</color>";
+                    _itemBlobAnimator.SetTrigger(ITEM_ANIM_TRIGGER);
+                }
+            }
+            _previouslyheldItems = heldItems;        
         }
 
         private void ShowNextStep()
@@ -162,6 +210,7 @@ namespace BigProject.UI.Dialogue
 
         public void ShowDialogueWindow()
         {
+            
             _isFirstLine = true;
             _dialogueTextFront.gameObject.SetActive(true);
             _dialogueWindow.SetActive(true);

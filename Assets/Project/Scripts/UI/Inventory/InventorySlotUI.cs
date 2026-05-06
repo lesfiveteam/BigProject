@@ -89,11 +89,6 @@ namespace BigProject.UI
         {
             _inventoryItemUI.SetIsPlayingAnimation(true);
             Image spriteImage = _inventoryItemUI.GetImage();
-
-            Transform originalParent = spriteImage.transform.parent;
-            spriteImage.transform.SetParent(transform.root);
-            spriteImage.transform.SetAsLastSibling();
-
             spriteImage.gameObject.SetActive(true);
             _inventoryItemUI.SetImageTransformPosition(startPosition);
 
@@ -108,11 +103,6 @@ namespace BigProject.UI
                 t += 0.01f;
                 yield return new WaitForSeconds(animStepTime * 0.01f);
             }
-
-            spriteImage.transform.SetParent(originalParent);
-            spriteImage.transform.localPosition = Vector3.zero;
-            spriteImage.transform.localScale = Vector3.one;
-
             _inventoryItemUI.SetIsPlayingAnimation(false);
         }
     }
