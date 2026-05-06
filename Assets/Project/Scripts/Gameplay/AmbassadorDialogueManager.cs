@@ -74,7 +74,7 @@ namespace Managers.Gameplay
                 return;
             }
 
-            _gameplayManager.ChangeState(GameplayState.Dialogue);
+            //_gameplayManager.ChangeState(GameplayState.Dialogue);
             StartCoroutine(AmbassadorDialogueRoutine());
         }
 
