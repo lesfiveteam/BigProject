@@ -70,8 +70,8 @@ namespace BigProject.Gameplay.VillageWatermillQuest
 
         public void DespawnMiller()
         {
-            GameLogManager.Info(String.Format(LogStr.INFO_QUEST, "despawn miller from scene."));
-            _miller.SetActive(false);
+            //GameLogManager.Info(String.Format(LogStr.INFO_QUEST, "despawn miller from scene."));
+            //_miller.SetActive(false);
         }
 
         public void SpawnMiller()

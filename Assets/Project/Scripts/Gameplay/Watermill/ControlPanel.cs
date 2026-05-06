@@ -16,6 +16,7 @@ using UnityEngine.Assertions;
 using BigProject.Settings;
 using BigProject.Systems.HUD;
 using UnityEngine.Events;
+using UnityEngine.Localization;
 
 namespace BigProject.Gameplay.Watermill
 {
@@ -84,6 +85,10 @@ namespace BigProject.Gameplay.Watermill
         [SerializeField]
         private AudioClip _leverMoveSound;
 
+        [Header("Player remarkds")]
+        [SerializeField]
+        private LocalizedString _getBrokenLeverRemark;
+
         private PlayerInputHandler _inputHandler;
         private InventorySystem _inventory;
         private IControlPanelState _state;
@@ -125,6 +130,7 @@ namespace BigProject.Gameplay.Watermill
             Assert.IsNotNull(_gearsHandler, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Gears Handler"));
             Assert.IsNotNull(_hudConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD Config"));
             Assert.IsNotNull(_targetPosition, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Target Position"));
+            Assert.IsNotNull(_getBrokenLeverRemark, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Player remark"));
         }
 
         private void OnDestroy()
@@ -230,7 +236,8 @@ namespace BigProject.Gameplay.Watermill
             {
                 case ControlPanelState.Broken:
                     _state = new ControlPanelStateBroken(this, _inputHandler, _brokenLever, 
-                        _brokenLeverOffset, _brokenLeverRemoveTime, _brokenLeverItemId, _actions["GetBrokenLever"], _inventory, _soundsManager, _leverChangeSound);
+                        _brokenLeverOffset, _brokenLeverRemoveTime, _brokenLeverItemId, _actions["GetBrokenLever"], _inventory, _soundsManager,
+                        _leverChangeSound, _getBrokenLeverRemark);
                     break;
                 case ControlPanelState.Incompleted:
                     _state = new ControlPanelStateIncompleted(this, _inputHandler, _repairedLeverHolder, 
