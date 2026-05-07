@@ -25,6 +25,7 @@ namespace BigProject.Managers.CutsceneManager
         private AsyncOperationHandle<TimelineAsset> _handle;
         private GameplayState _cutsceneState;
         private GameplayState _previousState = GameplayState.Play;
+        private bool _destroyPrefabAfterPlay;
 
         public bool IsPlaying { get; private set; } = false;
 
@@ -45,6 +46,11 @@ namespace BigProject.Managers.CutsceneManager
 
         public void Play(AssetReferenceT<TimelineAsset> timelineAssetRef, GameplayState cutsceneState = GameplayState.Cutscene)
         {
+            Play(timelineAssetRef, cutsceneState, _gameplayManager.State);
+        }
+
+        public void Play(AssetReferenceT<TimelineAsset> timelineAssetRef, GameplayState cutsceneState, GameplayState stateAfterPlay, bool destroyPrefabAfterPlay = true)
+        {
             ExceptionUtilities.ThrowIfNull(timelineAssetRef, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "CutsceneManager", "TimelineAsset"));
 
             if (IsPlaying)
@@ -54,8 +60,9 @@ namespace BigProject.Managers.CutsceneManager
             }
 
             IsPlaying = true;
-            _previousState = _gameplayManager.State;
+            _previousState = stateAfterPlay;
             _cutsceneState = cutsceneState;
+            _destroyPrefabAfterPlay = destroyPrefabAfterPlay;
             _handle = timelineAssetRef.LoadAssetAsync();
             _handle.Completed += OnTimelineLoaded;
         }
@@ -262,9 +269,14 @@ namespace BigProject.Managers.CutsceneManager
         {
             GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, $"CutsceneManager", $"stop playing"));
             _director.playableAsset = null;
-            RemovePrefabsActors();
-            GameObject.Destroy(_cutscenePrefabs);
-            _cutscenePrefabs = null;
+
+            if (_destroyPrefabAfterPlay)
+            {
+                RemovePrefabsActors();
+                GameObject.Destroy(_cutscenePrefabs);
+                _cutscenePrefabs = null;
+            }
+
             ResetPlayer();
         }
 

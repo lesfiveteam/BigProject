@@ -29,7 +29,8 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         {
             _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RunesSystem>(),
                 ServiceLocator.GetService<HUD>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>(),
-                ServiceLocator.GetService<RunePanelUI>(), ServiceLocator.GetService<CutsceneManager>(), ServiceLocator.GetService<SceneLoadManager>());
+                ServiceLocator.GetService<RunePanelUI>(), ServiceLocator.GetService<CutsceneManager>(), 
+                ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<GameplayManager>());
 
             _miller.SetActive(true);
             _elder.SetActive(false);

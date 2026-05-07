@@ -57,23 +57,26 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         private RunesDriver _runesDriver;
         private CutsceneManager _cutsceneManager;
         private SceneLoadManager _sceneLoader;
+        private GameplayManager _gameplayManager;
 
         public void Init(InventorySystem inventory, RunesSystem runes, HUD hud, RuneShardsSystem runesSystem, RunesConfig runesConfig, 
-            RunePanelUI runesPanel, CutsceneManager cutsceneManager, SceneLoadManager sceneLoader)
+            RunePanelUI runesPanel, CutsceneManager cutsceneManager, SceneLoadManager sceneLoader, GameplayManager gameplayManager)
         {
             _inventory = inventory;
             _runes = runes;
             _hud = hud;
             _runesConfig = runesConfig;
             _cutsceneManager = cutsceneManager;
-            _sceneLoader = sceneLoader; 
+            _sceneLoader = sceneLoader;
+            _gameplayManager = gameplayManager;
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(gameObject.name, "Inventory System"));
             ExceptionUtilities.ThrowIfNull(_runes, String.Format(gameObject.name, "Rune System"));
             ExceptionUtilities.ThrowIfNull(_hud, String.Format(gameObject.name, "HUD"));
             ExceptionUtilities.ThrowIfNull(_runesConfig, String.Format(gameObject.name, "RuneShardsSystem"));
             ExceptionUtilities.ThrowIfNull(runesPanel, String.Format(gameObject.name, "RunePanelUI"));
             ExceptionUtilities.ThrowIfNull(_cutsceneManager, String.Format(gameObject.name, "CutsceneManager"));
-            ExceptionUtilities.ThrowIfNull(_cutsceneManager, String.Format(gameObject.name, "SceneLoadManager"));
+            ExceptionUtilities.ThrowIfNull(_sceneLoader, String.Format(gameObject.name, "SceneLoadManager"));
+            ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(gameObject.name, "GameplayManager"));
             _runesDriver = new(runesSystem, runesConfig, runesPanel, _questId, _runesInitialPoint);
         }
 
@@ -126,15 +129,15 @@ namespace BigProject.Gameplay.VillageWatermillQuest
 
         public void PlayCutscene()
         {
-
+            _gameplayManager.ChangeState(GameplayState.Cutscene);
             _cutsceneHandler.MakeTransition(0);
             StartCoroutine(PlayCutsceneRoutine());
         }
 
         private IEnumerator PlayCutsceneRoutine()
         {
-            yield return new WaitUntil(() => _sceneLoader.IsLoading);
-            _cutsceneManager.Play(_finishCutscene);
+            yield return new WaitUntil(() => !_sceneLoader.IsLoading);
+            _cutsceneManager.Play(_finishCutscene, GameplayState.Cutscene, GameplayState.Play, false);
         }
     }
 }
