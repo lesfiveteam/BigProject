@@ -6,7 +6,9 @@ using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Settings;
 using BigProject.Systems;
+using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
+using BigProject.Systems.QuestSystem;
 using BigProject.UI;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -30,6 +32,8 @@ namespace BigProject.Gameplay.Church
         [SerializeField]
         private QuestActions _questActions;
 
+        private ProgressManager _progressManager;
+
         private void Awake()
         {
             Assert.IsNotNull(_miniGameActivator, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Mini Game Activator"));
@@ -46,21 +50,34 @@ namespace BigProject.Gameplay.Church
             InventoryUI inventoryUI = ServiceLocator.GetService<InventoryUI>();
             PlayerController player = ServiceLocator.GetService<PlayerController>();
             SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
-            ProgressManager progressManager = ServiceLocator.GetService<ProgressManager>();
+            _progressManager = ServiceLocator.GetService<ProgressManager>();
 
-            if (progressManager.GetQuestState(_questId) == Systems.QuestSystem.QuestState.Active)
+            if (_progressManager.GetQuestState(_questId) == Systems.QuestSystem.QuestState.Active)
             {
                 _questObjects.SetActive(true);
             }
+            else
+            {
+                _progressManager.AddQuestListener(_questId, OnQuestStateChanged);
+            }
+
 
             _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>());
             _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(), 
                 player.GetComponentInChildren<SkinnedMeshRenderer>());
-            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, progressManager);
+            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, _progressManager);
             _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
             _cameraMove.Init(player);
 
             SwithOffOutline(player);
+        }
+
+        private void OnQuestStateChanged(IQuest quest)
+        {
+            if (_questId == quest.ID)
+            {
+                _questObjects.SetActive(true);
+            }
         }
 
         private void SwithOffOutline(PlayerController player)
@@ -68,6 +85,11 @@ namespace BigProject.Gameplay.Church
             Outline outline = player.GetComponentInChildren<Outline>();
             if (outline != null)
                 outline.enabled = false;
+        }
+
+        private void OnDestroy()
+        {
+            _progressManager.RemoveQuestListener(_questId, OnQuestStateChanged);
         }
     }
 }
