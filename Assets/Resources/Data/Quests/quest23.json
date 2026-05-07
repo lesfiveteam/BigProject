@@ -31,7 +31,7 @@
             [
                 {
                     "id":0,
-                    "fromState":1,
+                    "fromState":2,
                     "toState":3
                 }
             ]

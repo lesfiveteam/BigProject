@@ -12,7 +12,7 @@
         {
             "id": 1,
             "name": "PriestRuinsDialogue",
-            "currentState": 2,
+            "currentState": 3,
             "manualTransitions": 
             [
                 {
@@ -37,8 +37,8 @@
                             "dependencies":
                             [
                                 {
-                                    "id":1,
-                                    "state":3
+                                    "id":2000,
+                                    "state":5
                                 }
                             ]
                         }
