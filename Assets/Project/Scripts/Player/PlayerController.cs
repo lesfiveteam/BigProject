@@ -194,7 +194,8 @@ namespace BigProject.Player
 
                 if (!_navMeshAgent.pathPending && _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance &&
                     (!_navMeshAgent.hasPath || _navMeshAgent.velocity.sqrMagnitude == 0f))
-                {                    
+                {
+                    _navMeshAgent.ResetPath(); // fix of rare levitation
                     _isMoving = false;
                     _animatorController.SetBool(IsMoving, false);
                     TryInteract();
