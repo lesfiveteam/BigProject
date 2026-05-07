@@ -17,9 +17,11 @@ namespace BigProject.Gameplay.VillageChurchQuest
         [SerializeField]
         private GameObject _priest;
         [SerializeField]
-        private Collider _churchDoor;
+        private Transform _churchDoorLeft, _churchDoorRight;
         [SerializeField]
-        private float _churchDoorOpenAngleDelta = -15f; 
+        private Collider _doorCollider;
+        [SerializeField]
+        private float _churchDoorOpenAngleDelta; 
 
         [field: SerializeField]
         public int QuestId { get; private set; }
@@ -29,6 +31,10 @@ namespace BigProject.Gameplay.VillageChurchQuest
             Assert.IsNotNull(_questObjects, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Objects"));
             Assert.IsNotNull(_questActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Actions"));
             Assert.IsNotNull(_priest, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Priest"));
+            Assert.IsNotNull(_churchDoorLeft, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Left"));
+            Assert.IsNotNull(_churchDoorRight, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Right"));
+            Assert.IsNotNull(_doorCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Collider"));
+
         }
 
         public void InitOnSceneEntry()
@@ -36,10 +42,13 @@ namespace BigProject.Gameplay.VillageChurchQuest
             _questObjects.SetActive(true);
             _questActions.Init(ServiceLocator.GetService<InventorySystem>());
             _priest.SetActive(false);
-            _churchDoor.enabled = true;
-            Vector3 doorAngles = _churchDoor.transform.localEulerAngles;
+            _doorCollider.enabled = true;
+            Vector3 doorAngles = _churchDoorLeft.localEulerAngles;
             doorAngles.y += _churchDoorOpenAngleDelta;
-            _churchDoor.transform.localEulerAngles = doorAngles;
+            _churchDoorLeft.localEulerAngles = doorAngles;
+            doorAngles = _churchDoorRight.localEulerAngles;
+            doorAngles.y -= _churchDoorOpenAngleDelta;
+            _churchDoorRight.localEulerAngles = doorAngles;
         }
 
         public void Begin()

@@ -13,9 +13,11 @@ namespace BigProject.Gameplay.VillageBetweenSecondAndThird
         [SerializeField]
         private GameObject _priest;
         [SerializeField]
-        private Collider _churchDoor;
+        private Transform _churchDoorLeft, _churchDoorRight;
         [SerializeField]
-        private float _churchDoorOpenAngleDelta = -15f;
+        private Collider _doorCollider;
+        [SerializeField]
+        private float _churchDoorOpenAngleDelta;
         [SerializeField]
         private LocalizedString _playerRemark;
 
@@ -28,17 +30,22 @@ namespace BigProject.Gameplay.VillageBetweenSecondAndThird
 
         private void Awake()
         {
-            Assert.IsNotNull(_churchDoor, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Church Door"));
+            Assert.IsNotNull(_churchDoorLeft, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Left"));
+            Assert.IsNotNull(_churchDoorRight, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Right"));
+            Assert.IsNotNull(_doorCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Collider"));
             Assert.IsNotNull(_priest, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Priest"));
         }
 
         public void InitOnSceneEntry()
         {
             _priest.SetActive(false);
-            _churchDoor.enabled = true;
-            Vector3 doorAngles = _churchDoor.transform.localEulerAngles;
+            _doorCollider.enabled = true;
+            Vector3 doorAngles = _churchDoorLeft.localEulerAngles;
             doorAngles.y += _churchDoorOpenAngleDelta;
-            _churchDoor.transform.localEulerAngles = doorAngles;
+            _churchDoorLeft.localEulerAngles = doorAngles;
+            doorAngles = _churchDoorRight.localEulerAngles;
+            doorAngles.y -= _churchDoorOpenAngleDelta;
+            _churchDoorRight.localEulerAngles = doorAngles;
             _input = ServiceLocator.GetService<PlayerInputHandler>();
             _gameplayManager = ServiceLocator.GetService<GameplayManager>();
             _input.Click += OnClicked;
