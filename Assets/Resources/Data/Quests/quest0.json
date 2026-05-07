@@ -1,7 +1,7 @@
 {
     "id":0,
     "name":"Quest0_intro",
-    "currentState":1,
+    "currentState":0,
     "isSavingAllowed":false,
     "actions":
     [
