@@ -21,6 +21,10 @@ namespace BigProject.UI
         [SerializeField] private Button _quitButton;
         [SerializeField] private AudioClip _clickSound;
         [SerializeField] private GlobalConfig _globalConfig;
+        [SerializeField] private Animator _boyAnimator;
+        [SerializeField] private Animator _backgroundAnimator;
+
+        private const string ANIM_START_TRIGGER = "Start";
 
         private ProgressManager _progressManager;
         private SceneLoadManager _sceneLoader;
@@ -65,6 +69,7 @@ namespace BigProject.UI
                 _soundsManager.PlaySound(_clickSound, is2D: true);
                 _savesManager.DeleteSave(_globalConfig.PlayerProfileName);
                 _savesManager.DeleteSave($"{_globalConfig.PlayerProfileName}_{ProgressManager.ADDITIONAL_DATA_NAME}");
+                PlayAnimations();
                 _sceneLoader.LoadScene(Scenes.Intro);
             });
 
@@ -73,6 +78,7 @@ namespace BigProject.UI
                 _soundsManager.PlaySound(_clickSound, is2D: true);
                 _progressManager.LoadProgress();
                 Bootstrapper.SetStage(GameExecutionStage.Gameplay);
+                PlayAnimations();
                 _sceneLoader.LoadScene(Scenes.Village);
             });
 
@@ -98,6 +104,12 @@ namespace BigProject.UI
             _continueButton.onClick.RemoveAllListeners();
             _settingsButton.onClick.RemoveAllListeners();
             _quitButton.onClick.RemoveAllListeners();
+        }
+
+        private void PlayAnimations()
+        {
+            _boyAnimator.SetTrigger(ANIM_START_TRIGGER);
+            _backgroundAnimator.SetTrigger(ANIM_START_TRIGGER);
         }
     }
 }
