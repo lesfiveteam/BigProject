@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.NPC.Animals.Deer;
 using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.NPC;
@@ -21,6 +22,8 @@ namespace BigProject.Gameplay.Village
         private NPCChatsDatabasesController _chatsDatabasesController;
         [SerializeField]
         private WatermillHandler _watermillHandler;
+        [SerializeField]
+        private NPCDeerSpawner _NPCDeerSpawner;
 
         private QuestsBoundariesTracker _questsTracker;
 
@@ -40,6 +43,7 @@ namespace BigProject.Gameplay.Village
             _questsTracker.OnSceneEntry();
 
             //_chestSound.Init(ServiceLocator.GetService<SoundsManager>());
+            _NPCDeerSpawner.Init(ServiceLocator.GetService<SoundsManager>());
             ProgressManager progressManager = ServiceLocator.GetService<ProgressManager>();
             _chatsDatabasesController.Init(progressManager);
             _watermillHandler.Init(progressManager);

@@ -1,4 +1,6 @@
 ﻿using BigProject.Systems;
+using BigProject.Systems.Sound;
+using BigProject.Utilities;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -12,17 +14,19 @@ namespace Assets.Project.Scripts.NPC.Animals.Cow
 
         [SerializeField] private Animator _animator;
 
-        [SerializeField] private float _minBoringTime = 3f;
-        [SerializeField] private float _maxBoringTime = 5f;
+        [SerializeField] private float _minBoringTime = 20f;
+        [SerializeField] private float _maxBoringTime = 40f;
+        [SerializeField] private EnvironmentSound _environmentSound;
 
         private Coroutine _animationCoroutine;
-        private float _timeToAlive = 2f;
+        private float _timeToAlive = 4f;
 
         private bool _isAlive = false;
 
         private void Start()
         {
             Assert.IsNotNull(_animator, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "Animator"));
+            ExceptionUtilities.ThrowIfNullFormat(_environmentSound);
 
             _animationCoroutine = StartCoroutine(StartAnimationsRoutine());
         }
@@ -42,6 +46,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Cow
 
                 yield return new WaitForSeconds(boredTime);
 
+                _environmentSound.PlaySound();
                 _animator.SetTrigger(BoredTrigger);
             }
         }

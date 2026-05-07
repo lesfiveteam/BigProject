@@ -1,4 +1,7 @@
-﻿using BigProject.Utilities;
+﻿using BigProject.Managers.SoundsMusicManagers;
+using BigProject.Systems.Sound;
+using BigProject.Utilities;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +14,16 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
         [SerializeField, Range(0, 5)] private int _deerCount;
         [SerializeField] private Transform _deerConainer;
 
+        private SoundsManager _soundsManager;
+        private Coroutine _initCoroutine;
+        private int _initMaxWait = 10;
+        private int _initCounter = 0;
+
+        public void Init(SoundsManager soundsManager)
+        {
+            _soundsManager = soundsManager;
+        }
+
         private void Start()
         {
             ExceptionUtilities.ThrowIfNullFormat(_deerPrefab);
@@ -21,7 +34,27 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
 
             _deerCount = Mathf.Min(_deerCount, _spawnPoints.Count);
 
+            _initCoroutine = StartCoroutine(WaitForInitRoutine());
+        }
+
+        private IEnumerator WaitForInitRoutine()
+        {
+            while (_soundsManager == null)
+            {
+                _initCounter++;
+
+                yield return new WaitForSeconds(1f);
+
+                if (_initCounter >= _initMaxWait)
+                {
+                    ExceptionUtilities.ThrowIfNullFormat(_soundsManager);
+                    break;
+                }
+            }
+
             SpawnDeers();
+
+            _initCoroutine = null;
         }
 
         private void SpawnDeers()
@@ -37,7 +70,20 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
             for (int i = 0; i < _deerCount; i++)
             {
                 Transform point = availablePoints[i];
-                Instantiate(_deerPrefab, point.position, point.rotation, _deerConainer);
+                NPCDeer deer = Instantiate(_deerPrefab, point.position, point.rotation, _deerConainer);
+
+                EnvironmentSound sound = deer.GetComponentInChildren<EnvironmentSound>();
+                ExceptionUtilities.ThrowIfNullFormat(sound);
+                deer.GetComponentInChildren<EnvironmentSound>().Init(_soundsManager);
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_initCoroutine != null)
+            {
+                StopCoroutine(_initCoroutine);
+                _initCoroutine = null;
             }
         }
     }
