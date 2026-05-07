@@ -52,8 +52,6 @@ namespace BigProject.UI.Dialogue
         [SerializeField]
         private float _boyRectTransformHeight = 1240;
         [SerializeField]
-        private RectTransform _rectTransform;
-        [SerializeField]
         private Animator _itemBlobAnimator;
         [SerializeField]
         private TextMeshProUGUI _itemBlobText;
@@ -76,6 +74,8 @@ namespace BigProject.UI.Dialogue
         private List<TextMeshProUGUI> _answerOptionButtonTexts = new List<TextMeshProUGUI>();
         private TextMeshProUGUI _leftNameTMPro;
         private TextMeshProUGUI _rightNameTMPro;
+
+        private RectTransform _rectTransform;
 
         private bool _answerWasShownPreviousFrame = false;
         private bool _isFirstLine;

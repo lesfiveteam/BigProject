@@ -6,6 +6,7 @@ using BigProject.Player;
 using BigProject.Systems;
 using BigProject.Systems.QuestSystem;
 using BigProject.Utilities;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -18,11 +19,11 @@ namespace BigProject.Gameplay.Church
         private const int QUEST_ID = 3;
 
         [SerializeField]
-        private int _swipeDownValue = -10;
-        [SerializeField]
         private List<Bell> _bells = new List<Bell>();
         [SerializeField]
         private List<int> _targetBellOrder = new List<int>();
+        [SerializeField]
+        private float _timeBeforeWinMiniGame = 2f;
 
         private List<int> _playerBellOrder = new List<int>();
         private MiniGameActivator _activator;
@@ -113,7 +114,7 @@ namespace BigProject.Gameplay.Church
 
                 if (_playerBellOrder.Count == _targetBellOrder.Count && BellsOrderIsRight())
                 {
-                    WinMiniGame();
+                    StartCoroutine(WinMiniGame());
                 }
             }
         }
@@ -163,12 +164,13 @@ namespace BigProject.Gameplay.Church
             }
         }
 
-        private void WinMiniGame()
+        private IEnumerator WinMiniGame()
         {
+            ReplicaManager.ShowReplica(_isValidOrderRemark);
             _actionHandler.MakeTransition(0);
+            yield return new WaitForSeconds(_timeBeforeWinMiniGame);
             _activator.DeactivateMiniGame();
             ResetActions();
-            ReplicaManager.ShowReplica(_isValidOrderRemark);
         }
 
         private void ResetActions()
