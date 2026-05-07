@@ -21,6 +21,12 @@ namespace BigProject.Gameplay.Church
         [SerializeField]
         private int _questId;
 
+
+        [SerializeField]
+        private GameObject _priest;
+        [SerializeField]
+        private GameObject _priestFinishPosition;
+
         [Header("Player remarks")]
         [SerializeField]
         private LocalizedString _firstEnterRemark;
@@ -69,14 +75,13 @@ namespace BigProject.Gameplay.Church
         {
             ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.Outro);
         }
-
-        public void FirstVillageStepAction()
-        {
-            ReplicaManager.ShowReplica(_firstEnterRemark); // При первом ЛКМ в деревне
-        }
         public void TouchStillageAction()
         {
             ReplicaManager.ShowReplica(_touchStillageRemark); // При начале обыске стиллажа
+        }
+        public void MovePriestToFinishPosition()
+        {
+            _priest.transform.position = _priestFinishPosition.transform.position;
         }
     }
 }
