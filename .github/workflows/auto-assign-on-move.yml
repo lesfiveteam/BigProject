@@ -1,18 +1,25 @@
-name: Auto Assign on Project Board Move
+name: Assign on move to In Progress
 on:
   project_card:
     types: [moved]
-
 jobs:
-  auto_assign:
+  assign_to_mover:
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      pull-requests: write
     steps:
-      - name: Assign on Move to 'Бронь сцен'
-        uses: augustohp/ghAutoAssignOnWIP@main
+      - name: Assign to mover
+        uses: actions/github-script@v7
         with:
-          gh-token: ${{ secrets.GH_TOKEN }}
-          wip-column-name: 'Сцены в работе'
-          reset-on-columns: 'Свободные сцены'
+          script: |
+            // Получаем логин пользователя, который переместил карточку
+            const mover = context.payload.sender.login;
+            // Получаем номер issue из карточки (если это issue)
+            const issueUrl = context.payload.project_card.content_url;
+            if (!issueUrl.includes('/issues/')) return;
+            const issueNumber = issueUrl.split('/').pop();
+            // Назначаем исполнителя
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              assignees: [mover]
+            });
