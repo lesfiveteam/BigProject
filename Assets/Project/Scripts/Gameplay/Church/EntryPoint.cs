@@ -2,6 +2,7 @@ using Assets.Project.Scripts.Interactable;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Gameplay.Common;
 using BigProject.Managers;
+using BigProject.Managers.CutsceneManager;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Settings;
@@ -61,11 +62,13 @@ namespace BigProject.Gameplay.Church
                 _progressManager.AddQuestListener(_questId, OnQuestStateChanged);
             }
 
+            SkinnedMeshRenderer playerRenderer = player.GetComponentInChildren<SkinnedMeshRenderer>();
+            Collider playerCollider = player.GetComponent<Collider>();
 
-            _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>());
-            _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(), 
-                player.GetComponentInChildren<SkinnedMeshRenderer>());
-            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, _progressManager);
+            _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>(),
+                playerCollider, playerRenderer);
+            _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, playerCollider, playerRenderer);
+            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, _progressManager, ServiceLocator.GetService<CutsceneManager>());
             _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
             _cameraMove.Init(player);
 

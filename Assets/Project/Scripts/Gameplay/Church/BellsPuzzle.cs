@@ -1,6 +1,7 @@
 using BigProject.Gameplay.Common;
 using BigProject.Intercatable;
 using BigProject.Managers;
+using BigProject.Managers.CutsceneManager;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Systems;
@@ -8,8 +9,11 @@ using BigProject.Systems.QuestSystem;
 using BigProject.Utilities;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Localization;
+using UnityEngine.Timeline;
 
 namespace BigProject.Gameplay.Church
 {
@@ -24,6 +28,8 @@ namespace BigProject.Gameplay.Church
         private List<int> _targetBellOrder = new List<int>();
         [SerializeField]
         private float _timeBeforeWinMiniGame = 2f;
+        [SerializeField]
+        private AssetReferenceT<TimelineAsset> _ñutscene;
 
         private List<int> _playerBellOrder = new List<int>();
         private MiniGameActivator _activator;
@@ -32,6 +38,7 @@ namespace BigProject.Gameplay.Church
         private SoundsManager _soundsManager;
         private IQuestActionHandler _actionHandler;
         private ProgressManager _progressManager;
+        private CutsceneManager _cutsceneManager;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -47,12 +54,14 @@ namespace BigProject.Gameplay.Church
             PlayerInputHandler inputHandler,
             MiniGameActivator miniGameActivator,
             SoundsManager soundsManager,
-            ProgressManager progressManager
+            ProgressManager progressManager,
+            CutsceneManager cutsceneManager
             )
         {
             _activator = miniGameActivator;
             _inputHandler = inputHandler;
             _progressManager = progressManager;
+            _cutsceneManager = cutsceneManager;
 
             foreach (Bell bell in _bells)
             {
@@ -166,10 +175,12 @@ namespace BigProject.Gameplay.Church
 
         private IEnumerator WinMiniGame()
         {
+            _activator.enabled = false;
             ReplicaManager.ShowReplica(_isValidOrderRemark);
             _actionHandler.MakeTransition(0);
             yield return new WaitForSeconds(_timeBeforeWinMiniGame);
-            _activator.DeactivateMiniGame();
+            _cutsceneManager.Play(_ñutscene, GameplayState.Cutscene, GameplayState.Play, false);
+            //_activator.DeactivateMiniGame();
             ResetActions();
         }
 

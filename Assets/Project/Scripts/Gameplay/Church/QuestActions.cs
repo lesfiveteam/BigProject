@@ -1,9 +1,11 @@
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Managers;
 using BigProject.Settings;
+using BigProject.Systems;
 using BigProject.Systems.Inventory;
 using BigProject.Utilities;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Localization;
 
@@ -14,6 +16,8 @@ namespace BigProject.Gameplay.Church
         private InventorySystem _inventory;
         private RuneShardsSystem _runesSystem;
         private RunesConfig _runesConfig;
+        private SkinnedMeshRenderer _playerRenderer;
+        private Collider _playerCollider;
 
         [SerializeField]
         private string _noteOne, _noteThree, _noteFour;
@@ -26,6 +30,8 @@ namespace BigProject.Gameplay.Church
         private GameObject _priest;
         [SerializeField]
         private GameObject _priestFinishPosition;
+        [SerializeField]
+        private CinemachineCamera _puzzleCamera;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -35,14 +41,19 @@ namespace BigProject.Gameplay.Church
         [SerializeField]
         private LocalizedString _findNoteRemark;
 
-        public void Init(InventorySystem inventory, RuneShardsSystem runesSystem, RunesConfig runesConfig)
+        public void Init(InventorySystem inventory, RuneShardsSystem runesSystem, RunesConfig runesConfig,
+            Collider playerCollider, SkinnedMeshRenderer playerRenderer)
         {
             _inventory = inventory;
             _runesSystem = runesSystem;
             _runesConfig = runesConfig;
-            ExceptionUtilities.ThrowIfNull(_inventory, string.Format(gameObject.name, "Inventory System"));
-            ExceptionUtilities.ThrowIfNull(_runesSystem, string.Format(gameObject.name, "Rune Shards System"));
-            ExceptionUtilities.ThrowIfNull(_runesConfig, string.Format(gameObject.name, "Rune Shards System"));
+            _playerRenderer = playerRenderer;
+            _playerCollider = playerCollider;
+            ExceptionUtilities.ThrowIfNull(_inventory, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory System"));
+            ExceptionUtilities.ThrowIfNull(_runesSystem, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Rune Shards System"));
+            ExceptionUtilities.ThrowIfNull(_runesConfig, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Runes Config"));
+            ExceptionUtilities.ThrowIfNull(_playerRenderer, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Collider"));
+            ExceptionUtilities.ThrowIfNull(_playerCollider, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Renderer"));
         }
 
         public void AddNoteOne()
@@ -82,6 +93,17 @@ namespace BigProject.Gameplay.Church
         public void MovePriestToFinishPosition()
         {
             _priest.transform.position = _priestFinishPosition.transform.position;
+        }
+
+        public void DeactivatePuzzleCamera()
+        {
+            _puzzleCamera.enabled = false;
+        }
+
+        public void ActivatePlayer()
+        {
+            _playerRenderer.enabled = true;
+            _playerCollider.enabled = true;
         }
     }
 }
