@@ -1,0 +1,18 @@
+name: Auto Assign on Project Board Move
+on:
+  project_card:
+    types: [moved]
+
+jobs:
+  auto_assign:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Assign on Move to 'Бронь сцен'
+        uses: augustohp/ghAutoAssignOnWIP@main
+        with:
+          gh-token: ${{ secrets.GH_TOKEN }}
+          wip-column-name: 'Сцены в работе'
+          reset-on-columns: 'Свободные сцены'
