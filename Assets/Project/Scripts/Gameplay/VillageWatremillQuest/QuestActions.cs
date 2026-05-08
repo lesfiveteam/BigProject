@@ -30,7 +30,7 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         [SerializeField]
         private GameObject _chests;
         [SerializeField]
-        private Vector3 _millerFinalPosition;
+        private GameObject _runesInChest;
         [SerializeField]
         private GearsHandler _millWheelHandler;
         [SerializeField]
@@ -80,12 +80,13 @@ namespace BigProject.Gameplay.VillageWatermillQuest
             _runesDriver = new(runesSystem, runesConfig, runesPanel, _questId, _runesInitialPoint);
         }
 
-        private void Start()
+        private void Awa()
         {
             Assert.IsNotNull(_miller, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Miller"));
+            Assert.IsNotNull(_runesInChest, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Runes In Chest"));
             Assert.IsNotNull(_chests, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chests"));
             Assert.IsNotNull(_millWheelHandler, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Wheel"));
-            Assert.IsNotNull(_hudConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD config"));
+            Assert.IsNotNull(_hudConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "HUD confi"));
             Assert.IsNotNull(_runesInitialPoint, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "RunesInitialPoint"));
             Assert.IsNotNull(_finishCutscene, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Cutscene"));
             Assert.IsNotNull(_cutsceneHandler, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Cutscene Handler"));
@@ -105,9 +106,9 @@ namespace BigProject.Gameplay.VillageWatermillQuest
 
         public void SpawnMiller()
         {
-            GameLogManager.Info(String.Format(LogStr.INFO_QUEST, "move miller to quest final position and spawn chests."));
+            GameLogManager.Info(String.Format(LogStr.INFO_QUEST, "spawn chests."));
             _chests.SetActive(true);
-            _miller.transform.position = _millerFinalPosition;
+            _runesInChest.SetActive(true);
         }
 
         public void RotateMillWheelOn()
@@ -125,6 +126,7 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         {
             ReplicaManager.ShowReplica(_runeRemark);
             _runesDriver.Deliver(Camera.main);
+            _runesInChest.SetActive(false);
         }
 
         public void PlayCutscene()
