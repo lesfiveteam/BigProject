@@ -13,6 +13,9 @@ namespace BigProject.Intercatable.HighlightedObjects
 {
     public class InteractableObjectsHighlighter : MonoBehaviour
     {
+        private const float WORLD_HIT_MAX_DISTANCE = 100f;
+        private const int HIGHLIGHTED_LAYER_MASK = 1 << 11;
+
         [SerializeField]
         private float _objectCheckDelay = 0.1f;
 
@@ -79,8 +82,8 @@ namespace BigProject.Intercatable.HighlightedObjects
                 if (!uiHit)
                 {
                     Ray ray = _camera.ScreenPointToRay(Mouse.current.position.ReadValue());
-
-                    if (Physics.Raycast(ray, out RaycastHit hit))
+                    
+                    if (Physics.Raycast(ray, out RaycastHit hit, WORLD_HIT_MAX_DISTANCE, HIGHLIGHTED_LAYER_MASK))
                     {
                         HighlightedObject newObject = hit.transform.GetComponent<HighlightedObject>();
 
