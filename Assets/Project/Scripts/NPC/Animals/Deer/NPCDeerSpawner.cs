@@ -74,7 +74,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
 
                 EnvironmentSound sound = deer.GetComponentInChildren<EnvironmentSound>();
                 ExceptionUtilities.ThrowIfNullFormat(sound);
-                deer.GetComponentInChildren<EnvironmentSound>().Init(_soundsManager);
+                sound.Init(_soundsManager);
             }
         }
 

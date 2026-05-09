@@ -1,4 +1,7 @@
-﻿using BigProject.Utilities;
+﻿using BigProject.Managers.SoundsMusicManagers;
+using BigProject.Systems.Sound;
+using BigProject.Utilities;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,10 +17,15 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         [SerializeField] private Transform _chickenContainer;
         [SerializeField] private List<NPCPeckPoint> _peckPoints;
 
+        private SoundsManager _soundsManager;
         private List<NPCCock> _cocks = new();
 
         private float _chickenSpawnDistance = 3f;
         private int _spawnCountTry = 30;
+
+        private Coroutine _initCoroutine;
+        private int _initMaxWait = 10;
+        private int _initCounter = 0;
 
         private void Start()
         {
@@ -26,7 +34,32 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             ExceptionUtilities.ThrowIfNullFormat(_chickenContainer);
             ExceptionUtilities.ThrowIfEmptyCollection(_peckPoints, "_peckPoints");
 
+            _initCoroutine = StartCoroutine(WaitForInitRoutine());
+        }
+
+        public void Init(SoundsManager soundsManager)
+        {
+            _soundsManager = soundsManager;
+        }
+
+        private IEnumerator WaitForInitRoutine()
+        {
+            while (_soundsManager == null)
+            {
+                _initCounter++;
+
+                yield return new WaitForSeconds(1f);
+
+                if (_initCounter >= _initMaxWait)
+                {
+                    ExceptionUtilities.ThrowIfNullFormat(_soundsManager);
+                    break;
+                }
+            }
+
             SpawnProcess();
+
+            _initCoroutine = null;
         }
 
         private void SpawnProcess()
@@ -49,6 +82,11 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             NPCCock cock = Instantiate(_cockPrefab, spawnPoint.transform.position, Quaternion.identity, _chickenContainer);
             cock.Init(spawnPoint, this);
             _cocks.Add(cock);
+
+            EnvironmentSound sound = cock.GetComponentInChildren<EnvironmentSound>();
+            ExceptionUtilities.ThrowIfNullFormat(sound);
+            sound.Init(_soundsManager);
+            sound.PlaySound();
 
             for (int i = 0; i < spawnPoint.ChickenCount; i++)
                 if (!SpawnChicken(cock, spawnPoint))
@@ -93,6 +131,15 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             newPeckPoint.IsOccupied = true;
 
             return newPeckPoint;
+        }
+
+        private void OnDisable()
+        {
+            if (_initCoroutine != null)
+            {
+                StopCoroutine(_initCoroutine);
+                _initCoroutine = null;
+            }
         }
     }
 }

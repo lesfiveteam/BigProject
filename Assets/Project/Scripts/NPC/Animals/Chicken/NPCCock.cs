@@ -1,6 +1,4 @@
-﻿using BigProject.Systems.Sound;
-using BigProject.Utilities;
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -14,8 +12,6 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
         public Action<NPCPeckPoint> changePeckPoint;
 
-        [SerializeField] private EnvironmentSound _environmentSound;
-
         private NPCChickenSpawner _peckManager;
 
         private Coroutine _changePeckPointCoroutine = null;
@@ -25,8 +21,6 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
         public void Init(NPCPeckPoint currentPeckPoint, NPCChickenSpawner peckManager)
         {
-            ExceptionUtilities.ThrowIfNullFormat(_environmentSound);
-            _environmentSound.PlaySound();
             _currentPeckPoint = currentPeckPoint;
             _peckManager = peckManager;
 
