@@ -294,7 +294,10 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
                 Vector3 directionFromDanger = (transform.position - danger.position).normalized;
 
-                yield return StartCoroutine(TryFindRushPointRoutine(directionFromDanger, path, isFound => pointFound = isFound));
+                yield return TryFindRushPointRoutine(
+                    directionFromDanger,
+                    path,
+                    isFound => pointFound = isFound);
 
                 if (pointFound)
                 {

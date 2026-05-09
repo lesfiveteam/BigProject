@@ -14,20 +14,21 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
         private readonly int RunTrigger = Animator.StringToHash("Run");
         private const string SPEED_MULTIPLIER = "speedMultiplier";
         private const string RUN_CLIP_NAME = "run1";
+
         private const int JUMP_FRAMES = 16;
+        private const float JUMP_DISTANCE = 10f;
+
+        private const int ATTEMPT_FOR_SEARCH = 2;
+        private const float ANGLE_STEP = 2f;
+        private const float SEARCH_RADIUS = 1f;
 
         [SerializeField] private Animator _animator;
         [SerializeField] private NavMeshAgent _agent;
 
+        private int _jumpCount = 6;
+
         private Coroutine _runCoroutine;
         private AnimationClip _clipRun;
-
-        private int _jumpsCount = 6;
-        private float _jumpDistance = 10f;
-
-        private int _attemptsForSearch = 2;
-        private float _angleStep = 2f;
-        private float _searchRadius = 1f;
 
         private void Start()
         {
@@ -51,15 +52,18 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
         {
             NavMeshPath path = new();
 
-            while (_jumpsCount > 0)
+            while (_jumpCount > 0)
             {
-                _jumpsCount--;
+                _jumpCount--;
 
                 bool pointFound = false;
 
                 Vector3 directionFromDanger = (transform.position - danger.position).normalized;
 
-                yield return StartCoroutine(TryFindJumpPointRoutine(directionFromDanger, path, (isFound) => pointFound = isFound));
+                yield return TryFindJumpPointRoutine(
+                    directionFromDanger,
+                    path,
+                    (isFound) => pointFound = isFound);
 
                 if (pointFound)
                 {
@@ -97,18 +101,18 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
             Vector3 targetPoint;
             bool isFounded = false;
 
-            for (float angle = 0; angle <= 180; angle += _angleStep)
+            for (float angle = 0; angle <= 180; angle += ANGLE_STEP)
             {
                 rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * direction;
-                targetPoint = origin + rotatedDir * _jumpDistance;
+                targetPoint = origin + rotatedDir * JUMP_DISTANCE;
 
                 yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
                     origin,
                     targetPoint,
-                    _searchRadius,
+                    SEARCH_RADIUS,
                     path,
                     (founded) => isFounded = founded,
-                    _attemptsForSearch);
+                    ATTEMPT_FOR_SEARCH);
 
                 if (isFounded && path.corners.Length == 2)
                 {
@@ -119,15 +123,15 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
                 attemptsCount++;
 
                 rotatedDir = Quaternion.AngleAxis(-angle, Vector3.up) * direction;
-                targetPoint = origin + rotatedDir * _jumpDistance;
+                targetPoint = origin + rotatedDir * JUMP_DISTANCE;
 
                 yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
                     origin,
                     targetPoint,
-                    _searchRadius,
+                    SEARCH_RADIUS,
                     path,
                     (founded) => isFounded = founded,
-                    _attemptsForSearch);
+                    ATTEMPT_FOR_SEARCH);
 
                 if (isFounded && path.corners.Length == 2)
                 {
@@ -147,10 +151,13 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
             callback?.Invoke(false);
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             if (_runCoroutine != null)
+            {
                 StopCoroutine(_runCoroutine);
+                _runCoroutine = null;
+            }
         }
     }
 }
