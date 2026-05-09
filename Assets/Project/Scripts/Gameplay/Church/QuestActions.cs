@@ -49,6 +49,8 @@ namespace BigProject.Gameplay.Church
         private LocalizedString _touchStillageRemark;
         [SerializeField]
         private LocalizedString _findNoteRemark;
+        [SerializeField]
+        private LocalizedString _getRunesRemark;
 
         public void Init(InventorySystem inventory, RuneShardsSystem runesSystem, RunesConfig runesConfig, RunePanelUI runePanel,
             Collider playerCollider, SkinnedMeshRenderer playerRenderer, GameplayManager gameplayManager, HUD hud, InventoryUI inventoryUI)
@@ -120,6 +122,7 @@ namespace BigProject.Gameplay.Church
             yield return new WaitUntil(() => _gameplayManager.State == GameplayState.Play);
             _hud.ShowWidget(_hudConfig.HUDRunesWidgetId);
             _runesDriver.Deliver();
+            ReplicaManager.ShowReplica(_getRunesRemark);
         }
     }
 }
