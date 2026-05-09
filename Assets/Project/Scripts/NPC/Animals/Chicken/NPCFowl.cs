@@ -134,8 +134,9 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             NavMeshPath path = new();
 
             float currentPeckRadius = PECK_RADIUS;
+            bool isFounded = false;
 
-            // PeckTimer(); // ToDo: need to check logic and fix
+            PeckTimer(); // ToDo: need to check logic and fix
 
             while (_isAlive)
             {
@@ -147,13 +148,16 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
                 yield return _cachedPeckTime;
 
-                if (NavMeshUtils.TryGetRandomPointInCircle(
+                yield return NavMeshUtils.TryGetRandomPointInCircleRoutine(
                     transform.position,
                     transform.position,
-                    currentPeckRadius, 
-                    _currentPeckPoint.transform.position, 
-                    PECK_POINT_RADIUS, 
-                    path))
+                    currentPeckRadius,
+                    _currentPeckPoint.transform.position,
+                    PECK_POINT_RADIUS,
+                    path,
+                    (founded) => isFounded = founded);
+
+                if (isFounded)
                 {
                     currentPeckRadius = PECK_RADIUS;
                     Vector3 newPeckTarget = path.corners.Last();
@@ -194,9 +198,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             {
                 _pointToMove = _newPeckPoint.transform.position;
 
-                float searchRadius = PECK_POINT_RADIUS;
-
-                NavMeshUtils.TryGetRandomPointInCircle(
+                yield return NavMeshUtils.TryGetRandomPointInCircleRoutine(
                     transform.position,
                     _pointToMove,
                     PECK_POINT_RADIUS,
@@ -211,20 +213,34 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
                 float searchRadius = PECK_POINT_RADIUS - currentOffset.magnitude;
 
-                while (!NavMeshUtils.TryGetRandomPointInCircle(
-                    transform.position, 
+                bool isFounded = false;
+
+                yield return NavMeshUtils.TryGetRandomPointInCircleRoutine(
+                    transform.position,
                     _pointToMove,
                     searchRadius,
                     _newPeckPoint.transform.position,
                     PECK_POINT_RADIUS,
-                    path))
+                    path,
+                    (founded) => isFounded = founded);
+
+                while (!isFounded)
                 {
                     searchRadius++;
+
+                    yield return NavMeshUtils.TryGetRandomPointInCircleRoutine(
+                    transform.position,
+                    _pointToMove,
+                    searchRadius,
+                    _newPeckPoint.transform.position,
+                    PECK_POINT_RADIUS,
+                    path,
+                    (founded) => isFounded = founded);
                 }
             }
 
             if (path == null || path.corners.Length <= 1)
-                Debug.LogError("Can't find point to new peck");
+                Debug.LogWarningFormat(LogStr.WARNING_CANT_FIND_PATH, gameObject.name, transform.position);
 
             _agent.SetDestination(path.corners.Last());
             _animator.SetBool(WalkBool, true);
@@ -302,10 +318,24 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         {
             Vector3 origin = transform.position;
             int attemptsCount = 0;
+            Vector3 rotatedDir;
+            Vector3 targetPoint;
+            bool isFounded = false;
 
             for (float angle = 0; angle <= 180; angle += ANGLE_STEP)
             {
-                if (TryGetPointWithDirection(direction, angle, origin, path))
+                rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * direction;
+                targetPoint = origin + rotatedDir * ESCAPE_DISTANCE;
+
+                yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
+                    origin,
+                    targetPoint,
+                    SEARCH_RADIUS,
+                    path,
+                    (founded) => isFounded = founded,
+                    ATTEMPTS_FOR_SEARCH);
+
+                if (isFounded && path.corners.Length == 2)
                 {
                     callback?.Invoke(true);
                     yield break;
@@ -313,7 +343,18 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
                 attemptsCount++;
 
-                if (TryGetPointWithDirection(direction, -angle, origin, path))
+                rotatedDir = Quaternion.AngleAxis(-angle, Vector3.up) * direction;
+                targetPoint = origin + rotatedDir * ESCAPE_DISTANCE;
+
+                yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
+                    origin,
+                    targetPoint,
+                    SEARCH_RADIUS,
+                    path,
+                    (founded) => isFounded = founded,
+                    ATTEMPTS_FOR_SEARCH);
+
+                if (isFounded && path.corners.Length == 2)
                 {
                     callback?.Invoke(true);
                     yield break;
@@ -329,19 +370,6 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             }
 
             callback?.Invoke(false);
-        }
-
-        private bool TryGetPointWithDirection(Vector3 baseDirection, float angle, Vector3 origin, NavMeshPath path)
-        {
-            Vector3 rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * baseDirection;
-            Vector3 targetPoint = origin + rotatedDir * ESCAPE_DISTANCE;
-
-            if (NavMeshUtils.TryGetRandomPointAtDistance(origin, targetPoint, SEARCH_RADIUS, path, ATTEMPTS_FOR_SEARCH))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private void OnDisable()

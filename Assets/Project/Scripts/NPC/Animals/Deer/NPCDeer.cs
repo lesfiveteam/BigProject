@@ -93,10 +93,24 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
         {
             Vector3 origin = transform.position;
             int attemptsCount = 0;
+            Vector3 rotatedDir;
+            Vector3 targetPoint;
+            bool isFounded = false;
 
             for (float angle = 0; angle <= 180; angle += _angleStep)
             {
-                if (TryGetPointWithDirection(direction, angle, origin, path))
+                rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * direction;
+                targetPoint = origin + rotatedDir * _jumpDistance;
+
+                yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
+                    origin,
+                    targetPoint,
+                    _searchRadius,
+                    path,
+                    (founded) => isFounded = founded,
+                    _attemptsForSearch);
+
+                if (isFounded && path.corners.Length == 2)
                 {
                     callback?.Invoke(true);
                     yield break;
@@ -104,7 +118,18 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
 
                 attemptsCount++;
 
-                if (TryGetPointWithDirection(direction, -angle, origin, path))
+                rotatedDir = Quaternion.AngleAxis(-angle, Vector3.up) * direction;
+                targetPoint = origin + rotatedDir * _jumpDistance;
+
+                yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
+                    origin,
+                    targetPoint,
+                    _searchRadius,
+                    path,
+                    (founded) => isFounded = founded,
+                    _attemptsForSearch);
+
+                if (isFounded && path.corners.Length == 2)
                 {
                     callback?.Invoke(true);
                     yield break;
@@ -120,19 +145,6 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
             }
 
             callback?.Invoke(false);
-        }
-
-        private bool TryGetPointWithDirection(Vector3 baseDirection, float angle, Vector3 origin, NavMeshPath path)
-        {
-            Vector3 rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * baseDirection;
-            Vector3 targetPoint = origin + rotatedDir * _jumpDistance;
-
-            if (NavMeshUtils.TryGetRandomPointAtDistance(origin, targetPoint, _searchRadius, path, _attemptsForSearch) && path.corners.Length == 2)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private void OnDestroy()
