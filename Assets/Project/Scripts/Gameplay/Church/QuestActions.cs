@@ -24,6 +24,7 @@ namespace BigProject.Gameplay.Church
         private RunesDriver _runesDriver;
         private GameplayManager _gameplayManager;
         private HUD _hud;
+        private InventoryUI _inventoryUI;
 
         [SerializeField]
         private string _noteOne, _noteThree, _noteFour;
@@ -50,17 +51,19 @@ namespace BigProject.Gameplay.Church
         private LocalizedString _findNoteRemark;
 
         public void Init(InventorySystem inventory, RuneShardsSystem runesSystem, RunesConfig runesConfig, RunePanelUI runePanel,
-            Collider playerCollider, SkinnedMeshRenderer playerRenderer, GameplayManager gameplayManager, HUD hud)
+            Collider playerCollider, SkinnedMeshRenderer playerRenderer, GameplayManager gameplayManager, HUD hud, InventoryUI inventoryUI)
         {
             _inventory = inventory;
             _playerRenderer = playerRenderer;
             _playerCollider = playerCollider;
             _gameplayManager = gameplayManager;
             _hud = hud;
+            _inventoryUI = inventoryUI;
             ExceptionUtilities.ThrowIfNull(_inventory, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory System"));
             ExceptionUtilities.ThrowIfNull(_playerRenderer, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Collider"));
             ExceptionUtilities.ThrowIfNull(_playerCollider, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Renderer"));
             ExceptionUtilities.ThrowIfNull(_hud, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "HUD"));
+            ExceptionUtilities.ThrowIfNull(_inventoryUI, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "InventoryUI"));
             _runesDriver = new(runesSystem, runesConfig, runePanel, _questId, _priest.transform);
         }
 
@@ -74,14 +77,6 @@ namespace BigProject.Gameplay.Church
         {
             _inventory.RemoveItemByName(_noteThree);
             _inventory.AddItemByName(_noteFour);
-
-            IReadOnlyList<int> rewardRunes = _runesConfig.GetQuestRewardRunes(_questId);
-            ExceptionUtilities.ThrowIfNullFormat(rewardRunes, "unable to get reward runes");
-
-            foreach (int rewardRuneId in rewardRunes)
-            {
-                _runesSystem.AddRunesSegment(rewardRuneId);
-            }
         }
 
         // For test build
@@ -106,6 +101,7 @@ namespace BigProject.Gameplay.Church
         public void DeactivatePuzzleCamera()
         {
             _puzzleCamera.enabled = false;
+            _inventoryUI.SetNoteVisibility(false);
         }
 
         public void ActivatePlayer()
