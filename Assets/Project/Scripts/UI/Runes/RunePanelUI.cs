@@ -207,7 +207,7 @@ namespace BigProject.UI
                 img.rectTransform.anchoredPosition = localPoint;
                 img.raycastTarget = false;
                 img.material = new Material(_runeMaterial);
-                img.material.SetFloat("_StartTime", Time.timeSinceLevelLoad);
+                img.material.SetFloat("_StartTime", Time.time);
 
                 img.rectTransform.DOScale(RUNE_SCALE, RUNES_SCALE_TIME).OnComplete(() => 
                     img.rectTransform.DOMove(GetRuneTarget(), RUNES_FLY_TIME).SetEase(Ease.InQuad).OnComplete(() =>

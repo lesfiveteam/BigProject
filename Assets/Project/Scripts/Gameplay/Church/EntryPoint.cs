@@ -66,7 +66,7 @@ namespace BigProject.Gameplay.Church
             Collider playerCollider = player.GetComponent<Collider>();
 
             _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>(),
-                playerCollider, playerRenderer);
+                ServiceLocator.GetService<RunePanelUI>(), playerCollider, playerRenderer, gameplayManager, ServiceLocator.GetService<HUD>());
             _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, playerCollider, playerRenderer);
             _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, _progressManager, ServiceLocator.GetService<CutsceneManager>());
             _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
