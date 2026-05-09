@@ -29,9 +29,13 @@ namespace BigProject.Gameplay.Church
         [SerializeField]
         private int _questId;
         [SerializeField]
+        private int _finalQuestId;
+        [SerializeField]
         private GameObject _questObjects;
         [SerializeField]
         private QuestActions _questActions;
+        [SerializeField]
+        private Final.QuestActions _finalQuestActions;
 
         private ProgressManager _progressManager;
 
@@ -42,6 +46,7 @@ namespace BigProject.Gameplay.Church
             Assert.IsNotNull(_cameraMove, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "CameraMove"));
             Assert.IsNotNull(_questObjects, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Game Objects"));
             Assert.IsNotNull(_questActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Actions"));
+            Assert.IsNotNull(_finalQuestActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Final Quest Actions"));
         }
 
         public void Init()
@@ -74,13 +79,32 @@ namespace BigProject.Gameplay.Church
             _cameraMove.Init(player);
 
             SwithOffOutline(player);
+
+            _finalQuestActions.Init(ServiceLocator.GetService<ProgressManager>(), ServiceLocator.GetService<RunePanelUI>());
+            _progressManager.AddQuestListener(_finalQuestId, OnQuestStateChanged);
+
+            if (_progressManager.GetQuestState(_finalQuestId) == QuestState.Active)
+            {
+                _finalQuestActions.gameObject.SetActive(true);
+                _finalQuestActions.OnRunesAssembled();
+            }
         }
 
         private void OnQuestStateChanged(IQuest quest)
         {
-            if (_questId == quest.ID)
+            if (quest.CurrentState != QuestState.Active)
+            {
+                return;
+            }
+
+            if (quest.ID == _questId)
             {
                 _questObjects.SetActive(true);
+            }
+            else
+            {
+                _finalQuestActions.gameObject.SetActive(true);
+                _finalQuestActions.OnRunesAssembled();
             }
         }
 
@@ -94,6 +118,7 @@ namespace BigProject.Gameplay.Church
         private void OnDestroy()
         {
             _progressManager.RemoveQuestListener(_questId, OnQuestStateChanged);
+            _progressManager.RemoveQuestListener(_finalQuestId, OnQuestStateChanged);
         }
     }
 }

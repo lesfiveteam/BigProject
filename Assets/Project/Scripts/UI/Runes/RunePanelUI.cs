@@ -36,6 +36,9 @@ namespace BigProject.UI
         private Sprite _backgroundTarget;
         private List<Transform> _flyingRunes = new();
 
+        public event Action Completed;
+        public bool IsCompleted {  get; private set; }
+
         private readonly Vector2 FIRST_APPEARANCE_OFFSET = new(-200f, 0f);
         private readonly Vector2 RUNE_INIT_SIZE = new(15f, 15f);
         private readonly Vector2 RUNE_EACH_OFFSET = new(30f, 10f);
@@ -104,6 +107,12 @@ namespace BigProject.UI
             if (_isAssembled)
             {
                 _glintController.Stop();
+
+                if (_openedSegmentsCount == _runeSlots.Count)
+                {
+                    IsCompleted = true;
+                    Completed?.Invoke();
+                }
             }
         }
 
