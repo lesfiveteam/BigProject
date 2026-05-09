@@ -31,6 +31,10 @@ namespace BigProject.UI
         private int _openedSegmentsCount;
         private bool _isAssembled;
         private Vector2 _runesPosition;
+        private bool _isReceiving;
+        private bool _isReadyToOpen = true;
+        private Sprite _backgroundTarget;
+        private List<Transform> _flyingRunes = new();
 
         private readonly Vector2 FIRST_APPEARANCE_OFFSET = new(-200f, 0f);
         private readonly Vector2 RUNE_INIT_SIZE = new(15f, 15f);
@@ -65,6 +69,7 @@ namespace BigProject.UI
             _runesSystem.OnRuneAdded += AddRune;
             _runesSystem.OnSegmentUnlocked += ChangeBackground;
             _runesSystem.OnCleared += OnCleared;
+            _gameplayManager.StateChanged += OnGameStateChanged;
         }
 
         public void SetRunesOnScreenPosition(Vector2 position)
@@ -87,6 +92,7 @@ namespace BigProject.UI
             _runesSystem.OnRuneAdded -= AddRune;
             _runesSystem.OnSegmentUnlocked -= ChangeBackground;
             _runesSystem.OnCleared -= OnCleared;
+            _gameplayManager.StateChanged -= OnGameStateChanged;
         }
 
         private void AddRune(int runeId)
@@ -103,13 +109,15 @@ namespace BigProject.UI
 
         private void ChangeBackground(int segmentsCount)
         {
-            StopAllCoroutines();
+            EmergencyReceive();
             _openedSegmentsCount = segmentsCount;
 
             foreach (BackgroundData background in _backgrounds)
             {
                 if (_openedSegmentsCount >= background.backImage.unlockedSegmentsThreshold)
                 {
+                    _backgroundTarget = background.backImage.sprite;
+
                     if (!_isPlayable)
                     {
                         _isPlayable = true;
@@ -130,7 +138,8 @@ namespace BigProject.UI
                     {
                         Vector3 mask = background.mask;
                         _glintController.SetMask(mask.x > 0f, mask.y > 0f, mask.z > 0f);
-                        _backgroundImage.sprite = background.backImage.sprite;
+                        _backgroundImage.sprite = _backgroundTarget;
+                        _backgroundTarget = null;
                     }
 
                     return;
@@ -164,7 +173,10 @@ namespace BigProject.UI
 
         public void OpenJigsawPanel()
         {
-            _gameplayManager.ChangeState(GameplayState.RunesJagsaw);
+            if (_isReadyToOpen)
+            {
+                _gameplayManager.ChangeState(GameplayState.RunesJagsaw);
+            }
         }
 
         private void OnCleared()
@@ -174,8 +186,12 @@ namespace BigProject.UI
 
         private IEnumerator FirstAppearanceRoutine(BackgroundData background)
         {
+            _isReceiving = true;
+            _isReadyToOpen = false;
+            Vector2 initialPosition = _rect.anchoredPosition;
             _rect.anchoredPosition -= FIRST_APPEARANCE_OFFSET;
-            _rect.DOAnchorPos(FIRST_APPEARANCE_OFFSET, FIRST_APPEARANCE_TIME).SetRelative();
+            _rect.DOAnchorPos(FIRST_APPEARANCE_OFFSET, FIRST_APPEARANCE_TIME).SetRelative().OnKill(() =>
+                _rect.anchoredPosition = initialPosition);
             yield return new WaitForSeconds(FIRST_APPEARANCE_TIME);
             RunesFly(background);
         }
@@ -187,15 +203,22 @@ namespace BigProject.UI
             _rect.DOShakeScale(GET_RUNES_SHAKE_TIME, GET_RUNES_SHAKE_STRENGTH, GET_RUNES_SHAKE_VIBRATO, 0f).OnComplete(() =>
                 _rect.localScale = _startScale);
             yield return new WaitForSeconds(GET_RUNES_SHAKE_TIME);
+            _isReadyToOpen = true;
             _glintController.Play();
             yield return new WaitForSeconds(GET_RUNES_CHANGE_BACK_TIME);
             _backgroundImage.sprite = background.backImage.sprite;
+            _backgroundTarget = null;
+            _flyingRunes.Clear();
+            _isReceiving = false;
         }
 
         private void RunesFly(BackgroundData background)
         {
+            _isReceiving = true;
+            _isReadyToOpen = false;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(_runesCanvas.transform as RectTransform, _runesPosition,
                 _runesCanvas.worldCamera, out Vector2 localPoint);
+            bool isGetStage = false;
 
             foreach (Sprite rune in background.runes)
             {
@@ -209,13 +232,22 @@ namespace BigProject.UI
                 img.material = new Material(_runeMaterial);
                 img.material.SetFloat("_StartTime", Time.time);
 
-                img.rectTransform.DOScale(RUNE_SCALE, RUNES_SCALE_TIME).OnComplete(() => 
+                img.rectTransform.DOScale(RUNE_SCALE, RUNES_SCALE_TIME).OnComplete(() =>
                     img.rectTransform.DOMove(GetRuneTarget(), RUNES_FLY_TIME).SetEase(Ease.InQuad).OnComplete(() =>
                         {
                             Destroy(go);
-                            StartCoroutine(GetRunesRoutine(background));
+                            _flyingRunes.Remove(img.rectTransform);
+
+                            if (gameObject.activeSelf && !isGetStage)
+                            {
+                                isGetStage = true;
+                                StartCoroutine(GetRunesRoutine(background));
+                            }
                         }));
 
+
+
+                _flyingRunes.Add(img.rectTransform);
                 localPoint += RUNE_EACH_OFFSET;
             }
         }
@@ -226,5 +258,38 @@ namespace BigProject.UI
             _rect.GetWorldCorners(corners);
             return (corners[0] + corners[2]) / 2f;
         }
+
+        private void OnGameStateChanged(GameplayState state)
+        {
+            if (IsUnsuitableState(state))
+            {
+                EmergencyReceive();
+            }
+        }
+
+        private void EmergencyReceive()
+        {
+            if (_isReceiving)
+            {
+                StopAllCoroutines();
+                _isReceiving = false;
+                _isReadyToOpen = true;
+
+                foreach (Transform rune in _flyingRunes)
+                {
+                    rune.DOKill();
+                    Destroy(rune.gameObject);
+                }
+
+                _flyingRunes.Clear();
+
+                if (_backgroundTarget != null)
+                {
+                    _backgroundImage.sprite = _backgroundTarget;
+                }
+            }
+        }
+
+        private bool IsUnsuitableState(GameplayState state) => state != GameplayState.Play && state != GameplayState.Pause;
     }
 }
