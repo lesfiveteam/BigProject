@@ -5,8 +5,6 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 {
     public class NPCChicken : NPCFowl
     {
-        private const float DELAY_TIME_TO_CHANGE_PECK_POINT = 2f;
-
         [SerializeField] private Renderer _renderer;
 
         private NPCCock _cockLeader;
@@ -36,7 +34,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         private void OnChangePeckPoint(NPCPeckPoint newPeckPoint)
         {
             _newPeckPoint = newPeckPoint;
-            _goToNewPeckPointCoroutine = StartCoroutine(GoToNewPeckPointRoutine(delayTime: DELAY_TIME_TO_CHANGE_PECK_POINT));
+            _goToNewPeckPointCoroutine = StartCoroutine(GoToNewPeckPointRoutine(isChicken: true));
         }
 
         private Color SetRandomColor()

@@ -49,7 +49,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             {
                 if (_isScared)
                 {
-                    yield return new WaitWhile(() => Time.timeScale == 0);
+                    yield return _cachedWaitWhilePause;
                     continue;
                 }
 
@@ -71,7 +71,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                     }
                 }
 
-                yield return new WaitWhile(() => Time.timeScale == 0);
+                yield return _cachedWaitWhilePause;
             }
         }
 

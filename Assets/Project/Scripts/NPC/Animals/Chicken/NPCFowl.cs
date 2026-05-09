@@ -12,8 +12,17 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 {
     public class NPCFowl : MonoBehaviour, IScared, IUnscared
     {
-        protected const string SPEED = "Speed";
-        protected readonly int WalkBool = Animator.StringToHash("isWalk");
+        private const string SPEED = "Speed";
+        private readonly int WalkBool = Animator.StringToHash("isWalk");
+        private const float CHICKEN_DELAY_TIME_TO_CHANGE_PECK_POINT = 2f;
+        private const float PECK_POINT_RADIUS = 5f;
+        private const float PECK_RADIUS = 4f;
+        private const float MIN_PECK_TIME = 2f;
+        private const float MAX_PECK_TIME = 5f;
+        private const float ANGLE_STEP = 2f;
+        private const float ESCAPE_DISTANCE = 3f;
+        private const float SEARCH_RADIUS = 1f;
+        private const int ATTEMPTS_FOR_SEARCH = 10;
 
         [SerializeField] protected Animator _animator;
         [SerializeField] protected NavMeshAgent _agent;
@@ -22,19 +31,19 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         protected NPCPeckPoint _newPeckPoint;
         protected Vector3 _pointToMove;
 
-        protected float _peckPointRadius = 5f;
-        protected float _peckRadius = 4f;
-        protected float _minPeckTime = 2f;
-        protected float _maxPeckTime = 5f;
-        protected float _angleStep = 2f;
-        protected float _escapeDistance = 3f;
-        protected float _searchRadius = 1f;
-        protected int _attemptsForSearch = 10;
-
         protected Coroutine _peckCoroutine;
         protected Coroutine _goToNewPeckPointCoroutine;
         protected Coroutine _scareCoroutine;
         protected Coroutine _returnToPeckPointCoroutine;
+
+        protected Func<bool> _isPausedCondition;
+        protected WaitWhile _cachedWaitWhilePause;
+        private Func<bool> _arrivedCondition;
+        private WaitUntil _cachedArrivedCondition;
+        private WaitForSeconds _cachedPeckTime;
+        private WaitForSeconds _cachedChickenDelayTime;
+
+        protected float _currentPeckTime;
 
         protected bool _isAlive = false;
         protected bool _isScared = false;
@@ -50,6 +59,17 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         {
             ExceptionUtilities.ThrowIfNullFormat(_agent);
             ExceptionUtilities.ThrowIfNullFormat(_animator);
+
+            _isPausedCondition = () => Time.timeScale == 0;
+            _cachedWaitWhilePause = new WaitWhile(_isPausedCondition);
+
+            _arrivedCondition = () => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance;
+            _cachedArrivedCondition = new WaitUntil(_arrivedCondition);
+
+            _currentPeckTime = Random.Range(MIN_PECK_TIME, MAX_PECK_TIME);
+            _cachedPeckTime = new WaitForSeconds(_currentPeckTime);
+
+            _cachedChickenDelayTime = new WaitForSeconds(CHICKEN_DELAY_TIME_TO_CHANGE_PECK_POINT);
         }
 
         public void Scare(Transform danger)
@@ -96,7 +116,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             {
                 float currentDistance = Vector3.Distance(_currentPeckPoint.transform.position, transform.position);
 
-                if (currentDistance > _peckPointRadius)
+                if (currentDistance > PECK_POINT_RADIUS)
                 {
                     _returnToPeckPointCoroutine = StartCoroutine(ReturnToPeckPointRoutine());
                 }
@@ -113,36 +133,36 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
             NavMeshPath path = new();
 
-            float currentPeckRadius = _peckRadius;
+            float currentPeckRadius = PECK_RADIUS;
 
-            //PeckTimer(); // ToDo: need to check logic and fix
+            // PeckTimer(); // ToDo: need to check logic and fix
 
             while (_isAlive)
             {
                 if (_isScared)
                 {
-                    yield return new WaitWhile(() => Time.timeScale == 0);
+                    yield return _cachedWaitWhilePause;
                     continue;
                 }
 
-                yield return new WaitForSeconds(Random.Range(_minPeckTime, _maxPeckTime));
+                yield return _cachedPeckTime;
 
                 if (NavMeshUtils.TryGetRandomPointInCircle(
                     transform.position,
                     transform.position,
                     currentPeckRadius, 
                     _currentPeckPoint.transform.position, 
-                    _peckPointRadius, 
+                    PECK_POINT_RADIUS, 
                     path))
                 {
-                    currentPeckRadius = _peckRadius;
+                    currentPeckRadius = PECK_RADIUS;
                     Vector3 newPeckTarget = path.corners.Last();
 
                     _agent.SetDestination(newPeckTarget);
 
                     _animator.SetBool(WalkBool, true);
 
-                    yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
+                    yield return _cachedArrivedCondition;
 
                     _animator.SetBool(WalkBool, false);
                 }
@@ -155,18 +175,16 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
         protected virtual void PeckTimer() { }
 
-        protected IEnumerator GoToNewPeckPointRoutine(float delayTime = 0, bool beScared = false)
+        protected IEnumerator GoToNewPeckPointRoutine(bool isChicken = false, bool beScared = false)
         {
-            if (delayTime != 0)
-                yield return new WaitForSeconds(delayTime);
+            if (isChicken)
+                yield return _cachedChickenDelayTime;
 
             if (_peckCoroutine != null)
             {
                 StopCoroutine(_peckCoroutine);
                 _peckCoroutine = null;
             }
-
-            yield return new WaitForEndOfFrame();
 
             SetMoveSpeed(MoveSpeed.Run);
 
@@ -176,14 +194,14 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             {
                 _pointToMove = _newPeckPoint.transform.position;
 
-                float searchRadius = _peckPointRadius;
+                float searchRadius = PECK_POINT_RADIUS;
 
                 NavMeshUtils.TryGetRandomPointInCircle(
                     transform.position,
                     _pointToMove,
-                    _peckPointRadius,
+                    PECK_POINT_RADIUS,
                     _newPeckPoint.transform.position,
-                    _peckPointRadius,
+                    PECK_POINT_RADIUS,
                     path);
             }
             else
@@ -191,14 +209,14 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 Vector3 currentOffset = transform.position - _currentPeckPoint.transform.position;
                 _pointToMove = _newPeckPoint.transform.position + currentOffset;
 
-                float searchRadius = _peckPointRadius - currentOffset.magnitude;
+                float searchRadius = PECK_POINT_RADIUS - currentOffset.magnitude;
 
                 while (!NavMeshUtils.TryGetRandomPointInCircle(
                     transform.position, 
                     _pointToMove,
                     searchRadius,
                     _newPeckPoint.transform.position,
-                    _peckPointRadius,
+                    PECK_POINT_RADIUS,
                     path))
                 {
                     searchRadius++;
@@ -211,7 +229,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             _agent.SetDestination(path.corners.Last());
             _animator.SetBool(WalkBool, true);
 
-            yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
+            yield return _cachedArrivedCondition;
 
             _animator.SetBool(WalkBool, false);
 
@@ -243,7 +261,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             _agent.SetDestination(_currentPeckPoint.transform.position);
             _animator.SetBool(WalkBool, true);
 
-            yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
+            yield return _cachedArrivedCondition;
 
             _animator.SetBool(WalkBool, false);
 
@@ -269,7 +287,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                     _animator.SetBool(WalkBool, true);
                     _agent.SetDestination(pointToRun);
 
-                    yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
+                    yield return _cachedArrivedCondition;
 
                     _animator.SetBool(WalkBool, false);
                 }
@@ -285,7 +303,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             Vector3 origin = transform.position;
             int attemptsCount = 0;
 
-            for (float angle = 0; angle <= 180; angle += _angleStep)
+            for (float angle = 0; angle <= 180; angle += ANGLE_STEP)
             {
                 if (TryGetPointWithDirection(direction, angle, origin, path))
                 {
@@ -306,7 +324,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 if (attemptsCount >= 10)
                 {
                     attemptsCount = 0;
-                    yield return new WaitWhile(() => Time.timeScale == 0);
+                    yield return _cachedWaitWhilePause;
                 }
             }
 
@@ -316,9 +334,9 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         private bool TryGetPointWithDirection(Vector3 baseDirection, float angle, Vector3 origin, NavMeshPath path)
         {
             Vector3 rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * baseDirection;
-            Vector3 targetPoint = origin + rotatedDir * _escapeDistance;
+            Vector3 targetPoint = origin + rotatedDir * ESCAPE_DISTANCE;
 
-            if (NavMeshUtils.TryGetRandomPointAtDistance(origin, targetPoint, _searchRadius, path, _attemptsForSearch))
+            if (NavMeshUtils.TryGetRandomPointAtDistance(origin, targetPoint, SEARCH_RADIUS, path, ATTEMPTS_FOR_SEARCH))
             {
                 return true;
             }
