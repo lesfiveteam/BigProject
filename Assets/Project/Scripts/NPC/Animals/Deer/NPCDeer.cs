@@ -28,14 +28,12 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
         private int _jumpCount = 6;
 
         private Coroutine _runCoroutine;
-        private AnimationClip _clipRun;
 
         private WaitWhile _cachedWaitWhilePause = new(() => Time.timeScale == 0);
         private WaitUntil _cachedArrivedCondition;
         private WaitForSeconds _waitForEndJump;
 
         private float _timeForJumpFrames;
-        private float _timeForEndJump;
 
         private void Start()
         {
@@ -46,8 +44,8 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
             AnimationClip clipRun = _animator.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == RUN_CLIP_NAME);
             float frameDuration = clipRun.length / clipRun.frameRate;
             _timeForJumpFrames = frameDuration * JUMP_FRAMES;
-            _timeForEndJump = _clipRun.length - _timeForJumpFrames;
-            _waitForEndJump = new(_timeForEndJump);
+            float timeForEndJump = clipRun.length - _timeForJumpFrames;
+            _waitForEndJump = new(timeForEndJump);
 
             _agent.updateRotation = false;
         }
