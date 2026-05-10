@@ -9,6 +9,8 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
 {
     public class NPCDeerSpawner : MonoBehaviour
     {
+        private const int INIT_MAX_WAIT = 10;
+
         [SerializeField] private NPCDeer _deerPrefab;
         [SerializeField] private List<Transform> _spawnPoints;
         [SerializeField, Range(0, 5)] private int _deerCount;
@@ -16,7 +18,9 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
 
         private SoundsManager _soundsManager;
         private Coroutine _initCoroutine;
-        private int _initMaxWait = 10;
+
+        private WaitForSeconds _initWaitTime = new(1f);
+
         private int _initCounter = 0;
 
         public void Init(SoundsManager soundsManager)
@@ -43,9 +47,9 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
             {
                 _initCounter++;
 
-                yield return new WaitForSeconds(1f);
+                yield return _initWaitTime;
 
-                if (_initCounter >= _initMaxWait)
+                if (_initCounter >= INIT_MAX_WAIT)
                 {
                     ExceptionUtilities.ThrowIfNullFormat(_soundsManager);
                     break;

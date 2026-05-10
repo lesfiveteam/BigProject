@@ -11,16 +11,16 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
 {
     public class NPCDeer : MonoBehaviour, IScared
     {
-        private readonly int RunTrigger = Animator.StringToHash("Run");
-        private const string SPEED_MULTIPLIER = "speedMultiplier";
-        private const string RUN_CLIP_NAME = "run1";
-
         private const int JUMP_FRAMES = 16;
         private const float JUMP_DISTANCE = 10f;
 
         private const int ATTEMPT_FOR_SEARCH = 2;
         private const float ANGLE_STEP = 2f;
         private const float SEARCH_RADIUS = 1f;
+
+        private const string RUN_CLIP_NAME = "run1";
+        private readonly int _speedFloat = Animator.StringToHash("speedMultiplier");
+        private readonly int _runTrigger = Animator.StringToHash("Run");
 
         [SerializeField] private Animator _animator;
         [SerializeField] private NavMeshAgent _agent;
@@ -30,12 +30,24 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
         private Coroutine _runCoroutine;
         private AnimationClip _clipRun;
 
+        private WaitWhile _cachedWaitWhilePause = new(() => Time.timeScale == 0);
+        private WaitUntil _cachedArrivedCondition;
+        private WaitForSeconds _waitForEndJump;
+
+        private float _timeForJumpFrames;
+        private float _timeForEndJump;
+
         private void Start()
         {
             ExceptionUtilities.ThrowIfNullFormat(_animator);
             ExceptionUtilities.ThrowIfNullFormat(_agent);
 
-            _clipRun = _animator.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == RUN_CLIP_NAME);
+            _cachedArrivedCondition = new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
+            AnimationClip clipRun = _animator.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == RUN_CLIP_NAME);
+            float frameDuration = clipRun.length / clipRun.frameRate;
+            _timeForJumpFrames = frameDuration * JUMP_FRAMES;
+            _timeForEndJump = _clipRun.length - _timeForJumpFrames;
+            _waitForEndJump = new(_timeForEndJump);
 
             _agent.updateRotation = false;
         }
@@ -51,6 +63,8 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
         private IEnumerator ScaredRunRoutine(Transform danger)
         {
             NavMeshPath path = new();
+            Vector3 directionFromDanger;
+            Vector3 pointToRun;
 
             while (_jumpCount > 0)
             {
@@ -58,7 +72,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
 
                 bool pointFound = false;
 
-                Vector3 directionFromDanger = (transform.position - danger.position).normalized;
+                directionFromDanger = (transform.position - danger.position).normalized;
 
                 yield return TryFindJumpPointRoutine(
                     directionFromDanger,
@@ -68,20 +82,17 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
                 if (pointFound)
                 {
                     float jumpTime = NavMeshUtils.GetPathLength(path) / _agent.speed;
-                    float frameDuration = _clipRun.length / _clipRun.frameRate;
-                    float timeForJumpFrames = frameDuration * JUMP_FRAMES;
-                    float timeForEndJump = _clipRun.length - timeForJumpFrames;
-                    float animationSpeedMultiplier = timeForJumpFrames / jumpTime;
-                    _animator.SetFloat(SPEED_MULTIPLIER, animationSpeedMultiplier);
-                    _animator.SetTrigger(RunTrigger);
+                    float animationSpeedMultiplier = _timeForJumpFrames / jumpTime;
+                    _animator.SetFloat(_speedFloat, animationSpeedMultiplier);
+                    _animator.SetTrigger(_runTrigger);
 
-                    Vector3 pointToRun = path.corners.Last();
+                    pointToRun = path.corners.Last();
                     transform.rotation = Quaternion.LookRotation(pointToRun - transform.position);
                     _agent.SetDestination(pointToRun);
 
-                    yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
+                    yield return _cachedArrivedCondition;
 
-                    yield return new WaitForSeconds(timeForEndJump);
+                    yield return _waitForEndJump;
                 }
                 else
                 {
@@ -104,7 +115,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
             for (float angle = 0; angle <= 180; angle += ANGLE_STEP)
             {
                 rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * direction;
-                targetPoint = origin + rotatedDir * JUMP_DISTANCE;
+                targetPoint = origin + (rotatedDir * JUMP_DISTANCE);
 
                 yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
                     origin,
@@ -123,7 +134,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
                 attemptsCount++;
 
                 rotatedDir = Quaternion.AngleAxis(-angle, Vector3.up) * direction;
-                targetPoint = origin + rotatedDir * JUMP_DISTANCE;
+                targetPoint = origin + (rotatedDir * JUMP_DISTANCE);
 
                 yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
                     origin,
@@ -144,7 +155,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Deer
                 if (attemptsCount >= 10)
                 {
                     attemptsCount = 0;
-                    yield return new WaitWhile(() => Time.timeScale == 0);
+                    yield return _cachedWaitWhilePause;
                 }
             }
 
