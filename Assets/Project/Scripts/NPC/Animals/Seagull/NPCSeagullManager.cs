@@ -40,6 +40,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
             foreach (NPCSeagull seagull in _seagulls)
             {
                 seagull.ReadyToFly += OnReadyToFly;
+                _seagullReadyToFly.Add(seagull);
                 seagull.SetWaypoints(_waypoints);
             }
         }

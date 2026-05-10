@@ -1,5 +1,4 @@
 ﻿using BigProject.Managers;
-using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Systems;
 using BigProject.Systems.Sound;
 using BigProject.Utilities;
@@ -16,39 +15,43 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
     {
         public Action<NPCSeagull, bool> ReadyToFly;
 
-        private readonly int BoredTrigger = Animator.StringToHash("Bored");
-        private readonly int JumpTrigger = Animator.StringToHash("Jump");
-        private readonly int JumpBackTrigger = Animator.StringToHash("JumpBack");
-        private readonly int FlySpeedModifier = Animator.StringToHash("flySpeed");
-        private const string JUMP_CLIP_NAME = "Animation_Jump";
+        private const int WAYPOINTS_ROOT_COUNT = 3;
+        private const float FLY_SCALE_MODIFY = 0.7f;
+        private const float FLY_SPEED = 6f;
+        private const float ROTATION_SPEED = 50f;
+        private const float TAKEOFF_DISTANCE = 20f;
+        private const float FLY_HEIGHT = 120f;
+        private const float WAYPOINT_RADIUS = 15f;
+        private const float LANDING_POINT_GENERATION_DISTANCE = 40f;
+        private const float MIN_BORED_TIME = 3f;
+        private const float MAX_BORED_TIME = 7f;
+
         private const int JUMP_FRAMES = 8;
         private const float HIGH_FLY_SPEED_MODIFIER = 3.0f;
         private const float LOW_FLY_SPEED_MODIFIER = 0.3f;
+        private const string JUMP_CLIP_NAME = "Animation_Jump";
+
+        private readonly int _boredTrigger = Animator.StringToHash("Bored");
+        private readonly int _jumpTrigger = Animator.StringToHash("Jump");
+        private readonly int _jumpBackTrigger = Animator.StringToHash("JumpBack");
+        private readonly int _flySpeedModifier = Animator.StringToHash("flySpeed");
 
         [SerializeField] private Animator _animator;
         [SerializeField] private Transform _body;
         [SerializeField] private EnvironmentSound _environmentSound;
 
-        [SerializeField] private float _flySpeed = 6f;
-        [SerializeField] private float _rotationSpeed = 50f;
-        [SerializeField] private int _waypointsRootCount = 3;
-
-        private float _takeoffDistance = 20f;
-        private float _flyHeight = 120f;
-        private float _waypointRadius = 15f;
-        private float _landingPointGenerationDistance = 40f;
-
-        private Coroutine _flightCoroutine;
-        private List<Coroutine> _coroutines = new();
         private Transform[] _waypoints;
-        private AnimationClip _clipJump;
+        private Coroutine _flightCoroutine;
+        private Coroutine _boringCoroutines;
+
+        private WaitForSeconds _jumpDelay;
+        private WaitWhile _pausedCondition;
 
         private Vector3 _startPoint;
         private Vector3 _startRotation;
 
         private Vector3 _defaultScale;
         private Vector3 _flyScale;
-        private float _flyScaleModify = 0.7f;
 
         private bool _inFly;
         public bool InFly
@@ -71,22 +74,36 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
             _startRotation = transform.eulerAngles;
 
             _defaultScale = transform.localScale;
-            _flyScale = _defaultScale * _flyScaleModify;
+            _flyScale = _defaultScale * FLY_SCALE_MODIFY;
 
-            _clipJump = _animator.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == JUMP_CLIP_NAME);
+            AnimationClip clipJump = _animator.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == JUMP_CLIP_NAME);
+            float jumpFrameDuration = clipJump.length / clipJump.frameRate;
+            float timeForJumpFrames = jumpFrameDuration * JUMP_FRAMES;
+            _jumpDelay = new WaitForSeconds(timeForJumpFrames);
 
-            _coroutines.Add(StartCoroutine(BorringTimeRoutine()));
+            _pausedCondition = new WaitWhile(() => Time.timeScale == 0);
+
+            _boringCoroutines = StartCoroutine(BorringTimeRoutine());
         }
 
         private IEnumerator BorringTimeRoutine()
         {
+            float boredTime;
+
             while (_animator != null)
             {
-                float boredTime = Random.Range(3f, 7f);
+                if (InFly)
+                {
+                    yield return _pausedCondition;
+                    continue;
+                }
+
+                boredTime = Random.Range(MIN_BORED_TIME, MAX_BORED_TIME);
+
                 yield return new WaitForSeconds(boredTime);
 
                 if (!InFly)
-                    _animator.SetTrigger(BoredTrigger);
+                    _animator.SetTrigger(_boredTrigger);
             }
         }
 
@@ -102,7 +119,6 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
         public void SetWaypoints(Transform[] waypoints)
         {
             _waypoints = waypoints;
-            InFly = false;
         }
 
         public void StartFlight(Vector3 direction)
@@ -113,26 +129,22 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
                 return;
             }
 
+            direction.y = 0;
+
             if (_flightCoroutine != null)
                 StopCoroutine(_flightCoroutine);
 
-            direction.y = 0;
             _flightCoroutine = StartCoroutine(FlightRoutine(direction));
-            _coroutines.Add(_flightCoroutine);
         }
 
         private IEnumerator FlightRoutine(Vector3 startDirection)
         {
             InFly = true;
-            Coroutine coroutine;
 
             // Take off
             _environmentSound.PlaySound();
-            Vector3 takeoffTarget = GetAirPoint(_startPoint) + startDirection * _takeoffDistance;
-            coroutine = StartCoroutine(TakeoffRoutine(takeoffTarget));
-            _coroutines.Add(coroutine);
-            yield return coroutine;
-            _coroutines.Remove(coroutine);
+            Vector3 takeoffPoint = GetAirPoint(_startPoint) + startDirection * TAKEOFF_DISTANCE;
+            yield return TakeoffRoutine(takeoffPoint);
 
             // Fly the root
             List<Vector3> airPoints = GetAirPoints();
@@ -141,90 +153,89 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
             {
                 for (int i = 0; i < airPoints.Count; i++)
                 {
-                    coroutine = StartCoroutine(FlyToPointRoutine(airPoints[i]));
-                    _coroutines.Add(coroutine);
-                    yield return coroutine;
-                    _coroutines.Remove(coroutine);
+                    yield return FlyToPointRoutine(airPoints[i]);
                 }
+            }
+            else
+            {
+                Debug.LogWarningFormat(LogStr.WARNING_EMPTY_COLLECTION);
             }
 
             // Go home
-            coroutine = StartCoroutine(FlyToHomeRoutine(GetAirPoint(_startPoint)));
-            _coroutines.Add(coroutine);
-            yield return coroutine;
-            _coroutines.Remove(coroutine);
+            yield return FlyToHomeRoutine(GetAirPoint(_startPoint));
 
             // Landing
             _environmentSound.PlaySound();
-            coroutine = StartCoroutine(LandRoutine());
-            _coroutines.Add(coroutine);
-            yield return coroutine;
-            _coroutines.Remove(coroutine);
+            yield return LandRoutine();
 
             // End flight
             InFly = false;
             _flightCoroutine = null;
         }
 
-        private IEnumerator TakeoffRoutine(Vector3 target)
+        private IEnumerator TakeoffRoutine(Vector3 takeoffPoint)
         {
-            _animator.SetTrigger(JumpTrigger);
-            _animator.SetFloat(FlySpeedModifier, HIGH_FLY_SPEED_MODIFIER);
+            _animator.SetTrigger(_jumpTrigger);
+            _animator.SetFloat(_flySpeedModifier, HIGH_FLY_SPEED_MODIFIER);
 
-            Vector3 pointToTakeOff = target;
-            pointToTakeOff.y -= 5f;
+            float accelerationСompensation = 5f;
+            takeoffPoint.y -= accelerationСompensation;
 
-            float distanceForScale = Vector3.Distance(transform.position, pointToTakeOff) / 1.2f;
-
-            float frameDuration = _clipJump.length / _clipJump.frameRate;
-            float timeForJumpFrames = frameDuration * JUMP_FRAMES;
+            float pathFraction = 0.8f;
+            float distanceForScale = Vector3.Distance(transform.position, takeoffPoint) * pathFraction;
 
             float minDistance = 0.5f;
             float currentDistance;
 
-            yield return new WaitForSeconds(timeForJumpFrames);
+            float progress;
+
+            Vector3 direction = (takeoffPoint - transform.position).normalized;
+            transform.rotation = Quaternion.LookRotation(direction);
+
+            yield return _jumpDelay;
 
             do
             {
-                Vector3 direction = (pointToTakeOff - transform.position).normalized;
+                direction = (takeoffPoint - transform.position).normalized;
+                Move(FLY_SPEED, direction);
 
-                Move(_flySpeed, direction);
+                yield return _pausedCondition;
 
-                yield return new WaitWhile(() => Time.timeScale == 0);
-
-                currentDistance = Vector3.Distance(transform.position, pointToTakeOff);
+                currentDistance = Vector3.Distance(transform.position, takeoffPoint);
 
                 if (currentDistance < distanceForScale)
                 {
-                    float progress = 1f - currentDistance / distanceForScale;
+                    progress = 1f - currentDistance / distanceForScale;
                     transform.localScale = Vector3.Lerp(_defaultScale, _flyScale, progress * progress);
                 }
             }
             while (currentDistance > minDistance);
 
-            transform.position = pointToTakeOff;
+            transform.position = takeoffPoint;
         }
 
         private IEnumerator FlyToPointRoutine(Vector3 target)
         {
-            _animator.SetFloat(FlySpeedModifier, LOW_FLY_SPEED_MODIFIER);
+            _animator.SetFloat(_flySpeedModifier, LOW_FLY_SPEED_MODIFIER);
 
+            Vector3 direction;
+            float distanceToTarget;
             bool passed = false;
 
             while (!passed)
             {
-                Vector3 direction = (target - transform.position).normalized;
-                float distanceToTarget = Vector3.Distance(transform.position, target);
+                direction = (target - transform.position).normalized;
+                distanceToTarget = Vector3.Distance(transform.position, target);
 
-                if (distanceToTarget < _waypointRadius && Vector3.Dot(transform.forward, direction) < 0)
+                Move(FLY_SPEED, direction);
+
+                if (distanceToTarget < WAYPOINT_RADIUS 
+                    && Vector3.Dot(transform.forward, direction) < 0)
                 {
                     passed = true;
-                    break;
                 }
 
-                Move(_flySpeed, direction);
-
-                yield return new WaitWhile(() => Time.timeScale == 0);
+                yield return _pausedCondition;
             }
         }
 
@@ -233,86 +244,102 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
             bool passed = false;
             bool landingPointGenerated = false;
 
+            Vector3 direction;
+            float distanceToTarget;
+
             while (!passed)
             {
-                Vector3 direction = (target - transform.position).normalized;
-                float distanceToTarget = Vector3.Distance(transform.position, target);
+                distanceToTarget = Vector3.Distance(transform.position, target);
 
-                if (!landingPointGenerated && distanceToTarget < _landingPointGenerationDistance)
+                if (!landingPointGenerated && distanceToTarget < LANDING_POINT_GENERATION_DISTANCE)
                 {
-                    Vector3 landingOffsetedPoint = (transform.position - _startPoint).normalized * _takeoffDistance;
+                    Vector3 landingOffsetedPoint = (transform.position - _startPoint).normalized * TAKEOFF_DISTANCE;
                     landingOffsetedPoint.y = 0;
                     target += landingOffsetedPoint;
 
                     landingPointGenerated = true;
                 }
 
-                if (distanceToTarget < _waypointRadius && Vector3.Dot(transform.forward, direction) < 0)
+                direction = (target - transform.position).normalized;
+                
+                Move(FLY_SPEED, direction);
+
+                if (distanceToTarget < WAYPOINT_RADIUS && Vector3.Dot(transform.forward, direction) < 0)
                 {
                     passed = true;
-                    break;
                 }
 
-                Move(_flySpeed, direction);
-
-                yield return new WaitWhile(() => Time.timeScale == 0);
+                yield return _pausedCondition;
             }
         }
 
         private IEnumerator LandRoutine()
         {
-            _animator.SetFloat(FlySpeedModifier, HIGH_FLY_SPEED_MODIFIER);
+            _animator.SetFloat(_flySpeedModifier, HIGH_FLY_SPEED_MODIFIER);
 
             Quaternion defaultAngle = _body.localRotation;
             Quaternion landingAggle = Quaternion.Euler(new Vector3(_body.localEulerAngles.x, _body.localEulerAngles.y, _body.localEulerAngles.z - 90));
             float angleSpeed = 30;
 
-            Vector3 start = transform.position;
-            Vector3 target = _startPoint;
+            Vector3 direction;
+            float distanceToTarget;
+            float progress;
+            float time;
+
             bool finished = false;
+            bool isTargetAngelReached = false;
 
-            float distanceForScale = Vector3.Distance(transform.position, target) / 1.2f;
-            float currentDistance;
+            float pathFraction = 0.8f;
+            float distanceForScale = Vector3.Distance(transform.position, _startPoint) * pathFraction;
 
-            float currentSpeed = _flySpeed;
+            float currentSpeed;
             float minDistance = 0.5f;
-            float minSpeed = _flySpeed / 4;
+            float minAngle = 0.1f;
+            float minSpeed = FLY_SPEED / 4;
 
             while (!finished)
             {
-                Vector3 direction = (target - transform.position).normalized;
-                float distanceToTarget = Vector3.Distance(transform.position, target);
-
-                _body.localRotation = Quaternion.RotateTowards(_body.localRotation, landingAggle, angleSpeed * Time.deltaTime);
-
-                currentDistance = Vector3.Distance(transform.position, target);
-
-                if (currentDistance < distanceForScale)
+                if (!isTargetAngelReached)
                 {
-                    float progress = 1f - currentDistance / distanceForScale;
+                    if (Quaternion.Angle(_body.localRotation, landingAggle) >= minAngle)
+                    {
+                        _body.localRotation = Quaternion.RotateTowards(_body.localRotation, landingAggle, angleSpeed * Time.deltaTime);
+                    }
+                    else
+                    {
+                        isTargetAngelReached = true;
+                    }
+                }
+
+                distanceToTarget = Vector3.Distance(transform.position, _startPoint);
+
+                if (distanceToTarget < distanceForScale)
+                {
+                    progress = 1f - distanceToTarget / distanceForScale;
                     transform.localScale = Vector3.Lerp(_flyScale, _defaultScale, progress * progress);
                 }
 
-                if (distanceToTarget < minDistance && Vector3.Dot(transform.forward, direction) < 0)
-                {
-                    transform.position = target;
-                    transform.localScale = _defaultScale;
-                    finished = true;
-                    break;
-                }
+                time = minDistance / distanceToTarget;
+                currentSpeed = Mathf.Lerp(FLY_SPEED, minSpeed, time);
 
-                float t = minDistance / distanceToTarget;
-                currentSpeed = Mathf.Lerp(_flySpeed, minSpeed, t);
+                direction = (_startPoint - transform.position).normalized;
 
                 Move(currentSpeed, direction);
 
-                yield return new WaitWhile(() => Time.timeScale == 0);
+                if (distanceToTarget < minDistance && Vector3.Dot(transform.forward, direction) < 0)
+                {
+                    transform.position = _startPoint;
+                    transform.localScale = _defaultScale;
+                    finished = true;
+                }
+
+                yield return _pausedCondition;
             }
 
-            _animator.SetTrigger(JumpBackTrigger);
+            _animator.SetTrigger(_jumpBackTrigger);
 
             _body.localRotation = defaultAngle;
-            transform.position = target;
+            transform.position = _startPoint;
             transform.eulerAngles = _startRotation;
         }
 
@@ -321,7 +348,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
             List<Vector3> result = new();
             List<Transform> availabeWaypoint = new(_waypoints);
 
-            int waypointsCount = Mathf.Min(_waypointsRootCount, availabeWaypoint.Count);
+            int waypointsCount = Mathf.Min(WAYPOINTS_ROOT_COUNT, availabeWaypoint.Count);
 
             for (int i = 0; i < waypointsCount; i++)
             {
@@ -334,16 +361,16 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
         }
 
         private Vector3 GetAirPoint(Vector3 groundPoint)
-            => new(groundPoint.x, _flyHeight, groundPoint.z);
+            => new(groundPoint.x, FLY_HEIGHT, groundPoint.z);
 
         private void Move(float moveSpeed, Vector3 direction)
         {
-            transform.position += transform.forward * moveSpeed * Time.deltaTime;
+            transform.position += moveSpeed * Time.deltaTime * transform.forward;
 
             if (direction != Vector3.zero)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, ROTATION_SPEED * Time.deltaTime);
             }
         }
 
@@ -357,19 +384,14 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
                 _flightCoroutine = null;
             }
 
-            if (_coroutines.Count > 0)
+            if (_boringCoroutines != null)
             {
-                foreach (Coroutine flightCoroutine in _coroutines)
-                {
-                    if (flightCoroutine != null)
-                        StopCoroutine(flightCoroutine);
-                }
-
-                _coroutines.Clear();
+                StopCoroutine(_boringCoroutines);
+                _boringCoroutines = null;
             }
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             StopFlight();
         }
