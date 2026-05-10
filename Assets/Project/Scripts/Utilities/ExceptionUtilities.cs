@@ -57,7 +57,7 @@ namespace BigProject.Utilities
 
         public static void ThrowIfEmptyCollection(ICollection collection, string name)
         {
-            if (collection.Count == 0)
+            if (collection == null || collection.Count == 0)
                 throw new InvalidOperationException(string.Format(AUTHOR_EXCEPTION_MSG, name, LogStr.CRITICAL_EMPTY_COLLECTION));
         }
     }
