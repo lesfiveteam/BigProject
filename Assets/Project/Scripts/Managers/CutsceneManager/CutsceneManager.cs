@@ -101,6 +101,14 @@ namespace BigProject.Managers.CutsceneManager
             AddActors(GameObject.FindObjectsByType<CutsceneActor>(FindObjectsInactive.Include, FindObjectsSortMode.None));
         }
 
+        public void DeactivatePrefabs()
+        {
+            if (_cutscenePrefabs != null)
+            {
+                _cutscenePrefabs.SetActive(false);
+            }
+        }
+
         private void OnTimelineLoaded(AsyncOperationHandle<TimelineAsset> handle)
         {
             if (handle.Status != AsyncOperationStatus.Succeeded || _director == null)

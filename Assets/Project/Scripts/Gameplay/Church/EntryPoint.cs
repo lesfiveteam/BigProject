@@ -81,7 +81,7 @@ namespace BigProject.Gameplay.Church
             SwithOffOutline(player);
 
             _finalQuestActions.Init(ServiceLocator.GetService<ProgressManager>(), ServiceLocator.GetService<RunePanelUI>(),
-                ServiceLocator.GetService<CutsceneManager>());
+                ServiceLocator.GetService<CutsceneManager>(), ServiceLocator.GetService<GameplayManager>());
             _progressManager.AddQuestListener(_finalQuestId, OnQuestStateChanged);
 
             if (_progressManager.GetQuestState(_finalQuestId) == QuestState.Active)

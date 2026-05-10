@@ -1,5 +1,6 @@
 using BigProject.Managers;
 using BigProject.Managers.CutsceneManager;
+using BigProject.NPC;
 using BigProject.Systems;
 using BigProject.Systems.QuestSystem;
 using BigProject.UI;
@@ -21,20 +22,25 @@ namespace BigProject.Gameplay.Final
         private Renderer _frescoRenderer;
         [SerializeField]
         private AssetReferenceT<TimelineAsset> _ñutscene;
+        [SerializeField]
+        private DialogNPC _cutsceneDialogue;
 
         private RunePanelUI _runePanel;
         private IQuestActionHandler _runesAssembleHandler;
         private CutsceneManager _cutsceneManager;
+        private GameplayManager _gameplayManager;
 
         private const float FRESCO_BLINK_TIME = 2f;
 
-        public void Init(ProgressManager progressManager, RunePanelUI runePanel, CutsceneManager cutsceneManager)
+        public void Init(ProgressManager progressManager, RunePanelUI runePanel, CutsceneManager cutsceneManager, GameplayManager gameplayManager)
         {
             _runePanel = runePanel;
             _cutsceneManager = cutsceneManager;
+            _gameplayManager = gameplayManager;
             ExceptionUtilities.ThrowIfNull(progressManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "ProgressManager"));
             ExceptionUtilities.ThrowIfNull(_runePanel, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "RunePanelUI"));
             ExceptionUtilities.ThrowIfNull(_cutsceneManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "CutsceneManager"));
+            ExceptionUtilities.ThrowIfNull(_gameplayManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "GameplayManager"));
             progressManager.TryGetQuestActionHandler(_questId, _runesAssembleActionId, out _runesAssembleHandler);
         }
 
@@ -71,7 +77,11 @@ namespace BigProject.Gameplay.Final
         private IEnumerator FinalRoutine()
         {
             _cutsceneManager.Play(_ñutscene, GameplayState.Cutscene, GameplayState.Cutscene, false);
-            yield return new WaitUntil(() => _cutsceneManager.IsPlaying);
+            yield return new WaitUntil(() => !_cutsceneManager.IsPlaying);
+
+            _cutsceneDialogue.Interact();
+            yield return new WaitUntil(() => _gameplayManager.State == GameplayState.Play);
+            _cutsceneManager.DeactivatePrefabs();
         }
 
         private void OnEnable()
