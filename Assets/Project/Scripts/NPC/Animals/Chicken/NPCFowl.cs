@@ -12,9 +12,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 {
     public class NPCFowl : MonoBehaviour, IScared, IUnscared
     {
-        private const string SPEED = "Speed";
-        private readonly int WalkBool = Animator.StringToHash("isWalk");
-        private const float CHICKEN_DELAY_TIME_TO_CHANGE_PECK_POINT = 2f;
+        private const int ATTEMPTS_FOR_SEARCH = 10;
         private const float PECK_POINT_RADIUS = 5f;
         private const float PECK_RADIUS = 4f;
         private const float MIN_PECK_TIME = 2f;
@@ -22,7 +20,9 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         private const float ANGLE_STEP = 2f;
         private const float ESCAPE_DISTANCE = 3f;
         private const float SEARCH_RADIUS = 1f;
-        private const int ATTEMPTS_FOR_SEARCH = 10;
+
+        private readonly int _speedFloat = Animator.StringToHash("Speed");
+        private readonly int _walkBool = Animator.StringToHash("isWalk");
 
         [SerializeField] protected Animator _animator;
         [SerializeField] protected NavMeshAgent _agent;
@@ -36,15 +36,11 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         protected Coroutine _scareCoroutine;
         protected Coroutine _returnToPeckPointCoroutine;
 
-        protected Func<bool> _isPausedCondition;
-        protected WaitWhile _cachedWaitWhilePause;
-        private Func<bool> _arrivedCondition;
-        private WaitUntil _cachedArrivedCondition;
+        protected WaitWhile _cachedWaitWhilePause = new(() => Time.timeScale == 0);
+        private WaitForSeconds _cachedChickenDelayTime = new(2f);
         private WaitForSeconds _cachedPeckTime;
-        private WaitForSeconds _cachedChickenDelayTime;
-
-        protected float _currentPeckTime;
-
+        private WaitUntil _cachedArrivedCondition;
+        
         protected bool _isAlive = false;
         protected bool _isScared = false;
 
@@ -60,16 +56,9 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             ExceptionUtilities.ThrowIfNullFormat(_agent);
             ExceptionUtilities.ThrowIfNullFormat(_animator);
 
-            _isPausedCondition = () => Time.timeScale == 0;
-            _cachedWaitWhilePause = new WaitWhile(_isPausedCondition);
-
-            _arrivedCondition = () => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance;
-            _cachedArrivedCondition = new WaitUntil(_arrivedCondition);
-
-            _currentPeckTime = Random.Range(MIN_PECK_TIME, MAX_PECK_TIME);
-            _cachedPeckTime = new WaitForSeconds(_currentPeckTime);
-
-            _cachedChickenDelayTime = new WaitForSeconds(CHICKEN_DELAY_TIME_TO_CHANGE_PECK_POINT);
+            float currentPeckTime = Random.Range(MIN_PECK_TIME, MAX_PECK_TIME);
+            _cachedPeckTime = new WaitForSeconds(currentPeckTime);
+            _cachedArrivedCondition = new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
         }
 
         public void Scare(Transform danger)
@@ -106,7 +95,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 _scareCoroutine = null;
             }
 
-            _animator.SetBool(WalkBool, false);
+            _animator.SetBool(_walkBool, false);
 
             if (_newPeckPoint != null)
             {
@@ -136,7 +125,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             float currentPeckRadius = PECK_RADIUS;
             bool isFounded = false;
 
-            PeckTimer(); // ToDo: need to check logic and fix
+            // PeckTimer(); // ToDo: need to check logic and fix
 
             while (_isAlive)
             {
@@ -164,11 +153,11 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
                     _agent.SetDestination(newPeckTarget);
 
-                    _animator.SetBool(WalkBool, true);
+                    _animator.SetBool(_walkBool, true);
 
                     yield return _cachedArrivedCondition;
 
-                    _animator.SetBool(WalkBool, false);
+                    _animator.SetBool(_walkBool, false);
                 }
                 else
                 {
@@ -243,11 +232,11 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 Debug.LogWarningFormat(LogStr.WARNING_CANT_FIND_PATH, gameObject.name, transform.position);
 
             _agent.SetDestination(path.corners.Last());
-            _animator.SetBool(WalkBool, true);
+            _animator.SetBool(_walkBool, true);
 
             yield return _cachedArrivedCondition;
 
-            _animator.SetBool(WalkBool, false);
+            _animator.SetBool(_walkBool, false);
 
             _pointToMove = Vector3.zero;
             _currentPeckPoint = _newPeckPoint;
@@ -266,7 +255,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 _ => 1f
             };
 
-            _animator.SetFloat(SPEED, modifier);
+            _animator.SetFloat(_speedFloat, modifier);
             _agent.acceleration = modifier;
         }
 
@@ -275,11 +264,11 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             SetMoveSpeed(MoveSpeed.Rush);
 
             _agent.SetDestination(_currentPeckPoint.transform.position);
-            _animator.SetBool(WalkBool, true);
+            _animator.SetBool(_walkBool, true);
 
             yield return _cachedArrivedCondition;
 
-            _animator.SetBool(WalkBool, false);
+            _animator.SetBool(_walkBool, false);
 
             _peckCoroutine = StartCoroutine(PeckRoutine());
         }
@@ -303,12 +292,12 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 {
                     Vector3 pointToRun = path.corners.Last();
 
-                    _animator.SetBool(WalkBool, true);
+                    _animator.SetBool(_walkBool, true);
                     _agent.SetDestination(pointToRun);
 
                     yield return _cachedArrivedCondition;
 
-                    _animator.SetBool(WalkBool, false);
+                    _animator.SetBool(_walkBool, false);
                 }
                 else
                 {

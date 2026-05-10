@@ -7,10 +7,10 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
     {
         [SerializeField] private Renderer _renderer;
 
-        private NPCCock _cockLeader;
-
         private readonly Color From = new(1f, 1f, 1f); // #FFFFFF
         private readonly Color To = new(0.5f, 0.32f, 0f); // #805200
+
+        private NPCCock _cockLeader;
 
         protected override void Start()
         {

@@ -7,14 +7,14 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 {
     public class NPCCock : NPCFowl
     {
+        public Action<NPCPeckPoint> changePeckPoint;
+
         private const float MIN_TIME_TO_CHANGE_PECK_POINT = 10f;
         private const float MAX_TIME_TO_CHANGE_PECK_POINT = 15f;
 
-        public Action<NPCPeckPoint> changePeckPoint;
-
         private NPCChickenSpawner _peckManager;
 
-        private Coroutine _changePeckPointCoroutine = null;
+        private Coroutine _changePeckPointCoroutine;
 
         private float _timeToChangePeckPoint;
         private float _peckPointChangeTimer = 0f;
