@@ -1,6 +1,4 @@
-﻿using BigProject.Systems.Sound;
-using BigProject.Utilities;
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -9,24 +7,20 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 {
     public class NPCCock : NPCFowl
     {
+        public Action<NPCPeckPoint> changePeckPoint;
+
         private const float MIN_TIME_TO_CHANGE_PECK_POINT = 10f;
         private const float MAX_TIME_TO_CHANGE_PECK_POINT = 15f;
 
-        public Action<NPCPeckPoint> changePeckPoint;
-
-        [SerializeField] private EnvironmentSound _environmentSound;
-
         private NPCChickenSpawner _peckManager;
 
-        private Coroutine _changePeckPointCoroutine = null;
+        private Coroutine _changePeckPointCoroutine;
 
         private float _timeToChangePeckPoint;
         private float _peckPointChangeTimer = 0f;
 
         public void Init(NPCPeckPoint currentPeckPoint, NPCChickenSpawner peckManager)
         {
-            ExceptionUtilities.ThrowIfNullFormat(_environmentSound);
-            _environmentSound.PlaySound();
             _currentPeckPoint = currentPeckPoint;
             _peckManager = peckManager;
 
@@ -55,7 +49,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             {
                 if (_isScared)
                 {
-                    yield return new WaitWhile(() => Time.timeScale == 0);
+                    yield return _cachedWaitWhilePause;
                     continue;
                 }
 
@@ -77,7 +71,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                     }
                 }
 
-                yield return new WaitWhile(() => Time.timeScale == 0);
+                yield return _cachedWaitWhilePause;
             }
         }
 
