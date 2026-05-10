@@ -22,6 +22,8 @@ namespace BigProject.UI
         [SerializeField] private RectTransform _rect;
         [SerializeField] private Canvas _runesCanvas;
         [SerializeField] private Material _runeMaterial;
+        [SerializeField] private GameObject _runeBar;
+        [SerializeField] private GameObject _unitImage;
 
         private RunesSystem _runesSystem;
         private GameplayManager _gameplayManager;
@@ -86,6 +88,10 @@ namespace BigProject.UI
             Assert.AreEqual(3, _backgrounds.Count, "You should add 3 background sprites in RunePanelUI");
             Assert.IsNotNull(_glintController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "GlintController"));
             Assert.IsNotNull(_rect, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "RectTransform"));
+            Assert.IsNotNull(_runesCanvas, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "Runes Canvas"));
+            Assert.IsNotNull(_runeMaterial, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "Rune Material"));
+            Assert.IsNotNull(_runeBar, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "RuneBar"));
+            Assert.IsNotNull(_unitImage, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "Rune Unit Image"));
             _backgrounds.Sort((a, b) => b.backImage.unlockedSegmentsThreshold.CompareTo(a.backImage.unlockedSegmentsThreshold));
             _startScale = _rect.localScale;
         }
@@ -110,6 +116,7 @@ namespace BigProject.UI
 
                 if (_openedSegmentsCount == _runeSlots.Count)
                 {
+                    ShowUnitImage();
                     IsCompleted = true;
                     Completed?.Invoke();
                 }
@@ -274,6 +281,11 @@ namespace BigProject.UI
             {
                 EmergencyReceive();
             }
+
+            if (state == GameplayState.Cutscene && _isPlayable)
+            {
+                _isPlayable = false;
+            }
         }
 
         private void EmergencyReceive()
@@ -297,6 +309,12 @@ namespace BigProject.UI
                     _backgroundImage.sprite = _backgroundTarget;
                 }
             }
+        }
+
+        private void ShowUnitImage()
+        {
+            _runeBar.SetActive(false);
+            _unitImage.SetActive(true);
         }
 
         private bool IsUnsuitableState(GameplayState state) => state != GameplayState.Play && state != GameplayState.Pause;
