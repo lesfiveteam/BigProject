@@ -7,13 +7,14 @@ namespace Assets.Project.Scripts.NPC.Animals.Mouse
 {
     public class NPCMouse : MonoBehaviour, IScared
     {
-        private readonly int RunTrigger = Animator.StringToHash("Run");
+        private const float ESCAPE_DURATION = 1f;
+        private readonly int _runTrigger = Animator.StringToHash("Run");
 
         [SerializeField] private Animator _animator;
         [SerializeField] private Transform _escapePoint;
         [SerializeField] private EnvironmentSound _environmentSound;
 
-        public float _duration = 1f;
+        private bool _isScared = false;
 
         private void Start()
         {
@@ -24,18 +25,21 @@ namespace Assets.Project.Scripts.NPC.Animals.Mouse
 
         public void Scare(Transform danger)
         {
+            if (_isScared)
+                return;
+
+            _isScared = true;
+
             _environmentSound.PlaySound();
-            _animator.SetTrigger(RunTrigger);
+            _animator.SetTrigger(_runTrigger);
 
-            Vector3 direction = (_escapePoint.position - transform.position).normalized;
+            Vector3 escapeDirection = (_escapePoint.position - transform.position).normalized;
 
-            if (direction != Vector3.zero)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = targetRotation;
-            }
+            if (escapeDirection != Vector3.zero)
+                transform.rotation = Quaternion.LookRotation(escapeDirection);
 
-            transform.DOMove(_escapePoint.position, _duration)
+            transform
+                .DOMove(_escapePoint.position, ESCAPE_DURATION)
                 .SetEase(Ease.Linear)
                 .OnComplete(() => Destroy(gameObject));
         }
