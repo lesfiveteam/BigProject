@@ -18,11 +18,15 @@ namespace BigProject.Gameplay.Final
         [SerializeField]
         private int _runesAssembleActionId;
         [SerializeField]
+        private Renderer _frescoRenderer;
+        [SerializeField]
         private AssetReferenceT<TimelineAsset> _ñutscene;
 
         private RunePanelUI _runePanel;
         private IQuestActionHandler _runesAssembleHandler;
         private CutsceneManager _cutsceneManager;
+
+        private const float FRESCO_BLINK_TIME = 2f;
 
         public void Init(ProgressManager progressManager, RunePanelUI runePanel, CutsceneManager cutsceneManager)
         {
@@ -45,6 +49,23 @@ namespace BigProject.Gameplay.Final
         public void PlayFinalCutscene()
         {
             StartCoroutine(FinalRoutine());
+        }
+
+        public void FrescoBlink()
+        {
+            StartCoroutine(FrescoBlinkRoutine());
+        }
+
+        private IEnumerator FrescoBlinkRoutine()
+        {
+            MaterialPropertyBlock propBlock = new();
+            _frescoRenderer.GetPropertyBlock(propBlock);
+            propBlock.SetFloat("_StartTime", Time.time);
+            propBlock.SetFloat("_GlintFactor", 0.5f);
+            _frescoRenderer.SetPropertyBlock(propBlock);
+            yield return new WaitForSeconds(FRESCO_BLINK_TIME);
+            propBlock.SetFloat("_GlintFactor", 0.0f);
+            _frescoRenderer.SetPropertyBlock(propBlock);
         }
 
         private IEnumerator FinalRoutine()
