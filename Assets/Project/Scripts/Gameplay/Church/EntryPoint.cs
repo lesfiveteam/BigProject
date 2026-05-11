@@ -2,6 +2,7 @@ using Assets.Project.Scripts.Interactable;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Gameplay.Common;
 using BigProject.Managers;
+using BigProject.Managers.CursorManager;
 using BigProject.Managers.CutsceneManager;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
@@ -81,7 +82,8 @@ namespace BigProject.Gameplay.Church
             SwithOffOutline(player);
 
             _finalQuestActions.Init(ServiceLocator.GetService<ProgressManager>(), ServiceLocator.GetService<RunePanelUI>(),
-                ServiceLocator.GetService<CutsceneManager>(), ServiceLocator.GetService<GameplayManager>());
+                ServiceLocator.GetService<CutsceneManager>(), ServiceLocator.GetService<GameplayManager>(), 
+                ServiceLocator.GetService<CursorManager>(), playerRenderer);
             _progressManager.AddQuestListener(_finalQuestId, OnQuestStateChanged);
 
             if (_progressManager.GetQuestState(_finalQuestId) == QuestState.Active)
