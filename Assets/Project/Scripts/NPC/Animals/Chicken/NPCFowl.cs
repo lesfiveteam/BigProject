@@ -12,36 +12,39 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 {
     public class NPCFowl : MonoBehaviour, IScared, IUnscared
     {
-        protected const float MIN_DELAY_CARVE_SWITCH_OFF = 0.2f;
-        protected const string SPEED = "Speed";
-        protected readonly int WalkBool = Animator.StringToHash("isWalk");
+        private const int ATTEMPTS_FOR_SEARCH = 10;
+        private const float PECK_POINT_RADIUS = 5f;
+        private const float PECK_RADIUS = 4f;
+        private const float MIN_PECK_TIME = 2f;
+        private const float MAX_PECK_TIME = 5f;
+        private const float ANGLE_STEP = 2f;
+        private const float ESCAPE_DISTANCE = 3f;
+        private const float SEARCH_RADIUS = 1f;
+
+        private readonly int _speedFloat = Animator.StringToHash("Speed");
+        private readonly int _walkBool = Animator.StringToHash("isWalk");
 
         [SerializeField] protected Animator _animator;
         [SerializeField] protected NavMeshAgent _agent;
-        [SerializeField] protected NavMeshObstacle _obstacle;
 
         protected NPCPeckPoint _currentPeckPoint;
-        protected NPCPeckPoint _newPeckPoint = null;
+        protected NPCPeckPoint _newPeckPoint;
         protected Vector3 _pointToMove;
 
-        protected float _peckPointRadius = 5f;
-        protected float _peckRadius = 4f;
-        protected float _minPeckTime = 2f;
-        protected float _maxPeckTime = 5f;
-        protected float _angleStep = 2f;
-        protected float _escapeDistance = 3f;
-        protected float _searchRadius = 1f;
-        protected int _attemptsForSearch = 10;
+        protected Coroutine _peckCoroutine;
+        protected Coroutine _goToNewPeckPointCoroutine;
+        protected Coroutine _scareCoroutine;
+        protected Coroutine _returnToPeckPointCoroutine;
 
-        protected Coroutine _peckCoroutine = null;
-        protected Coroutine _goToNewPeckPointCoroutine = null;
-        protected Coroutine _scareCoroutine = null;
-        protected Coroutine _returnToPeckPointCoroutine = null;
-
+        protected WaitWhile _cachedWaitWhilePause = new(() => Time.timeScale == 0);
+        private WaitForSeconds _cachedChickenDelayTime = new(2f);
+        private WaitForSeconds _cachedPeckTime;
+        private WaitUntil _cachedArrivedCondition;
+        
         protected bool _isAlive = false;
         protected bool _isScared = false;
 
-        protected enum MoveSpeed
+        private enum MoveSpeed
         {
             Walk,
             Run,
@@ -52,153 +55,10 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         {
             ExceptionUtilities.ThrowIfNullFormat(_agent);
             ExceptionUtilities.ThrowIfNullFormat(_animator);
-            ExceptionUtilities.ThrowIfNullFormat(_obstacle);
-        }
 
-        protected void SetMoveSpeed(MoveSpeed speed)
-        {
-            float modifier = speed switch
-            {
-                MoveSpeed.Walk => 1f,
-                MoveSpeed.Run => 3f,
-                MoveSpeed.Rush => 5f,
-                _ => 1f
-            };
-
-            _animator.SetFloat(SPEED, modifier);
-            _agent.acceleration = modifier;
-        }
-
-        protected IEnumerator PeckRoutine()
-        {
-            SetMoveSpeed(MoveSpeed.Walk);
-
-            NavMeshPath path = new();
-
-            float currentPeckRadius = _peckRadius;
-
-            //PeckTimer(); // ToDo: need to check logic and fix
-
-            while (_isAlive)
-            {
-                if (_isScared)
-                {
-                    yield return new WaitWhile(() => Time.timeScale == 0);
-                    continue;
-                }
-
-                yield return new WaitForSeconds(Random.Range(_minPeckTime, _maxPeckTime));
-                _obstacle.enabled = false;
-                yield return new WaitForSeconds(MIN_DELAY_CARVE_SWITCH_OFF);
-                _agent.enabled = true;
-                yield return new WaitForEndOfFrame();
-
-                if (NavMeshUtils.TryGetRandomPointInCircle(
-                    transform.position,
-                    transform.position,
-                    currentPeckRadius, 
-                    _currentPeckPoint.transform.position, 
-                    _peckPointRadius, 
-                    path))
-                {
-                    currentPeckRadius = _peckRadius;
-                    Vector3 newPeckTarget = path.corners.Last();
-
-                    _agent.SetDestination(newPeckTarget);
-
-                    _animator.SetBool(WalkBool, true);
-
-                    yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
-
-                    _animator.SetBool(WalkBool, false);
-
-                    _agent.enabled = false;
-                    yield return new WaitForEndOfFrame();
-                    _obstacle.enabled = true;
-                }
-                else
-                {
-                    currentPeckRadius++;
-                }
-            }
-        }
-
-        protected virtual void PeckTimer() { }
-
-        protected IEnumerator GoToNewPeckPointRoutine(float delayTime = 0, bool beScared = false)
-        {
-            if (delayTime != 0)
-                yield return new WaitForSeconds(delayTime);
-
-            if (_peckCoroutine != null)
-            {
-                StopCoroutine(_peckCoroutine);
-                _peckCoroutine = null;
-            }
-
-            if (_obstacle.enabled)
-            {
-                _obstacle.enabled = false;
-                yield return new WaitForSeconds(MIN_DELAY_CARVE_SWITCH_OFF);
-            }
-
-            if (!_agent.enabled)
-                _agent.enabled = true;
-
-            yield return new WaitForEndOfFrame();
-
-            SetMoveSpeed(MoveSpeed.Run);
-
-            NavMeshPath path = new();
-
-            if (beScared)
-            {
-                _pointToMove = _newPeckPoint.transform.position;
-
-                float searchRadius = _peckPointRadius;
-
-                NavMeshUtils.TryGetRandomPointInCircle(
-                    transform.position,
-                    _pointToMove,
-                    _peckPointRadius,
-                    _newPeckPoint.transform.position,
-                    _peckPointRadius,
-                    path);
-            }
-            else
-            {
-                Vector3 currentOffset = transform.position - _currentPeckPoint.transform.position;
-                _pointToMove = _newPeckPoint.transform.position + currentOffset;
-
-                float searchRadius = _peckPointRadius - currentOffset.magnitude;
-
-                while (!NavMeshUtils.TryGetRandomPointInCircle(
-                    transform.position, 
-                    _pointToMove,
-                    searchRadius,
-                    _newPeckPoint.transform.position,
-                    _peckPointRadius,
-                    path))
-                {
-                    searchRadius++;
-                }
-            }
-
-            if (path == null || path.corners.Length <= 1)
-                Debug.LogError("Can't find point to new peck");
-
-            _agent.SetDestination(path.corners.Last());
-            _animator.SetBool(WalkBool, true);
-
-            yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
-
-            _animator.SetBool(WalkBool, false);
-
-            _pointToMove = Vector3.zero;
-            _currentPeckPoint = _newPeckPoint;
-            _newPeckPoint = null;
-
-            _peckCoroutine = StartCoroutine(PeckRoutine());
+            float currentPeckTime = Random.Range(MIN_PECK_TIME, MAX_PECK_TIME);
+            _cachedPeckTime = new WaitForSeconds(currentPeckTime);
+            _cachedArrivedCondition = new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
         }
 
         public void Scare(Transform danger)
@@ -235,7 +95,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 _scareCoroutine = null;
             }
 
-            _animator.SetBool(WalkBool, false);
+            _animator.SetBool(_walkBool, false);
 
             if (_newPeckPoint != null)
             {
@@ -245,7 +105,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             {
                 float currentDistance = Vector3.Distance(_currentPeckPoint.transform.position, transform.position);
 
-                if (currentDistance > _peckPointRadius)
+                if (currentDistance > PECK_POINT_RADIUS)
                 {
                     _returnToPeckPointCoroutine = StartCoroutine(ReturnToPeckPointRoutine());
                 }
@@ -256,25 +116,159 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             }
         }
 
+        protected IEnumerator PeckRoutine()
+        {
+            SetMoveSpeed(MoveSpeed.Walk);
+
+            NavMeshPath path = new();
+
+            float currentPeckRadius = PECK_RADIUS;
+            bool isFounded = false;
+
+            // PeckTimer(); // ToDo: need to check logic and fix
+
+            while (_isAlive)
+            {
+                if (_isScared)
+                {
+                    yield return _cachedWaitWhilePause;
+                    continue;
+                }
+
+                yield return _cachedPeckTime;
+
+                yield return NavMeshUtils.TryGetRandomPointInCircleRoutine(
+                    transform.position,
+                    transform.position,
+                    currentPeckRadius,
+                    _currentPeckPoint.transform.position,
+                    PECK_POINT_RADIUS,
+                    path,
+                    (founded) => isFounded = founded);
+
+                if (isFounded)
+                {
+                    currentPeckRadius = PECK_RADIUS;
+                    Vector3 newPeckTarget = path.corners.Last();
+
+                    _agent.SetDestination(newPeckTarget);
+
+                    _animator.SetBool(_walkBool, true);
+
+                    yield return _cachedArrivedCondition;
+
+                    _animator.SetBool(_walkBool, false);
+                }
+                else
+                {
+                    currentPeckRadius++;
+                }
+            }
+        }
+
+        protected virtual void PeckTimer() { }
+
+        protected IEnumerator GoToNewPeckPointRoutine(bool isChicken = false, bool beScared = false)
+        {
+            if (isChicken)
+                yield return _cachedChickenDelayTime;
+
+            if (_peckCoroutine != null)
+            {
+                StopCoroutine(_peckCoroutine);
+                _peckCoroutine = null;
+            }
+
+            SetMoveSpeed(MoveSpeed.Run);
+
+            NavMeshPath path = new();
+
+            if (beScared)
+            {
+                _pointToMove = _newPeckPoint.transform.position;
+
+                yield return NavMeshUtils.TryGetRandomPointInCircleRoutine(
+                    transform.position,
+                    _pointToMove,
+                    PECK_POINT_RADIUS,
+                    _newPeckPoint.transform.position,
+                    PECK_POINT_RADIUS,
+                    path);
+            }
+            else
+            {
+                Vector3 currentOffset = transform.position - _currentPeckPoint.transform.position;
+                _pointToMove = _newPeckPoint.transform.position + currentOffset;
+
+                float searchRadius = PECK_POINT_RADIUS - currentOffset.magnitude;
+
+                bool isFounded = false;
+
+                yield return NavMeshUtils.TryGetRandomPointInCircleRoutine(
+                    transform.position,
+                    _pointToMove,
+                    searchRadius,
+                    _newPeckPoint.transform.position,
+                    PECK_POINT_RADIUS,
+                    path,
+                    (founded) => isFounded = founded);
+
+                while (!isFounded)
+                {
+                    searchRadius++;
+
+                    yield return NavMeshUtils.TryGetRandomPointInCircleRoutine(
+                    transform.position,
+                    _pointToMove,
+                    searchRadius,
+                    _newPeckPoint.transform.position,
+                    PECK_POINT_RADIUS,
+                    path,
+                    (founded) => isFounded = founded);
+                }
+            }
+
+            if (path == null || path.corners.Length <= 1)
+                Debug.LogWarningFormat(LogStr.WARNING_CANT_FIND_PATH, gameObject.name, transform.position);
+
+            _agent.SetDestination(path.corners.Last());
+            _animator.SetBool(_walkBool, true);
+
+            yield return _cachedArrivedCondition;
+
+            _animator.SetBool(_walkBool, false);
+
+            _pointToMove = Vector3.zero;
+            _currentPeckPoint = _newPeckPoint;
+            _newPeckPoint = null;
+
+            _peckCoroutine = StartCoroutine(PeckRoutine());
+        }
+
+        private void SetMoveSpeed(MoveSpeed speed)
+        {
+            float modifier = speed switch
+            {
+                MoveSpeed.Walk => 1f,
+                MoveSpeed.Run => 3f,
+                MoveSpeed.Rush => 5f,
+                _ => 1f
+            };
+
+            _animator.SetFloat(_speedFloat, modifier);
+            _agent.acceleration = modifier;
+        }
+
         private IEnumerator ReturnToPeckPointRoutine()
         {
             SetMoveSpeed(MoveSpeed.Rush);
 
-            if (_obstacle.enabled)
-            {
-                _obstacle.enabled = false;
-                yield return new WaitForSeconds(MIN_DELAY_CARVE_SWITCH_OFF);
-            }
-
-            if (!_agent.enabled)
-                _agent.enabled = true;
-
             _agent.SetDestination(_currentPeckPoint.transform.position);
-            _animator.SetBool(WalkBool, true);
+            _animator.SetBool(_walkBool, true);
 
-            yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
+            yield return _cachedArrivedCondition;
 
-            _animator.SetBool(WalkBool, false);
+            _animator.SetBool(_walkBool, false);
 
             _peckCoroutine = StartCoroutine(PeckRoutine());
         }
@@ -283,33 +277,27 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         {
             NavMeshPath path = new();
 
-            if (_obstacle.enabled)
-            {
-                _obstacle.enabled = false;
-                yield return new WaitForSeconds(MIN_DELAY_CARVE_SWITCH_OFF);
-            }
-
-            if (!_agent.enabled)
-                _agent.enabled = true;
-
             while (_isScared)
             {
                 bool pointFound = false;
 
                 Vector3 directionFromDanger = (transform.position - danger.position).normalized;
 
-                yield return StartCoroutine(TryFindRushPointRoutine(directionFromDanger, path, isFound => pointFound = isFound));
+                yield return TryFindRushPointRoutine(
+                    directionFromDanger,
+                    path,
+                    isFound => pointFound = isFound);
 
                 if (pointFound)
                 {
                     Vector3 pointToRun = path.corners.Last();
 
-                    _animator.SetBool(WalkBool, true);
+                    _animator.SetBool(_walkBool, true);
                     _agent.SetDestination(pointToRun);
 
-                    yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance);
+                    yield return _cachedArrivedCondition;
 
-                    _animator.SetBool(WalkBool, false);
+                    _animator.SetBool(_walkBool, false);
                 }
                 else
                 {
@@ -322,10 +310,24 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
         {
             Vector3 origin = transform.position;
             int attemptsCount = 0;
+            Vector3 rotatedDir;
+            Vector3 targetPoint;
+            bool isFounded = false;
 
-            for (float angle = 0; angle <= 180; angle += _angleStep)
+            for (float angle = 0; angle <= 180; angle += ANGLE_STEP)
             {
-                if (TryGetPointWithDirection(direction, angle, origin, path))
+                rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * direction;
+                targetPoint = origin + rotatedDir * ESCAPE_DISTANCE;
+
+                yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
+                    origin,
+                    targetPoint,
+                    SEARCH_RADIUS,
+                    path,
+                    (founded) => isFounded = founded,
+                    ATTEMPTS_FOR_SEARCH);
+
+                if (isFounded && path.corners.Length == 2)
                 {
                     callback?.Invoke(true);
                     yield break;
@@ -333,7 +335,18 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
                 attemptsCount++;
 
-                if (TryGetPointWithDirection(direction, -angle, origin, path))
+                rotatedDir = Quaternion.AngleAxis(-angle, Vector3.up) * direction;
+                targetPoint = origin + rotatedDir * ESCAPE_DISTANCE;
+
+                yield return NavMeshUtils.TryGetRandomPointAtDistanceRoutine(
+                    origin,
+                    targetPoint,
+                    SEARCH_RADIUS,
+                    path,
+                    (founded) => isFounded = founded,
+                    ATTEMPTS_FOR_SEARCH);
+
+                if (isFounded && path.corners.Length == 2)
                 {
                     callback?.Invoke(true);
                     yield break;
@@ -344,24 +357,11 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 if (attemptsCount >= 10)
                 {
                     attemptsCount = 0;
-                    yield return new WaitWhile(() => Time.timeScale == 0);
+                    yield return _cachedWaitWhilePause;
                 }
             }
 
             callback?.Invoke(false);
-        }
-
-        private bool TryGetPointWithDirection(Vector3 baseDirection, float angle, Vector3 origin, NavMeshPath path)
-        {
-            Vector3 rotatedDir = Quaternion.AngleAxis(angle, Vector3.up) * baseDirection;
-            Vector3 targetPoint = origin + rotatedDir * _escapeDistance;
-
-            if (NavMeshUtils.TryGetRandomPointAtDistance(origin, targetPoint, _searchRadius, path, _attemptsForSearch))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private void OnDisable()

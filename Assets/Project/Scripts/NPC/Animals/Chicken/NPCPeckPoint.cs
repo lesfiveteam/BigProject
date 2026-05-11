@@ -15,7 +15,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
             set
             {
                 if (value == _isOccupied)
-                    Debug.LogError($"PeckPoint allready occupied: {value}");
+                    Debug.LogError($"PeckPoint {gameObject.name} allready occupied: {value}");
 
                 _isOccupied = value;
             }

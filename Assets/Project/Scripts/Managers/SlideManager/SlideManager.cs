@@ -13,19 +13,20 @@ namespace Assets.Project.Scripts.Managers.SlideManager
     {
         private const float VISIBLE = 1f;
         private const float INVISIBLE = 0f;
-        private const float SKIP_DURATION = 0.2f;
+        private const float SKIP_DURATION = 0.1f;
 
         public event Action SlideShowEnded;
 
         [SerializeField] private Image _fader;
         [SerializeField] private CanvasGroup _skip;
+        [SerializeField] private Image _filler;
         [SerializeField] protected List<CanvasGroup> _slides1;
 
         protected List<CanvasGroup> _currentSlides;
 
-        private float _longPressDuration = 2f;
+        private float _skipProcessDuration = 2f;
 
-        private float _onSlideDuration = 10f;
+        private float _onSlideDuration = 20f;
         private float _currentOnSlideDuration;
 
         private bool _inFadeOutProcess = false;
@@ -34,15 +35,16 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         private float _fadeOutDuration = 2f;
         private float _currentFadeDuration;
 
-        private float _skipMessageFadeInOutDuration = 0.5f;
-        private float _skipMessageDuration = 2f;
-        private float _currentSkipMessageDuration;
+        private bool _isButtonPressed = false;
+        private float _showSkipFadeInOutDuration = 0.2f;
+        private float _showSkipDuration = 2f;
+        private float _currentShowSkipDuration;
 
         private List<Coroutine> _coroutines = new();
         private Coroutine _slideShowCoroutine;
         private Coroutine _workCoroutine;
-        private Coroutine _longPressCoroutine;
-        private Coroutine _skipShowCoroutine;
+        private Coroutine _skipProcessCoroutine;
+        private Coroutine _showSkipCoroutine;
         private Coroutine _dynamicTimerCoroutine;
 
         private void Start()
@@ -53,9 +55,11 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
             _coroutines.Add(_slideShowCoroutine);
             _coroutines.Add(_workCoroutine);
-            _coroutines.Add(_longPressCoroutine);
-            _coroutines.Add(_skipShowCoroutine);
+            _coroutines.Add(_skipProcessCoroutine);
+            _coroutines.Add(_showSkipCoroutine);
             _coroutines.Add(_dynamicTimerCoroutine);
+
+            _currentShowSkipDuration = _showSkipDuration;
         }
 
         protected virtual void AdditionInit() { }
@@ -78,8 +82,8 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
             _slideShowCoroutine = null;
             _workCoroutine = null;
-            _longPressCoroutine = null;
-            _skipShowCoroutine = null;
+            _skipProcessCoroutine = null;
+            _showSkipCoroutine = null;
             _dynamicTimerCoroutine = null;
 
             _coroutines.Clear();
@@ -87,28 +91,48 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         private void InputHandler()
         {
-            bool isPressed = Mouse.current.leftButton.isPressed || Keyboard.current.spaceKey.isPressed;
             bool wasPressed = Mouse.current.leftButton.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame;
+            bool wasEscPressed = Keyboard.current.escapeKey.wasPressedThisFrame;
+            bool isEscPressed = Keyboard.current.escapeKey.isPressed;
 
             if (wasPressed)
             {
+                if (!_isButtonPressed)
+                {
+                    _isButtonPressed = true;
+                    _showSkipCoroutine = StartCoroutine(ShowSkipRoutine());
+                }
+
                 OnShortPress();
-
-                if (_longPressCoroutine != null)
-                    StopCoroutine(_longPressCoroutine);
-
-                _longPressCoroutine = StartCoroutine(LongPressTimerRoutine());
-
-                if (_skipShowCoroutine != null)
-                    _currentSkipMessageDuration = _skipMessageDuration;
-                else
-                    _skipShowCoroutine = StartCoroutine(SkipMessageRoutine());
             }
 
-            if (!isPressed && _longPressCoroutine != null)
+            if (wasEscPressed)
             {
-                StopCoroutine(_longPressCoroutine);
-                _longPressCoroutine = null;
+                if (!_isButtonPressed)
+                    _isButtonPressed = true;
+
+                if (_showSkipCoroutine != null)
+                    _currentShowSkipDuration = _showSkipDuration;
+                else
+                    _showSkipCoroutine = StartCoroutine(ShowSkipRoutine());
+
+                if (_skipProcessCoroutine != null)
+                    StopCoroutine(_skipProcessCoroutine);
+
+                _skipProcessCoroutine = StartCoroutine(SkipProcessRoutine());
+            }
+
+            if (isEscPressed)
+            {
+                _currentShowSkipDuration = _showSkipDuration;
+            }
+
+            if (!isEscPressed && _skipProcessCoroutine != null)
+            {
+                _filler.fillAmount = 0f;
+
+                StopCoroutine(_skipProcessCoroutine);
+                _skipProcessCoroutine = null;
             }
         }
 
@@ -125,14 +149,25 @@ namespace Assets.Project.Scripts.Managers.SlideManager
             }
         }
 
-        private IEnumerator LongPressTimerRoutine()
+        private IEnumerator SkipProcessRoutine()
         {
-            yield return new WaitForSeconds(_longPressDuration);
-            OnLongPress();
-            _longPressCoroutine = null;
+            float elapsed = 0f;
+            _filler.fillAmount = 0f;
+
+            while (elapsed < _skipProcessDuration)
+            {
+                elapsed += Time.deltaTime;
+                _filler.fillAmount = Mathf.Clamp01(elapsed / _skipProcessDuration);
+                yield return null;
+            }
+
+            _filler.fillAmount = 1f;
+
+            SkipSlideShow();
+            _skipProcessCoroutine = null;
         }
 
-        private void OnLongPress()
+        private void SkipSlideShow()
         {
             StopSlideShow();
             SlideShowEnded?.Invoke();
@@ -207,16 +242,16 @@ namespace Assets.Project.Scripts.Managers.SlideManager
             _fader.color = color;
         }
 
-        private IEnumerator SkipMessageRoutine()
+        private IEnumerator ShowSkipRoutine()
         {
-            _currentSkipMessageDuration = _skipMessageDuration;
+            _currentShowSkipDuration = _showSkipDuration;
 
             float elapsed = 0f;
 
-            while (elapsed < _skipMessageFadeInOutDuration)
+            while (elapsed < _showSkipFadeInOutDuration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / _skipMessageFadeInOutDuration);
+                float t = Mathf.Clamp01(elapsed / _showSkipFadeInOutDuration);
                 float alpha = Mathf.Lerp(0f, 1f, t);
 
                 _skip.alpha = alpha;
@@ -230,10 +265,10 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
             elapsed = 0f;
 
-            while (elapsed < _skipMessageFadeInOutDuration)
+            while (elapsed < _showSkipFadeInOutDuration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / _skipMessageFadeInOutDuration);
+                float t = Mathf.Clamp01(elapsed / _showSkipFadeInOutDuration);
                 float alpha = Mathf.Lerp(1f, 0f, t);
 
                 _skip.alpha = alpha;
@@ -243,7 +278,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
             _skip.alpha = 0f;
 
-            _skipShowCoroutine = null;
+            _showSkipCoroutine = null;
         }
 
         private IEnumerator DynamicWaitRoutine(Func<float> getDuration)
@@ -260,9 +295,9 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         private IEnumerator DynamicTimerRoutine()
         {
-            while (_currentSkipMessageDuration > 0)
+            while (_currentShowSkipDuration > 0)
             {
-                _currentSkipMessageDuration -= Time.deltaTime;
+                _currentShowSkipDuration -= Time.deltaTime;
 
                 yield return new WaitWhile(() => Time.timeScale == 0);
             }

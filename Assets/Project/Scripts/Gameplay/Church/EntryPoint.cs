@@ -2,6 +2,8 @@ using Assets.Project.Scripts.Interactable;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Gameplay.Common;
 using BigProject.Managers;
+using BigProject.Managers.CursorManager;
+using BigProject.Managers.CutsceneManager;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Settings;
@@ -28,9 +30,13 @@ namespace BigProject.Gameplay.Church
         [SerializeField]
         private int _questId;
         [SerializeField]
+        private int _finalQuestId;
+        [SerializeField]
         private GameObject _questObjects;
         [SerializeField]
         private QuestActions _questActions;
+        [SerializeField]
+        private Final.QuestActions _finalQuestActions;
 
         private ProgressManager _progressManager;
 
@@ -41,6 +47,7 @@ namespace BigProject.Gameplay.Church
             Assert.IsNotNull(_cameraMove, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "CameraMove"));
             Assert.IsNotNull(_questObjects, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Game Objects"));
             Assert.IsNotNull(_questActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Actions"));
+            Assert.IsNotNull(_finalQuestActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Final Quest Actions"));
         }
 
         public void Init()
@@ -61,22 +68,46 @@ namespace BigProject.Gameplay.Church
                 _progressManager.AddQuestListener(_questId, OnQuestStateChanged);
             }
 
+            SkinnedMeshRenderer playerRenderer = player.GetComponentInChildren<SkinnedMeshRenderer>();
+            Collider playerCollider = player.GetComponent<Collider>();
 
-            _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RuneShardsSystem>(), ServiceLocator.GetService<RunesConfig>());
-            _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, player.GetComponent<Collider>(), 
-                player.GetComponentInChildren<SkinnedMeshRenderer>());
-            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, _progressManager);
+            _questActions.Init(ServiceLocator.GetService<InventorySystem>(), ServiceLocator.GetService<RuneShardsSystem>(), 
+                ServiceLocator.GetService<RunesConfig>(), ServiceLocator.GetService<RunePanelUI>(), playerCollider, playerRenderer,
+                gameplayManager, ServiceLocator.GetService<HUD>(), inventoryUI);
+            _miniGameActivator.Init(gameplayManager, inputHandler, inventoryUI, playerCollider, playerRenderer);
+            _bellsPuzzle.Init(inputHandler, _miniGameActivator, soundsManager, _progressManager, ServiceLocator.GetService<CutsceneManager>());
             _teleport.Init(ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<PlayerSpawner>(), soundsManager);
             _cameraMove.Init(player);
 
             SwithOffOutline(player);
+
+            _finalQuestActions.Init(ServiceLocator.GetService<ProgressManager>(), ServiceLocator.GetService<RunePanelUI>(),
+                ServiceLocator.GetService<CutsceneManager>(), ServiceLocator.GetService<GameplayManager>(), 
+                ServiceLocator.GetService<CursorManager>(), playerRenderer);
+            _progressManager.AddQuestListener(_finalQuestId, OnQuestStateChanged);
+
+            if (_progressManager.GetQuestState(_finalQuestId) == QuestState.Active)
+            {
+                _finalQuestActions.gameObject.SetActive(true);
+                _finalQuestActions.OnRunesAssembled();
+            }
         }
 
         private void OnQuestStateChanged(IQuest quest)
         {
-            if (_questId == quest.ID)
+            if (quest.CurrentState != QuestState.Active)
+            {
+                return;
+            }
+
+            if (quest.ID == _questId)
             {
                 _questObjects.SetActive(true);
+            }
+            else
+            {
+                _finalQuestActions.gameObject.SetActive(true);
+                _finalQuestActions.OnRunesAssembled();
             }
         }
 
@@ -90,6 +121,7 @@ namespace BigProject.Gameplay.Church
         private void OnDestroy()
         {
             _progressManager.RemoveQuestListener(_questId, OnQuestStateChanged);
+            _progressManager.RemoveQuestListener(_finalQuestId, OnQuestStateChanged);
         }
     }
 }

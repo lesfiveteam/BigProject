@@ -21,7 +21,13 @@ namespace BigProject.Gameplay.VillageChurchQuest
         [SerializeField]
         private Collider _doorCollider;
         [SerializeField]
-        private float _churchDoorOpenAngleDelta; 
+        private float _churchDoorOpenAngleDelta;
+        [SerializeField]
+        private GameObject _chests;
+        [SerializeField]
+        private Transform _chestWithRunes;
+        [SerializeField]
+        private Transform _emptyChestPosition;
 
         [field: SerializeField]
         public int QuestId { get; private set; }
@@ -34,12 +40,17 @@ namespace BigProject.Gameplay.VillageChurchQuest
             Assert.IsNotNull(_churchDoorLeft, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Left"));
             Assert.IsNotNull(_churchDoorRight, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Right"));
             Assert.IsNotNull(_doorCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Collider"));
+            Assert.IsNotNull(_chests, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chests"));
+            Assert.IsNotNull(_chestWithRunes, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chest With Runes"));
+            Assert.IsNotNull(_emptyChestPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Empty Chest Position"));
 
         }
 
         public void InitOnSceneEntry()
         {
             _questObjects.SetActive(true);
+            _chests.SetActive(true);
+            _chestWithRunes.position = _emptyChestPosition.position;
             _questActions.Init(ServiceLocator.GetService<InventorySystem>());
             _priest.SetActive(false);
             _doorCollider.enabled = true;

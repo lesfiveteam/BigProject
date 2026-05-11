@@ -26,7 +26,6 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
                 return _allAttractionPoints;
             }
-            set => _allAttractionPoints = value;
         }
 
         private bool _isInited = false;
@@ -112,6 +111,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         private void BuildIndex()
         {
             _confirmedWays.Clear();
+            _allAttractionPoints.Clear();
 
             foreach (NPCWay way in _activeWays)
             {

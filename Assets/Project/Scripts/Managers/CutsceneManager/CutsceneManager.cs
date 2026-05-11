@@ -27,6 +27,7 @@ namespace BigProject.Managers.CutsceneManager
         private GameplayState _previousState = GameplayState.Play;
         private bool _destroyPrefabAfterPlay;
 
+        public bool IsReadyToPlay { get; private set; } = false;
         public bool IsPlaying { get; private set; } = false;
 
         public CutsceneManager(PlayableDirector director, SceneLoadManager sceneLoader, CutscenesConfig config, GameplayManager gameplayManager)
@@ -101,6 +102,16 @@ namespace BigProject.Managers.CutsceneManager
             AddActors(GameObject.FindObjectsByType<CutsceneActor>(FindObjectsInactive.Include, FindObjectsSortMode.None));
         }
 
+        public void DeactivatePrefabs()
+        {
+            if (_cutscenePrefabs != null)
+            {
+                _cutscenePrefabs.SetActive(false);
+            }
+        }
+
+        public bool TryGetActor(string actorName, out CutsceneActor actor) => _actors.TryGetValue(actorName, out actor);
+
         private void OnTimelineLoaded(AsyncOperationHandle<TimelineAsset> handle)
         {
             if (handle.Status != AsyncOperationStatus.Succeeded || _director == null)
@@ -116,6 +127,7 @@ namespace BigProject.Managers.CutsceneManager
             AddCutscenePrefabs(timeline);
             InitTimeline(timeline);
             _gameplayManager.ChangeState(_cutsceneState);
+            IsReadyToPlay = true;
             _director.Play();
         }
 
@@ -289,6 +301,7 @@ namespace BigProject.Managers.CutsceneManager
 
             _gameplayManager.ChangeState(_previousState);
             IsPlaying = false;
+            IsReadyToPlay = false;
         }
     }
 }

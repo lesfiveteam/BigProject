@@ -36,6 +36,7 @@ namespace BigProject.Systems
             "\n\t %userprofile%\\AppData\\LocalLow\\{1}\\{2}\\";
         public const string ERROR_QUEST = "Quest error: {0}.";
         public const string ERROR_NULL_COMPONENT = "Component: {0} is null!";
+        public const string ERROR_CANT_SPAWN_CHICKEN = "Can't find spawn point for chicken";
 
         public const string CRITICAL_UNABLE_GET_SERVICE = "{0}: can't get {1} service.";
         public const string CRITICAL_NOT_SERIALIZED_FIELD = "{0}: has not serialized field [{1}].";

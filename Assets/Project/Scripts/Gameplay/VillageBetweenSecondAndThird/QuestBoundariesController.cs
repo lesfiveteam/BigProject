@@ -19,6 +19,8 @@ namespace BigProject.Gameplay.VillageBetweenSecondAndThird
         [SerializeField]
         private float _churchDoorOpenAngleDelta;
         [SerializeField]
+        private GameObject _chests;
+        [SerializeField]
         private LocalizedString _playerRemark;
 
         private PlayerInputHandler _input;
@@ -34,11 +36,13 @@ namespace BigProject.Gameplay.VillageBetweenSecondAndThird
             Assert.IsNotNull(_churchDoorRight, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Right"));
             Assert.IsNotNull(_doorCollider, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Door Collider"));
             Assert.IsNotNull(_priest, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Priest"));
+            Assert.IsNotNull(_chests, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Chests"));
         }
 
         public void InitOnSceneEntry()
         {
             _priest.SetActive(false);
+            _chests.SetActive(true);
             _doorCollider.enabled = true;
             Vector3 doorAngles = _churchDoorLeft.localEulerAngles;
             doorAngles.y += _churchDoorOpenAngleDelta;

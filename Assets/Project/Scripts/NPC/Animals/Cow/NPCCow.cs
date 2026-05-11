@@ -9,23 +9,23 @@ namespace Assets.Project.Scripts.NPC.Animals.Cow
 {
     public class NPCCow : MonoBehaviour
     {
-        private readonly int StartTrigger = Animator.StringToHash("Start");
-        private readonly int BoredTrigger = Animator.StringToHash("Bored");
+        private const float TIME_TO_ALIVE = 4f;
+        private const float MIN_BORING_TIME = 20f;
+        private const float MAX_BORING_TIME = 40f;
+
+        private readonly int _startTrigger = Animator.StringToHash("Start");
+        private readonly int _boredTrigger = Animator.StringToHash("Bored");
 
         [SerializeField] private Animator _animator;
-
-        [SerializeField] private float _minBoringTime = 20f;
-        [SerializeField] private float _maxBoringTime = 40f;
         [SerializeField] private EnvironmentSound _environmentSound;
 
         private Coroutine _animationCoroutine;
-        private float _timeToAlive = 4f;
-
+        
         private bool _isAlive = false;
 
         private void Start()
         {
-            Assert.IsNotNull(_animator, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "Animator"));
+            ExceptionUtilities.ThrowIfNullFormat(_animator);
             ExceptionUtilities.ThrowIfNullFormat(_environmentSound);
 
             _animationCoroutine = StartCoroutine(StartAnimationsRoutine());
@@ -33,29 +33,33 @@ namespace Assets.Project.Scripts.NPC.Animals.Cow
 
         private IEnumerator StartAnimationsRoutine()
         {
-            yield return new WaitForSeconds(Random.Range(0, _timeToAlive));
+            yield return new WaitForSeconds(Random.Range(0, TIME_TO_ALIVE));
 
-            _animator.SetTrigger(StartTrigger);
+            _animator.SetTrigger(_startTrigger);
             _isAlive = true;
 
             float boredTime;
 
             while (_isAlive)
             {
-                boredTime = Random.Range(_minBoringTime, _maxBoringTime);
+                boredTime = Random.Range(MIN_BORING_TIME, MAX_BORING_TIME);
 
                 yield return new WaitForSeconds(boredTime);
 
                 _environmentSound.PlaySound();
-                _animator.SetTrigger(BoredTrigger);
+                _animator.SetTrigger(_boredTrigger);
             }
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             _isAlive = false;
 
-            StopCoroutine(_animationCoroutine);
+            if (_animationCoroutine != null)
+            {
+                StopCoroutine(_animationCoroutine);
+                _animationCoroutine = null;
+            }
         }
     }
 }

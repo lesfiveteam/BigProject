@@ -14,6 +14,8 @@ namespace BigProject.Gameplay.VillageIntro
         private QuestActions _questActions;
         [SerializeField]
         private GameObject _questObjects;
+        [SerializeField]
+        private GameObject _miller;
 
         [field: SerializeField]
         public int QuestId { get; private set; }
@@ -22,12 +24,14 @@ namespace BigProject.Gameplay.VillageIntro
         {
             Assert.IsNotNull(_questActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Actions"));
             Assert.IsNotNull(_questObjects, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Objects"));
+            Assert.IsNotNull(_miller, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Miller"));
         }
 
         public void InitOnSceneEntry()
         {
             _questActions.Init(ServiceLocator.GetService<PlayerController>(), ServiceLocator.GetService<GameplayManager>(), ServiceLocator.GetService<SceneLoadManager>());
             _questObjects.SetActive(true);
+            _miller.SetActive(false);
         }
 
         public void End()

@@ -21,6 +21,9 @@ namespace BigProject.Gameplay.VillageElderQuest
         private AmbassadorDialogueManager _ambassadorDialogueManager;
         [SerializeField]
         private GameObject _questTownhallObjects;
+        [SerializeField]
+        private GameObject _miller;
+
 
         private float _watermillDoorInitAngle;
 
@@ -33,6 +36,7 @@ namespace BigProject.Gameplay.VillageElderQuest
             Assert.IsNotNull(_watermillDoor, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Watermill door"));
             Assert.IsNotNull(_ambassadorDialogueManager, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Ambassador dialogue manager"));
             Assert.IsNotNull(_questTownhallObjects, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Townhall Objects"));
+            Assert.IsNotNull(_miller, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Miller"));
         }
 
         public void InitOnSceneEntry()
@@ -42,11 +46,12 @@ namespace BigProject.Gameplay.VillageElderQuest
             _questTownhallObjects.SetActive(true);
             _ambassadorDialogueManager.Init(ServiceLocator.GetService<PlayerController>(), ServiceLocator.GetService<PlayerSpawner>(), 
                 ServiceLocator.GetService<DialogueManager>(), gameplayManager);
-            _watermillDoor.enabled = false;
-            Vector3 doorAngles = _watermillDoor.transform.localEulerAngles;
-            _watermillDoorInitAngle = doorAngles.y;
-            doorAngles.y = 0f;
-            _watermillDoor.transform.localEulerAngles = doorAngles;
+            _miller.SetActive(false);
+            //_watermillDoor.enabled = false;
+            //Vector3 doorAngles = _watermillDoor.transform.localEulerAngles;
+            //_watermillDoorInitAngle = doorAngles.y;
+            //doorAngles.y = 0f;
+            //_watermillDoor.transform.localEulerAngles = doorAngles;
         }
 
         public void Begin()

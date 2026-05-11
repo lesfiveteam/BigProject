@@ -1,6 +1,4 @@
-﻿using Assets.Project.Scripts.NPC.NPCWalkSystem;
-using DG.Tweening;
-using System.Collections.Generic;
+﻿using DG.Tweening;
 using System.Linq;
 using UnityEngine;
 
@@ -11,48 +9,58 @@ namespace Assets.Project.Scripts.NPC.Animals.Fish
         [SerializeField] private float _moveSpeed = 3f;
         [SerializeField] private float _rotateSpeed = 600f;
 
-        private Queue<NPCRootPoint> _currentRoute;
-        private Sequence _currentSequence;
+        private NPCFishPool _pool;
+        private Sequence _root;
 
-        public void Init(Queue<NPCRootPoint> currentRoute)
+        private Vector3[] _positions;
+        private float[] _distances;
+
+        public void Init(NPCFishPool pool, Vector3[] positions, float[] distances)
         {
-            _currentSequence = DOTween.Sequence();
-            _currentRoute = currentRoute;
-
-            SwimToSea();
+            _pool = pool;
+            _positions = positions;
+            _distances = distances;
         }
 
-        private void SwimToSea()
+        public void SwimToSea()
         {
-            List<NPCRootPoint> points = _currentRoute.ToList();
+            _root = DOTween.Sequence();
 
-            for (int i = 0; i < points.Count; i++)
+            for (int i = 0; i < _positions.Length; i++)
             {
-                Vector3 targetPos = points[i].Position;
-                Vector3 startPos = i == 0 ? transform.position : points[i - 1].Position;
-                Vector3 direction = (targetPos - startPos).normalized;
+                Vector3 targetPoint = _positions[i];
+                Vector3 startPoint = i == 0 ?
+                    transform.position :
+                    _positions[i - 1];
+                Vector3 moveDirection = (targetPoint - startPoint).normalized;
 
-                float moveDuration = Vector3.Distance(startPos, targetPos) / _moveSpeed;
-                _currentSequence.Append(transform.DOMove(targetPos, moveDuration).SetEase(Ease.Linear));
+                float moveDuration = i == 0 ?
+                    Vector3.Distance(transform.position, targetPoint) / _moveSpeed :
+                    _distances[i - 1] / _moveSpeed;
 
-                if (direction != Vector3.zero)
+                _root.Append(transform
+                    .DOMove(targetPoint, moveDuration)
+                    .SetEase(Ease.Linear));
+
+                if (moveDirection != Vector3.zero)
                 {
-                    Quaternion targetRotation = Quaternion.LookRotation(direction);
+                    Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
                     float angle = Quaternion.Angle(transform.rotation, targetRotation);
                     float rotateDuration = angle / _rotateSpeed;
 
-                    _currentSequence.Join(transform.DORotateQuaternion(targetRotation, rotateDuration));
+                    _root.Join(transform
+                        .DORotateQuaternion(targetRotation, rotateDuration));
                 }
             }
 
-            _currentSequence.OnComplete(() => Destroy(gameObject));
-            _currentSequence.Play();
+            _root.OnComplete(() => _pool.Return(this));
+            _root.Play();
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
-            if (_currentSequence != null && _currentSequence.IsActive())
-                _currentSequence.Kill();
+            if (_root != null && _root.IsActive())
+                _root.Kill();
         }
     }
 }

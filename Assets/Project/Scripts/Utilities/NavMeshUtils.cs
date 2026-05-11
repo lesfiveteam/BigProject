@@ -1,10 +1,16 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace Assets.Project.Scripts.Utilities
 {
     public class NavMeshUtils
     {
+        private static WaitForEndOfFrame _cachedEndOfFrame = new WaitForEndOfFrame();
+        private static readonly int YIELD_ATTEMPTS_INTERVAL = 10;
+
         public static float GetPathLength(NavMeshPath path)
         {
             float length = 0;
@@ -25,7 +31,13 @@ namespace Assets.Project.Scripts.Utilities
             return false;
         }
 
-        public static bool TryGetRandomPointAtDistance(Vector3 currentPosition, Vector3 center, float radius, NavMeshPath path, int maxAttempts = 30)
+        public static IEnumerator TryGetRandomPointAtDistanceRoutine(
+            Vector3 currentPosition,
+            Vector3 center,
+            float radius,
+            NavMeshPath path,
+            Action<bool> callback = null,
+            int maxAttempts = 30)
         {
             for (int i = 0; i < maxAttempts; i++)
             {
@@ -40,16 +52,28 @@ namespace Assets.Project.Scripts.Utilities
                     {
                         if (path.status == NavMeshPathStatus.PathComplete && path.corners.Length >= 2)
                         {
-                            return true;
+                            callback?.Invoke(true);
+                            yield break;
                         }
                     }
                 }
+
+                if ((i + 1) % YIELD_ATTEMPTS_INTERVAL == 0)
+                    yield return _cachedEndOfFrame;
             }
 
-            return false;
+            callback?.Invoke(false);
         }
 
-        public static bool TryGetRandomPointInCircle(Vector3 currentPosition, Vector3 targetPosition, float searchRadius, Vector3 restrictPoint, float restrictionRadius, NavMeshPath path, int maxAttempts = 30)
+        public static IEnumerator TryGetRandomPointInCircleRoutine(
+            Vector3 currentPosition,
+            Vector3 targetPosition,
+            float searchRadius,
+            Vector3 restrictPoint,
+            float restrictionRadius,
+            NavMeshPath path,
+            Action<bool> callback = null,
+            int maxAttempts = 30)
         {
             float maxDistance = 50f;
 
@@ -67,13 +91,17 @@ namespace Assets.Project.Scripts.Utilities
                     {
                         if (path.status == NavMeshPathStatus.PathComplete)
                         {
-                            return true;
+                            callback?.Invoke(true);
+                            yield break;
                         }
                     }
                 }
+
+                if ((i + 1) % YIELD_ATTEMPTS_INTERVAL == 0)
+                    yield return _cachedEndOfFrame;
             }
 
-            return false;
+            callback?.Invoke(false);
         }
 
         public static Vector3 AddRandomDeviation(Vector3 direction, float maxAngleDegrees)
