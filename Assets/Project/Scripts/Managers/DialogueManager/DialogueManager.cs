@@ -97,7 +97,6 @@ namespace BigProject.Managers
             // Включаем отображение кнопки продолжить и текст NPC
             DialogueNPCPhrase dialogueNPCPhrase =
                 _currentDialogueLine.DialogueNPCPhrases[_currentDialoguePhraseIndex];
-
             _dialogueView.ShowNPCPhrase(dialogueNPCPhrase);
             _currentDialoguePhraseIndex++;
 
