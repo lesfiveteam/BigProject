@@ -114,6 +114,7 @@ namespace BigProject.Gameplay.Church
 
         public void GetRunes()
         {
+            _inventory.RemoveItemByName(_noteFour);
             StartCoroutine(GetRunesRoutine());
         }
 
