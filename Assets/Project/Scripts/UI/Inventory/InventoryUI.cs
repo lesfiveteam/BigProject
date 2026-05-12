@@ -150,6 +150,7 @@ namespace BigProject.UI
         public void Hide()
         {
             gameObject.SetActive(false);
+            SetNoteVisibility(false);
         }
     }
 }
