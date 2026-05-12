@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BigProject.Systems;
+using System;
 using UnityEngine;
 
 namespace Assets.Project.Scripts.Managers.SlideManager
@@ -11,16 +11,16 @@ namespace Assets.Project.Scripts.Managers.SlideManager
             First,
         }
 
-        protected override List<CanvasGroup> GetActualSlides(IntroVariant slidesVariant)
+        protected override SlidesGroup GetActualSlidesGroup(IntroVariant slidesVariant)
         {
-            switch (slidesVariant)
-            {
-                case IntroVariant.First:
-                    return _slides1;
+            if (_slidesGroups.Count < Enum.GetValues(typeof(IntroVariant)).Length)
+                Debug.LogAssertion(string.Format(LogStr.CRITICAL_REQUIRED_VALUES_MISSING, name, nameof(_slidesGroups)));
 
-                default:
-                    throw new ArgumentException(slidesVariant.ToString());
-            }
+            return slidesVariant switch
+            {
+                IntroVariant.First => _slidesGroups[0],
+                _ => throw new ArgumentException(slidesVariant.ToString()),
+            };
         }
     }
 }

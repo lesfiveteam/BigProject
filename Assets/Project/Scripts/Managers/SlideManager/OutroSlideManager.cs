@@ -1,6 +1,5 @@
-﻿using BigProject.Utilities;
+﻿using BigProject.Systems;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Project.Scripts.Managers.SlideManager
@@ -13,26 +12,18 @@ namespace Assets.Project.Scripts.Managers.SlideManager
             Second,
         }
 
-        [SerializeField] private List<CanvasGroup> _slides2;
-
-        private void Start()
+        protected override SlidesGroup GetActualSlidesGroup(OutroVariant slidesVariant)
         {
-            ExceptionUtilities.ThrowIfEmptyCollection(_slides2, nameof(_slides2));
-        }
+            if (_slidesGroups.Count < Enum.GetValues(typeof(OutroVariant)).Length)
+                Debug.LogAssertion(string.Format(LogStr.CRITICAL_REQUIRED_VALUES_MISSING, name, nameof(_slidesGroups)));
 
-        protected override List<CanvasGroup> GetActualSlides(OutroVariant slidesVariant)
-        {
-            switch (slidesVariant)
+
+            return slidesVariant switch
             {
-                case OutroVariant.First:
-                    return _slides1;
-
-                case OutroVariant.Second:
-                    return _slides2;
-
-                default:
-                    throw new ArgumentException(slidesVariant.ToString());
-            }
+                OutroVariant.First => _slidesGroups[0],
+                OutroVariant.Second => _slidesGroups[1],
+                _ => throw new ArgumentException(slidesVariant.ToString()),
+            };
         }
     }
 }

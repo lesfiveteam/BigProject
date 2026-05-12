@@ -43,6 +43,7 @@ namespace BigProject.Systems
         public const string CRITICAL_NULL_REFERENCE = "{0}: get null reference [{1}].";
         public const string CRITICAL_EMPTY_COLLECTION = "Collection is empty";
         public const string CRITICAL_WRONG_ARGUMENT = "{0}: wrong argument [{1}].";
+        public const string CRITICAL_REQUIRED_VALUES_MISSING = "{0}: required values in [{1}] are missing.";
 
         public const string INFO_SYSTEM = "System \"{0}\" info: {1}.";
         public const string WARNING_SYSTEM = "System \"{0}\" warning: {1}.";
