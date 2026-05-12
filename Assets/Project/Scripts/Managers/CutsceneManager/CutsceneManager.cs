@@ -26,6 +26,7 @@ namespace BigProject.Managers.CutsceneManager
         private GameplayState _cutsceneState;
         private GameplayState _previousState = GameplayState.Play;
         private bool _destroyPrefabAfterPlay;
+        private object _loadingAssetRuntimeKey;
 
         public bool IsReadyToPlay { get; private set; } = false;
         public bool IsPlaying { get; private set; } = false;
@@ -64,6 +65,7 @@ namespace BigProject.Managers.CutsceneManager
             _previousState = stateAfterPlay;
             _cutsceneState = cutsceneState;
             _destroyPrefabAfterPlay = destroyPrefabAfterPlay;
+            _loadingAssetRuntimeKey = timelineAssetRef.RuntimeKey;
             _handle = timelineAssetRef.LoadAssetAsync();
             _handle.Completed += OnTimelineLoaded;
         }
@@ -114,7 +116,7 @@ namespace BigProject.Managers.CutsceneManager
 
         private void OnTimelineLoaded(AsyncOperationHandle<TimelineAsset> handle)
         {
-            if (handle.Status != AsyncOperationStatus.Succeeded || _director == null)
+            if (handle.Status != AsyncOperationStatus.Succeeded || _director == null || _loadingAssetRuntimeKey == null)
             {
                 Debug.LogError(string.Format(LogStr.ERROR_SYSTEM, "CtsceneManager", $"unable to load timeline"));
                 ResetPlayer();
@@ -128,6 +130,7 @@ namespace BigProject.Managers.CutsceneManager
             InitTimeline(timeline);
             _gameplayManager.ChangeState(_cutsceneState);
             IsReadyToPlay = true;
+            _loadingAssetRuntimeKey = null;
             _director.Play();
         }
 
@@ -220,7 +223,7 @@ namespace BigProject.Managers.CutsceneManager
 
         private void AddCutscenePrefabs(TimelineAsset timeline)
         {
-            if (_config.TryGetCutscenePrefabs(timeline, out List<GameObject> prefabs))
+            if (_config.TryGetCutscenePrefabs(_loadingAssetRuntimeKey, out List<GameObject> prefabs))
             {
                 _cutscenePrefabs = new GameObject($"Cutscene_{timeline.name}_prefabs");
 
@@ -254,11 +257,11 @@ namespace BigProject.Managers.CutsceneManager
             {
                 if (_actors.TryAdd(actor.Name, actor))
                 {
-                    GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, $"CutsceneManager", $"add actor {actor.name}"));
+                    GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, $"CutsceneManager", $"add actor {actor.Name}"));
                 }
                 else
                 {
-                    Debug.LogWarning(string.Format(LogStr.WARNING_SYSTEM, $"CutsceneManager", $"try add duplicate actor {actor.name}"));
+                    Debug.LogWarning(string.Format(LogStr.WARNING_SYSTEM, $"CutsceneManager", $"try add duplicate actor {actor.Name}"));
                 }
             }
         }

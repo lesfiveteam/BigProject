@@ -134,6 +134,20 @@ MonoBehaviour:
   m_OpenClipOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
   m_ApplyOffsets: 0
+--- !u!114 &-724253759588698912
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b6e92a257f4d7f4ebcdea82211a122c, type: 3}
+  m_Name: Cutscene Marker
+  m_EditorClassIdentifier: Assembly-CSharp::BigProject.Managers.CutsceneManager.CutsceneMarker
+  m_Time: 0
+  <EventType>k__BackingField: 0
 --- !u!114 &-99740116217828013
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -613,22 +627,6 @@ MonoBehaviour:
   m_OpenClipOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
   m_ApplyOffsets: 0
---- !u!114 &3859161837228391532
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15c38f6fa1940124db1ab7f6fe7268d1, type: 3}
-  m_Name: Signal Emitter
-  m_EditorClassIdentifier: Unity.Timeline::UnityEngine.Timeline.SignalEmitter
-  m_Time: 0
-  m_Retroactive: 0
-  m_EmitOnce: 0
-  m_Asset: {fileID: 11400000, guid: 8981671388459d1438e6150aed6766ee, type: 2}
 --- !u!114 &4005081291459290233
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -652,8 +650,22 @@ MonoBehaviour:
   m_Clips: []
   m_Markers:
     m_Objects:
-    - {fileID: 3859161837228391532}
-    - {fileID: -99740116217828013}
+    - {fileID: -724253759588698912}
+    - {fileID: 6699202795362680961}
+--- !u!114 &6699202795362680961
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b6e92a257f4d7f4ebcdea82211a122c, type: 3}
+  m_Name: Cutscene Marker
+  m_EditorClassIdentifier: Assembly-CSharp::BigProject.Managers.CutsceneManager.CutsceneMarker
+  m_Time: 5.183333333333334
+  <EventType>k__BackingField: 1
 --- !u!74 &7331408834368249072
 AnimationClip:
   m_ObjectHideFlags: 0
