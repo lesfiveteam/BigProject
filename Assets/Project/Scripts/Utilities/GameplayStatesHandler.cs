@@ -63,6 +63,7 @@ namespace BigProject.Utilities
                     _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
                     _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
                     _hud.HideWidget(_hudConfig.HUDInventoryWidgetId);
+                    _hud.HideWidget(_hudConfig.HUDCancelWidgetId);
                     ReplicaManager.HideReplica();
                     _input.SwitchToMiniGameActionMap();
                     break;
