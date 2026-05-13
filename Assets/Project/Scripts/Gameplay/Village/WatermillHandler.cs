@@ -1,3 +1,4 @@
+using BigProject.Gameplay.Watermill;
 using BigProject.Managers;
 using BigProject.Systems;
 using BigProject.Systems.QuestSystem;
@@ -14,6 +15,8 @@ namespace BigProject.Gameplay.Village
         private int _repairQuestId;
         [SerializeField]
         private int _repairActionId;
+        [SerializeField]
+        private GearsHandler _wheelHandler;
         [SerializeField]
         private Transform _barrier;
         [SerializeField]
@@ -49,6 +52,7 @@ namespace BigProject.Gameplay.Village
 
         private void Awake()
         {
+            Assert.IsNotNull(_wheelHandler, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, $"{name}", "Wheel Handler"));
             Assert.IsNotNull(_barrier, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, $"{name}", "Barrier Transform"));
             Assert.IsNotNull(_adapterPart, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, $"{name}", "Adapter Transform"));
         }
@@ -67,6 +71,7 @@ namespace BigProject.Gameplay.Village
         private void SetState(bool isRepaired)
         {
             RiverSettings setings = isRepaired ? _afterRepairSettings : _beforeRepairSettings;
+            _wheelHandler.enabled = isRepaired;
             Vector3 position = _barrier.localPosition;
             position.y = setings.barrierHeight;
             _barrier.localPosition = position;
