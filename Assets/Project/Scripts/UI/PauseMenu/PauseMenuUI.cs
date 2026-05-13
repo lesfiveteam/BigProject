@@ -50,6 +50,7 @@ namespace BigProject.UI
             _sceneLoader.SceneLoadingStarted += OnMainMenuLoadingStarted;
             _sceneLoader.LoadScene(Scenes.MainMenu);
             _pauseMenuManager.UnpauseGame();
+            Destroy(_pauseMenuManager);
         }
 
         private void OnMainMenuLoadingStarted()
