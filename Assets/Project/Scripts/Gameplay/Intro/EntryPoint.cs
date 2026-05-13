@@ -12,6 +12,7 @@ namespace Assets.Project.Scripts.Gameplay.Intro
     public class EntryPoint : MonoBehaviour
     {
         [SerializeField] private IntroSlideManager _slideManager;
+        [SerializeField] private AudioListener _audioListener;
 
         private void Start()
         {
@@ -27,7 +28,7 @@ namespace Assets.Project.Scripts.Gameplay.Intro
         private void OnIntroEnded()
         {
             _slideManager.SlideShowEnded -= OnIntroEnded;
-
+            _audioListener.enabled = false;
             Bootstrapper.SetStage(GameExecutionStage.Gameplay);
             ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.Village);
         }
