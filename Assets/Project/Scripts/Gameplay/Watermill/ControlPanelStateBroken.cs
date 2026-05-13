@@ -76,9 +76,16 @@ namespace BigProject.Gameplay.Watermill
             Vector3 _targetPosition = _brokenLever.transform.localPosition;
             _targetPosition.z += _brokenLeverOffset;
             _controlPanel.DeactivateOnExit();
-            await _controlPanel.MoveLever(_brokenLever.transform, _targetPosition, _brokenLeverRemoveTime, ct);
-            _brokenLever.SetActive(false);
-            MakeTransition();
+
+            try
+            {
+                await _controlPanel.MoveLever(_brokenLever.transform, _targetPosition, _brokenLeverRemoveTime, ct);
+            }
+            finally
+            {
+                _brokenLever.SetActive(false);
+                MakeTransition();
+            }
         }
 
         private void MakeTransition()
@@ -89,8 +96,7 @@ namespace BigProject.Gameplay.Watermill
             }
             catch (Exception ex)
             {
-                string msg = $"Some error ocurred adding the item to inventory: {ex.Message}";
-                Debug.LogError(String.Format(LogStr.ERROR_QUEST, msg));
+                Debug.LogError(string.Format(LogStr.ERROR_QUEST, $"some error ocurred adding the item to inventory. {ex.Message}"));
             }
 
             try
@@ -99,8 +105,8 @@ namespace BigProject.Gameplay.Watermill
             }
             catch (Exception ex)
             {
-                string msg = $"Unable to make action transition from broken lever: {ex.Message}";
-                Debug.LogError(String.Format(LogStr.ERROR_QUEST, msg));
+                Debug.LogError(string.Format(LogStr.ERROR_QUEST, $"unable to make action transition from broken lever. {ex.Message}"));
+                _controlPanel.Deactivate();
             }
         }
 

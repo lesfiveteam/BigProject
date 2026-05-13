@@ -2,6 +2,7 @@ using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Settings;
+using BigProject.Systems;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using BigProject.Systems.QuestSystem;
@@ -110,10 +111,17 @@ namespace BigProject.Gameplay.Watermill
             _soundsManager.PlaySound(_leverInsertSound, is2D: true);
             _isSkipped = false;
             SetVisibility();
-            await _controlPanel.MoveLever(_repairedLever.transform, _repairedLeverHolder.transform.localPosition, _leverInstallTime, ct);
-            MakeTransition();
-            ReplicaManager.ShowReplica(_moveLeversRemark);
-            _hud.ShowWidget(_hudConfig.HUDJournalWidgetId, time: SHOW_JOURNAL_TIME);
+
+            try
+            {
+                await _controlPanel.MoveLever(_repairedLever.transform, _repairedLeverHolder.transform.localPosition, _leverInstallTime, ct);
+            }
+            finally
+            {
+                MakeTransition();
+                ReplicaManager.ShowReplica(_moveLeversRemark);
+                _hud.ShowWidget(_hudConfig.HUDJournalWidgetId, time: SHOW_JOURNAL_TIME);
+            }
         }
 
         private void MakeTransition()
@@ -124,9 +132,8 @@ namespace BigProject.Gameplay.Watermill
             }
             catch (Exception ex)
             {
-                string msg = $"Unable to make action transition from installing repaired lever: {ex.Message}";
-                GameLogManager.Critical(msg);
-                Debug.Log(msg);
+                Debug.LogError(string.Format(LogStr.ERROR_QUEST, $"unable to make action transition from installing repaired lever. {ex.Message}"));
+                _controlPanel.Deactivate();
             }
         }
 

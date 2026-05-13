@@ -1,6 +1,7 @@
 using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
+using BigProject.Systems;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
 using BigProject.Systems.QuestSystem;
@@ -226,61 +227,60 @@ namespace BigProject.Gameplay.Watermill
         {
             _soundsManager.PlaySound(_leverMoveSound, is2D:true);
             _isMoving = true;
-            Vector3 newLeverPosition = lever.Transform.localPosition;
+            Vector3 startPosition = lever.Transform.localPosition;
+            Vector3 newLeverPosition = startPosition;
             newLeverPosition.x = target.transform.localPosition.x;
             newLeverPosition.y = target.transform.localPosition.y;
 
-            try
+            if (target.isFree)
             {
-                if (target.isFree)
+                currentPoint.isFree = true;
+                lever.PointId = target.id;
+                target.isFree = false;
+
+                try
                 {
-                    currentPoint.isFree = true;
-                    lever.PointId = target.id;
-                    target.isFree = false;
                     await _controlPanel.MoveLever(lever.Transform, newLeverPosition, _leverMoveTime, ct);
+                }
+                finally
+                {
                     _chosenLever = null;
 
                     if (IsLeversInTargetPosition())
                     {
                         MakeTransition();
                     }
+
+                    _isMoving = false;
                 }
-                else
+            }
+            else
+            {
+                Vector3 endPosition = startPosition + (newLeverPosition - startPosition).normalized * _staggerDistance;
+
+                try
                 {
-                    Vector3 startPosition = lever.Transform.localPosition;
-                    Vector3 endPosition = startPosition + (newLeverPosition - startPosition).normalized * _staggerDistance;
                     await _controlPanel.MoveLever(lever.Transform, endPosition, _leverStaggerTime + 0.1f, ct);
                     await _controlPanel.MoveLever(lever.Transform, startPosition, _leverStaggerTime + 0.1f, ct);
                 }
-            }
-            finally
-            {
-                _isMoving = false;
+                finally
+                {
+                    lever.Transform.localPosition = startPosition;
+                    _isMoving = false;
+                }
             }
         }
 
         private void MakeTransition()
         {
-            //try
-            //{
-            //    _inventory.RemoveItemById(_noteItemId);
-            //}
-            //catch (Exception ex)
-            //{
-            //    string msg = $"Some error ocurred while releasing the item from inventory: {ex.Message}";
-            //    GameLogManager.Critical(msg);
-            //    Debug.Log(msg);
-            //}
-
             try
             {
                 _activateMechAction.MakeTransition(0);
             }
             catch (Exception ex)
             {
-                string msg = $"Unable to make action transition from fixed control panel: {ex.Message}";
-                GameLogManager.Critical(msg);
-                Debug.Log(msg);
+                Debug.LogError(string.Format(LogStr.ERROR_QUEST, $"unable to make action transition from fixed control panel. {ex.Message}"));
+                _controlPanel.Deactivate();
             }
         }
 

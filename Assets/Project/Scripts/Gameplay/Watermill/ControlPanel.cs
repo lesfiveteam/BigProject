@@ -169,13 +169,13 @@ namespace BigProject.Gameplay.Watermill
             }
 
             _isLeverMoving = true;
-            Tween tween = lever.DOLocalMove(targetPosition, time);
+            Tween tween = lever.DOLocalMove(targetPosition, time).OnKill(() => lever.transform.localPosition = targetPosition);
 
             try
             {
                 await Awaitable.WaitForSecondsAsync(time + 0.1f, cancellationToken: ct);
             }
-            catch (OperationCanceledException)
+            catch
             {
                 tween.Kill();
                 throw;
@@ -278,6 +278,7 @@ namespace BigProject.Gameplay.Watermill
 
         private void ResetPanel()
         {
+            GameLogManager.Info(string.Format(LogStr.INFO_QUEST, $"reset panel state {_state.GetType()}"));
             _state?.Reset();
         }
 
