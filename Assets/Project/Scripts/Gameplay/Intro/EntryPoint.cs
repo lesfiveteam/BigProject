@@ -31,6 +31,11 @@ namespace Assets.Project.Scripts.Gameplay.Intro
             Bootstrapper.SetStage(GameExecutionStage.Gameplay);
             ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.Village);
         }
+
+        private void OnDestroy()
+        {
+            ServiceLocator.GetService<ManualLoop>().RemoveTickable(_slideManager);
+        }
     }
 }
 

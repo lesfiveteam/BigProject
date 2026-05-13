@@ -31,6 +31,11 @@ namespace Assets.Project.Scripts.Gameplay.Outro
             Bootstrapper.SetStage(GameExecutionStage.Launch);
             ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.MainMenu);
         }
+
+        private void OnDestroy()
+        {
+            ServiceLocator.GetService<ManualLoop>().RemoveTickable(_slideManager);
+        }
     }
 }
 
