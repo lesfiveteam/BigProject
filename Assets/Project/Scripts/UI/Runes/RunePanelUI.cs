@@ -282,7 +282,7 @@ namespace BigProject.UI
                 EmergencyReceive();
             }
 
-            if (state == GameplayState.Cutscene && _isPlayable)
+            if (state == GameplayState.Cutscene && _isAssembled && _openedSegmentsCount >= _runeSlots.Count)
             {
                 _isPlayable = false;
             }
