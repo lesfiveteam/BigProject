@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Managers;
 using BigProject.Player;
 using BigProject.Utilities;
@@ -24,13 +25,13 @@ namespace BigProject.UI
                 _playerInputHandler.PressPause -= PressPause;
         }
 
-        public void Init(PlayerInputHandler playerInputHandler, SettingsManager settingsManager)
+        public void Init(PlayerInputHandler playerInputHandler, SettingsManager settingsManager, SceneLoadManager sceneLoader)
         {
             _playerInputHandler = playerInputHandler;
             ExceptionUtilities.ThrowIfNull(_playerInputHandler, gameObject.name, "Player input handler is null!");
 
             _settingsPanel.Init(settingsManager, this);
-            _pausePanel.Init(this);
+            _pausePanel.Init(this, sceneLoader);
 
             if (_playerInputHandler != null)
                 _playerInputHandler.PressPause += PressPause;

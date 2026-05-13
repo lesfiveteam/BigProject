@@ -169,7 +169,7 @@ namespace BigProject.Initializers
             InitReplica(playerChatWorld.gameObject, playerChatWorld.GetComponentInChildren<TMP_Text>(),
                 _hudObj.GetComponentInChildren<PlayerChatUI>(true), gameplayManager, manualLoop);
             ServiceLocator.AddService(_replicaManager);
-            InitPauseMenu();
+            InitPauseMenu(sceneLoader);
             InitMap(gameplayManager);
 
             _questJournal.Init();
@@ -195,10 +195,10 @@ namespace BigProject.Initializers
             _replicaManager = new ReplicaManager(_chatController, manualLoop, _playerConfig);
         }
 
-        private void InitPauseMenu()
+        private void InitPauseMenu(SceneLoadManager sceneLoader)
         {
             _pauseMenuViewObj = Instantiate(_pauseView);
-            _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput, _settingsManager);
+            _pauseMenuViewObj.GetComponent<PauseMenuManager>().Init(_playerInput, _settingsManager, sceneLoader);
             DontDestroyOnLoad(_pauseMenuViewObj);
         }
 

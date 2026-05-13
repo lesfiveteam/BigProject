@@ -11,6 +11,7 @@ using BigProject.Managers.CursorManager;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Systems.Sound;
 using BigProject.Managers.SoundsMusicManagers;
+using System.Collections.Generic;
 
 namespace BigProject.Initializers
 {
@@ -21,6 +22,9 @@ namespace BigProject.Initializers
     {
         [SerializeField, Tooltip("Actions to execute for early initialize.")]
         private UnityEvent _initActions;
+
+        private ManualLoop _loop;
+        private List<object> _tickableObjects = new();
 
         private void Awake()
         {
@@ -33,6 +37,7 @@ namespace BigProject.Initializers
             GameLogManager.Info(LogStr.INFO_INITIALIZING_SCENE_SERVICES);
             ProgressManager pm = ServiceLocator.GetService<ProgressManager>();
             SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
+            _loop = ServiceLocator.GetService<ManualLoop>();
             InitQuestHandlers(pm);
             InitInteractable(pm, soundsManager);
             InitDoors();
@@ -146,11 +151,11 @@ namespace BigProject.Initializers
         private void InitGlobalRotationObjects()
         {
             GlobalRotationObject[] globalRotationObjects = FindObjectsByType<GlobalRotationObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
 
             foreach (GlobalRotationObject globalRotationObject in globalRotationObjects)
             {
-                manualLoop.AddTickable(globalRotationObject);
+                _tickableObjects.Add(globalRotationObject);
+                _loop.AddTickable(globalRotationObject);
             }
         }
         
@@ -163,6 +168,16 @@ namespace BigProject.Initializers
             {
                 riverSoundMover.Init(player.transform);
             }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (object tickable in _tickableObjects)
+            {
+                _loop.RemoveTickable(tickable);
+            }
+
+            _tickableObjects.Clear();
         }
     }
 }

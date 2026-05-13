@@ -22,6 +22,8 @@ namespace BigProject.Initializers
     /// </summary>
     public static class Bootstrapper
     {
+        public static event Action<GameExecutionStage> OnStageChanged;
+
         private const string INITIALIZERS_DIR = "Prefabs/Initializers/";
         private const string GLOBAL_EP_PREFAB_NAME = "GlobalEntryPoint";
         private const string GAMEPLAY_EP_PREFAB_NAME = "GameplayEntryPoint";
@@ -55,6 +57,8 @@ namespace BigProject.Initializers
 
         private static void MoveToStage(GameExecutionStage stage)
         {
+            OnStageChanged?.Invoke(stage);
+
             switch (stage)
             {
                 case GameExecutionStage.Launch:

@@ -1,3 +1,4 @@
+using BigProject.Initializers;
 using BigProject.Utilities;
 using System;
 using System.Collections.Generic;
@@ -171,6 +172,24 @@ namespace BigProject.Systems.Sound
             {
                 Gizmos.color = _soundPointColor;
                 Gizmos.DrawSphere(_soundPoint.position, _soundPointRadius);
+            }
+        }
+
+        private void OnEnable()
+        {
+            Bootstrapper.OnStageChanged += OnGameExecutionStageChanged;
+        }
+
+        private void OnDisable()
+        {
+            Bootstrapper.OnStageChanged -= OnGameExecutionStageChanged;
+        }
+
+        private void OnGameExecutionStageChanged(GameExecutionStage stage)
+        {
+            if (stage == GameExecutionStage.Launch)
+            {
+                Destroy(gameObject);
             }
         }
     }

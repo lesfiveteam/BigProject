@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using BigProject.Managers;
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Initializers;
+using System.Collections;
+using BigProject.Systems;
 
 namespace BigProject.UI
 {
@@ -14,10 +16,12 @@ namespace BigProject.UI
         [SerializeField] private Button _quitButton;
 
         private PauseMenuManager _pauseMenuManager;
+        private SceneLoadManager _sceneLoader;
 
-        public void Init(PauseMenuManager pauseMenuManager)
+        public void Init(PauseMenuManager pauseMenuManager, SceneLoadManager sceneLoader)
         {
             _pauseMenuManager = pauseMenuManager;
+            _sceneLoader = sceneLoader;
         }
 
         private void OnEnable()
@@ -43,13 +47,22 @@ namespace BigProject.UI
 
         private void GoToMainMenu()
         {
-            if (ServiceLocator.TryGetService(out SceneLoadManager sceneLoader))
+            _sceneLoader.SceneLoadingStarted += OnMainMenuLoadingStarted;
+            _sceneLoader.LoadScene(Scenes.MainMenu);
+            _pauseMenuManager.UnpauseGame();
+        }
+
+        private void OnMainMenuLoadingStarted()
+        {
+            _sceneLoader.SceneLoadingStarted -= OnMainMenuLoadingStarted;
+            GameplaySceneEntryPoint sceneEntryPoint = FindFirstObjectByType<GameplaySceneEntryPoint>();
+
+            if (sceneEntryPoint != null)
             {
-                Bootstrapper.SetStage(GameExecutionStage.Launch);
-                sceneLoader.LoadScene(Scenes.MainMenu);
-                _pauseMenuManager.UnpauseGame();
-                //Destroy(_pauseMenuManager.gameObject);
+                Destroy(sceneEntryPoint);
             }
+
+            Bootstrapper.SetStage(GameExecutionStage.Launch);
         }
     }
 }

@@ -79,6 +79,20 @@ namespace BigProject.Systems
             }
         }
 
+        public void RemoveTickable(object tickable, int queueId = 0)
+        {
+            if (_tickQueues.TryGetValue(queueId, out TickQueue queue))
+            {
+                RemoveTickableFromQueue(queue, tickable);   
+            }
+            else
+            {
+                Debug.LogWarning(string.Format(LogStr.WARNING_SYSTEM, "ManualLoop",
+                    $"unable to remove tickable {tickable.GetType()}, has no queue {queueId}"));
+            }
+
+        }
+
         /// <summary>
         /// Add updatable object list.
         /// </summary>
@@ -140,6 +154,24 @@ namespace BigProject.Systems
             if (tickObj is ILateTickable lateTickable)
             {
                 queue.lateTickables.Add(lateTickable);
+            }
+        }
+
+        private void RemoveTickableFromQueue(TickQueue queue, object tickObj)
+        {
+            if (tickObj is ITickable tickable)
+            {
+                queue.tickables.Remove(tickable);
+            }
+
+            if (tickObj is IFixedTickable fixedTickable)
+            {
+                queue.fixedTickables.Remove(fixedTickable);
+            }
+
+            if (tickObj is ILateTickable lateTickable)
+            {
+                queue.lateTickables.Remove(lateTickable);
             }
         }
     }
