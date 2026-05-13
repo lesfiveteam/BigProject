@@ -368,6 +368,7 @@ namespace BigProject.Initializers
             ServiceLocator.ReleaseService<CursorManager>();
             ServiceLocator.ReleaseService<PlayerSpawner>();
             ServiceLocator.ReleaseService<QuestsBoundariesTracker>();
+            ServiceLocator.ReleaseService<CutsceneManager>();
 
             foreach (QuestSwitch questSwitch in _questsSwitches)
             {
