@@ -15,8 +15,6 @@ namespace BigProject.Gameplay.VillageWatermillQuest
         [SerializeField]
         private QuestActions _questActions;
         [SerializeField]
-        private GameObject _elder;
-        [SerializeField]
         private GameObject _questWatermillObjects;
 
         [field: SerializeField]
@@ -29,7 +27,6 @@ namespace BigProject.Gameplay.VillageWatermillQuest
                 ServiceLocator.GetService<RunePanelUI>(), ServiceLocator.GetService<CutsceneManager>(), 
                 ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<GameplayManager>());
 
-            _elder.SetActive(false);
             _questWatermillObjects.SetActive(true);
         }
 
