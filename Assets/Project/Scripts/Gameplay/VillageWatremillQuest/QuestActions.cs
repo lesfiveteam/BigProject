@@ -80,7 +80,7 @@ namespace BigProject.Gameplay.VillageWatermillQuest
             _runesDriver = new(runesSystem, runesConfig, runesPanel, _questId, _runesInitialPoint);
         }
 
-        private void Awa()
+        private void Awake()
         {
             Assert.IsNotNull(_miller, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Miller"));
             Assert.IsNotNull(_runesInChest, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Runes In Chest"));

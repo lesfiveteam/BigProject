@@ -47,11 +47,11 @@ namespace BigProject.Gameplay.VillageElderQuest
             _ambassadorDialogueManager.Init(ServiceLocator.GetService<PlayerController>(), ServiceLocator.GetService<PlayerSpawner>(), 
                 ServiceLocator.GetService<DialogueManager>(), gameplayManager);
             _miller.SetActive(false);
-            //_watermillDoor.enabled = false;
-            //Vector3 doorAngles = _watermillDoor.transform.localEulerAngles;
-            //_watermillDoorInitAngle = doorAngles.y;
-            //doorAngles.y = 0f;
-            //_watermillDoor.transform.localEulerAngles = doorAngles;
+            _watermillDoor.enabled = false;
+            Vector3 doorAngles = _watermillDoor.transform.localEulerAngles;
+            _watermillDoorInitAngle = doorAngles.y;
+            doorAngles.y = 0f;
+            _watermillDoor.transform.localEulerAngles = doorAngles;
         }
 
         public void Begin()
