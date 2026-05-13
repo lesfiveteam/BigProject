@@ -23,6 +23,7 @@ namespace BigProject.UI
         [SerializeField] private GlobalConfig _globalConfig;
         [SerializeField] private Animator _boyAnimator;
         [SerializeField] private Animator _backgroundAnimator;
+        [SerializeField] private AudioListener _audioListener;
 
         private const string ANIM_START_TRIGGER = "Start";
 
@@ -44,6 +45,7 @@ namespace BigProject.UI
             ExceptionUtilities.ThrowIfNull(_savesManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SavesManager"));
             ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
             ExceptionUtilities.ThrowIfNull(_settingsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SettingsManager"));
+            ExceptionUtilities.ThrowIfNull(_audioListener, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "AudioListener"));
 
             _mainMenuPanelManager.GetSettingsPanel().Init(_settingsManager);
         }
@@ -77,8 +79,13 @@ namespace BigProject.UI
             {
                 _soundsManager.PlaySound(_clickSound, is2D: true);
                 _progressManager.LoadProgress();
-                Bootstrapper.SetStage(GameExecutionStage.Gameplay);
                 PlayAnimations();
+
+                if (!_sceneLoader.IsLoading)
+                {
+                    _sceneLoader.SceneLoadingStarted += OnGameLoadingStarted;
+                }
+
                 _sceneLoader.LoadScene(Scenes.Village);
             });
 
@@ -98,6 +105,14 @@ namespace BigProject.UI
                 Application.Quit();
             });
         }
+
+        private void OnGameLoadingStarted()
+        {
+            _sceneLoader.SceneLoadingStarted -= OnGameLoadingStarted;
+            _audioListener.enabled = false;
+            Bootstrapper.SetStage(GameExecutionStage.Gameplay);
+        }
+
         private void OnDisable()
         {
             _newGameButton.onClick.RemoveAllListeners();
