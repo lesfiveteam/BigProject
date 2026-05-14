@@ -79,6 +79,7 @@ namespace BigProject.Gameplay.Final
                     camera.gameObject.SetActive(false);
                 }
 
+                _cutsceneManager.FindActors();
             }
         }
 
