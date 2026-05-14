@@ -2,7 +2,6 @@
     "id":23,
     "name":"BetweenSecondAndThird",
     "currentState":0,
-    "isSavingAllowed":false,
     "actions":
     [
         {

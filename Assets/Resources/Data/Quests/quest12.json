@@ -80,7 +80,8 @@
             "conditions":
             [
                 {
-                    "toState":3,
+                    "fromState":1,
+                    "toState":2,
                     "dependencyPacks":
                     [
                         {
@@ -93,6 +94,14 @@
                             ]
                         }
                     ]
+                }
+            ],
+            "manualTransitions":
+            [
+                {
+                    "id":0,
+                    "fromState":2,
+                    "toState":3
                 }
             ]
         }
