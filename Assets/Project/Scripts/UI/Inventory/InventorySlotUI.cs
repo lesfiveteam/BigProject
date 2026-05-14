@@ -96,11 +96,11 @@ namespace BigProject.UI
 
             float t = 0.0f;
 
-            while (t <= 1.0f)
+            while (t <= 1.1f)
             {
                 Vector3 currentPosition = Vector3.Lerp(startPosition, targetPosition, t);
                 _inventoryItemUI.SetImageTransformPosition(currentPosition);
-                t += 0.01f;
+                t += 0.05f;
                 yield return new WaitForSeconds(animStepTime * 0.01f);
             }
             _inventoryItemUI.SetIsPlayingAnimation(false);
