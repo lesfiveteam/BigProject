@@ -1,4 +1,3 @@
-using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Managers;
 using BigProject.Settings;
 using BigProject.Systems;
@@ -7,7 +6,6 @@ using BigProject.Systems.Inventory;
 using BigProject.UI;
 using BigProject.Utilities;
 using System.Collections;
-using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -17,8 +15,6 @@ namespace BigProject.Gameplay.Church
     public class QuestActions : MonoBehaviour
     {
         private InventorySystem _inventory;
-        private RuneShardsSystem _runesSystem;
-        private RunesConfig _runesConfig;
         private SkinnedMeshRenderer _playerRenderer;
         private Collider _playerCollider;
         private RunesDriver _runesDriver;
@@ -41,6 +37,8 @@ namespace BigProject.Gameplay.Church
         private CinemachineCamera _puzzleCamera;
         [SerializeField]
         private HUDConfig _hudConfig;
+        [SerializeField]
+        private GameObject _exit;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -81,20 +79,11 @@ namespace BigProject.Gameplay.Church
             _inventory.AddItemByName(_noteFour);
         }
 
-        // For test build
-        public void FinishGame()
-        {
-            Invoke("StartOutro", 2f);
-        }
-
-        private void StartOutro()
-        {
-            ServiceLocator.GetService<SceneLoadManager>().LoadScene(Scenes.Outro);
-        }
         public void TouchStillageAction()
         {
-            ReplicaManager.ShowReplica(_touchStillageRemark); // При начале обыске стиллажа
+            ReplicaManager.ShowReplica(_touchStillageRemark); // При начале обыске стеллажа
         }
+
         public void MovePriestToFinishPosition()
         {
             _priest.transform.position = _priestFinishPosition.transform.position;
@@ -110,6 +99,11 @@ namespace BigProject.Gameplay.Church
         {
             _playerRenderer.enabled = true;
             _playerCollider.enabled = true;
+        }
+
+        public void CloseExit()
+        {
+            _exit.SetActive(false);
         }
 
         public void GetRunes()

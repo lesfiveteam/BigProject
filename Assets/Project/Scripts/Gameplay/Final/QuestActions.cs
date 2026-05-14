@@ -10,6 +10,7 @@ using BigProject.Systems.QuestSystem;
 using BigProject.UI;
 using BigProject.Utilities;
 using System.Collections;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.Assertions;
@@ -37,6 +38,10 @@ namespace BigProject.Gameplay.Final
         private Transform _elderFinalPosition;
         [SerializeField]
         private Transform _blacksmithFinalPosition;
+        [SerializeField]
+        private Church.QuestActions _churchActions;
+        [SerializeField]
+        private GameObject _peoplePrefab;
 
         private RunePanelUI _runePanel;
         private IQuestActionHandler _runesAssembleHandler;
@@ -59,6 +64,22 @@ namespace BigProject.Gameplay.Final
             Assert.IsNotNull(_priestFinalPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Priest Final Position"));
             Assert.IsNotNull(_elderFinalPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Elder Final Position"));
             Assert.IsNotNull(_blacksmithFinalPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Blacksmith Final Position"));
+            Assert.IsNotNull(_churchActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Church QuestActions"));
+            Assert.IsNotNull(_peoplePrefab, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "People Prefab"));
+
+            if (!_churchActions.transform.parent.gameObject.activeSelf)
+            {
+                _churchActions.CloseExit();
+                _churchActions.MovePriestToFinishPosition();
+                GameObject people = Instantiate(_peoplePrefab);
+                CinemachineCamera camera = people.GetComponentInChildren<CinemachineCamera>();
+
+                if (camera != null)
+                {
+                    camera.gameObject.SetActive(false);
+                }
+
+            }
         }
 
         public void Init(ProgressManager progressManager, RunePanelUI runePanel, CutsceneManager cutsceneManager, GameplayManager gameplayManager,
