@@ -94,6 +94,7 @@ namespace BigProject.Initializers
         private PlayerLocation _playerLocation;
         private CutsceneManager _cutsceneManager;
         private SettingsManager _settingsManager;
+        private ProgressManager _progressManager;
 
         private static bool _isInstantiated;
 
@@ -134,22 +135,22 @@ namespace BigProject.Initializers
         public void InitServices()
         {
             GameLogManager.Info(LogStr.INFO_INITIALIZING_GAMEPLAY_SERVICES);
-            ProgressManager progressManager = ServiceLocator.GetService<ProgressManager>();
+            _progressManager = ServiceLocator.GetService<ProgressManager>();
             _inventory = new InventorySystem(_itemsDatabase, _modifiersDatabase);
-            progressManager.AddSavable(_inventory);
+            _progressManager.AddSavable(_inventory);
             _hud = new();
             _playerInput = new();
-            _questJournal = new QuestJournal(progressManager, _journalConfig);
-            _runesShardsSystem = new(_runesConfig, _runeShardsDatabase, _runeSegmentsDatabase, progressManager);
+            _questJournal = new QuestJournal(_progressManager, _journalConfig);
+            _runesShardsSystem = new(_runesConfig, _runeShardsDatabase, _runeSegmentsDatabase, _progressManager);
             _runesSystem = new(_runesShardsSystem);
             ManualLoop manualLoop = ServiceLocator.GetService<ManualLoop>();
             GameplayManager gameplayManager = new(ServiceLocator.GetService<ManualLoop>());
             _statesHandler = new(_hudConfig, gameplayManager, _playerInput, _hud);
-            _questsTracker = new(progressManager, _questTrackerConfig.QuestsIds.ToList());
+            _questsTracker = new(_progressManager, _questTrackerConfig.QuestsIds.ToList());
             SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
             PlayerController playerController = Instantiate(_playerControllerPrefab);
             _settingsManager = ServiceLocator.GetService<SettingsManager>();
-            CreatePlayer(playerController, sceneLoader, progressManager);
+            CreatePlayer(playerController, sceneLoader, _progressManager);
             InitDialogue(gameplayManager);
 
             ServiceLocator.AddService(_questJournal);
@@ -174,8 +175,8 @@ namespace BigProject.Initializers
             InitMap(gameplayManager);
 
             _questJournal.Init();
-            progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
-            AddQuestsSwitches(progressManager);
+            _progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
+            AddQuestsSwitches(_progressManager);
             CreateCursorManager(sceneLoader);
             CreateCutsceneManager(sceneLoader, gameplayManager);
             GameLogManager.Info(LogStr.INFO_INITIALIZING_GAMEPLAY_SERVICES_COMPLETED);
@@ -380,6 +381,7 @@ namespace BigProject.Initializers
                 questSwitch.Dispose();
             }
 
+            _progressManager.RemoveSavable(_inventory);
             _inventory.Dispose();
             _questsTracker?.Dispose();
             _playerSpawner?.Dispose();
