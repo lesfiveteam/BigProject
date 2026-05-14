@@ -4,6 +4,7 @@ using BigProject.Intercatable.HighlightedObjects;
 using BigProject.Managers;
 using BigProject.Managers.CursorManager;
 using BigProject.Managers.CutsceneManager;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.NPC;
 using BigProject.Systems;
 using BigProject.Systems.QuestSystem;
@@ -42,6 +43,8 @@ namespace BigProject.Gameplay.Final
         private Church.QuestActions _churchActions;
         [SerializeField]
         private GameObject _peoplePrefab;
+        [SerializeField]
+        private AudioClip _finalMusicClip;
 
         private RunePanelUI _runePanel;
         private IQuestActionHandler _runesAssembleHandler;
@@ -50,6 +53,7 @@ namespace BigProject.Gameplay.Final
         private CursorManager _cursorManager;
         private DialogueManager _dialogueManager;
         private SceneLoadManager _sceneLoader;
+        private MusicManager _musicManager;
         private SkinnedMeshRenderer _playerRenderer;
 
         private const float FRESCO_BLINK_TIME = 2f;
@@ -66,6 +70,7 @@ namespace BigProject.Gameplay.Final
             Assert.IsNotNull(_blacksmithFinalPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Blacksmith Final Position"));
             Assert.IsNotNull(_churchActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Church QuestActions"));
             Assert.IsNotNull(_peoplePrefab, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "People Prefab"));
+            Assert.IsNotNull(_finalMusicClip, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Final Music Clip"));
 
             if (!_churchActions.transform.parent.gameObject.activeSelf)
             {
@@ -84,7 +89,7 @@ namespace BigProject.Gameplay.Final
         }
 
         public void Init(ProgressManager progressManager, RunePanelUI runePanel, CutsceneManager cutsceneManager, GameplayManager gameplayManager,
-            CursorManager cursorManager, DialogueManager dialogueManager, SceneLoadManager sceneLoader, SkinnedMeshRenderer playerRenderer)
+            CursorManager cursorManager, DialogueManager dialogueManager, SceneLoadManager sceneLoader, MusicManager musicManager, SkinnedMeshRenderer playerRenderer)
         {
             _runePanel = runePanel;
             _cutsceneManager = cutsceneManager;
@@ -92,6 +97,7 @@ namespace BigProject.Gameplay.Final
             _cursorManager = cursorManager;
             _dialogueManager = dialogueManager;
             _sceneLoader = sceneLoader;
+            _musicManager = musicManager;
             _playerRenderer = playerRenderer;
             ExceptionUtilities.ThrowIfNull(progressManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "ProgressManager"));
             ExceptionUtilities.ThrowIfNull(_runePanel, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "RunePanelUI"));
@@ -100,6 +106,7 @@ namespace BigProject.Gameplay.Final
             ExceptionUtilities.ThrowIfNull(_cursorManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "CursorManager"));
             ExceptionUtilities.ThrowIfNull(_dialogueManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "DialogueManager"));
             ExceptionUtilities.ThrowIfNull(_sceneLoader, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SceneLoadManager"));
+            ExceptionUtilities.ThrowIfNull(_musicManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "MusicManager"));
             ExceptionUtilities.ThrowIfNull(_playerRenderer, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player SkinnedMeshRenderer"));
             progressManager.TryGetQuestActionHandler(_questId, _runesAssembleActionId, out _runesAssembleHandler);
         }
@@ -169,6 +176,7 @@ namespace BigProject.Gameplay.Final
             yield return new WaitForFixedUpdate();
             yield return new WaitForSeconds(GameplayUtilities.CurrentCameraTransitionTime * 0.2f);
             _playerRenderer.enabled = true;
+            _musicManager.PlayMusic(_finalMusicClip);
         }
 
         private void SetActor(Transform actor, Transform target, bool hasTalk, bool talkActive = false)

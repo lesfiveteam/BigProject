@@ -83,7 +83,7 @@ namespace BigProject.Gameplay.Church
 
             _finalQuestActions.Init(ServiceLocator.GetService<ProgressManager>(), ServiceLocator.GetService<RunePanelUI>(),
                 ServiceLocator.GetService<CutsceneManager>(), ServiceLocator.GetService<GameplayManager>(), ServiceLocator.GetService<CursorManager>(),
-                ServiceLocator.GetService<DialogueManager>(), ServiceLocator.GetService<SceneLoadManager>(), playerRenderer);
+                ServiceLocator.GetService<DialogueManager>(), ServiceLocator.GetService<SceneLoadManager>(), ServiceLocator.GetService<MusicManager>(), playerRenderer);
             _progressManager.AddQuestListener(_finalQuestId, OnQuestStateChanged);
 
             if (_progressManager.GetQuestState(_finalQuestId) == QuestState.Active)
