@@ -2,6 +2,7 @@ using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Initializers;
 using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
+using BigProject.Player;
 using BigProject.Settings;
 using BigProject.Systems;
 using BigProject.Systems.QuestSystem;
@@ -33,19 +34,23 @@ namespace BigProject.UI
         private SavesManager _savesManager;
         private SoundsManager _soundsManager;
         private SettingsManager _settingsManager;
+        private PlayerLocation _playerLocation;
 
-        public void Init(ProgressManager progressManager, SceneLoadManager sceneLoader, SavesManager savesManager, SoundsManager soundsManager, SettingsManager settingsManager)
+        public void Init(ProgressManager progressManager, SceneLoadManager sceneLoader, SavesManager savesManager, SoundsManager soundsManager,
+            SettingsManager settingsManager, PlayerLocation playerLocation)
         {
             _progressManager = progressManager;
             _sceneLoader = sceneLoader;
             _savesManager = savesManager;
             _soundsManager = soundsManager;
             _settingsManager = settingsManager;
+            _playerLocation = playerLocation;
             ExceptionUtilities.ThrowIfNull(_progressManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "ProgressManager"));
             ExceptionUtilities.ThrowIfNull(_sceneLoader, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SceneLoadManager"));
             ExceptionUtilities.ThrowIfNull(_savesManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SavesManager"));
             ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
             ExceptionUtilities.ThrowIfNull(_settingsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SettingsManager"));
+            ExceptionUtilities.ThrowIfNull(_playerLocation, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "PlayerLocation"));
 
             _mainMenuPanelManager.GetSettingsPanel().Init(_settingsManager);
         }
@@ -98,9 +103,10 @@ namespace BigProject.UI
                 }
 
                 _progressManager.LoadProgress();
+                _progressManager.LoadAdditionalData(_playerLocation);
                 PlayAnimations();
                 _sceneLoader.SceneLoadingStarted += OnGameLoadingStarted;
-                _sceneLoader.LoadScene(Scenes.Village);
+                _sceneLoader.LoadScene(_playerLocation.Scene);
             });
 
             _settingsButton.onClick.AddListener(() =>

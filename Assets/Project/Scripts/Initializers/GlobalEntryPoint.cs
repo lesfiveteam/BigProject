@@ -7,6 +7,7 @@ using BigProject.Systems.QuestSystem;
 using System;
 using UnityEngine;
 using UnityEngine.Assertions;
+using BigProject.Player;
 
 namespace BigProject.Initializers
 {
@@ -72,6 +73,8 @@ namespace BigProject.Initializers
             SettingsManager settingsManager = new();
             settingsManager.Init(soundsManager, musicManager);
             ServiceLocator.AddService(settingsManager);
+
+            ServiceLocator.AddService(new PlayerLocation());
         }
     }
 }

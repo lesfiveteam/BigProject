@@ -33,6 +33,8 @@ namespace BigProject.Managers
         /// </summary>
         public bool AutoSave { get; set; } = true;
 
+        public event Action ProgressSaved;
+
 
         /// <param name="profileName">Player profile name</param>
         /// <param name="questLoader">Quest loader to use</param>
@@ -183,6 +185,7 @@ namespace BigProject.Managers
             try
             {
                 _savesManager.SaveGame(_profileName, _savable);
+                ProgressSaved?.Invoke();
             }
             catch
             {

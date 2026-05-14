@@ -91,6 +91,7 @@ namespace BigProject.Initializers
         private List<QuestSwitch> _questsSwitches = new();
         private QuestsBoundariesTracker _questsTracker;
         private PlayerSpawner _playerSpawner;
+        private PlayerLocation _playerLocation;
         private CutsceneManager _cutsceneManager;
         private SettingsManager _settingsManager;
 
@@ -148,7 +149,7 @@ namespace BigProject.Initializers
             SceneLoadManager sceneLoader = ServiceLocator.GetService<SceneLoadManager>();
             PlayerController playerController = Instantiate(_playerControllerPrefab);
             _settingsManager = ServiceLocator.GetService<SettingsManager>();
-            CreatePlayer(playerController, sceneLoader);
+            CreatePlayer(playerController, sceneLoader, progressManager);
             InitDialogue(gameplayManager);
 
             ServiceLocator.AddService(_questJournal);
@@ -283,7 +284,7 @@ namespace BigProject.Initializers
             }
         }
 
-        private void CreatePlayer(PlayerController playerController, SceneLoadManager sceneLoader)
+        private void CreatePlayer(PlayerController playerController, SceneLoadManager sceneLoader, ProgressManager progressManager)
         {
             playerController.Init(_playerInput, sceneLoader, ServiceLocator.GetService<SoundsManager>());
             playerController.transform.parent = transform.parent;
@@ -291,11 +292,14 @@ namespace BigProject.Initializers
             playerController.gameObject.SetActive(true);
             _playerSpawner = new(sceneLoader, playerController.GetComponent<NavMeshAgent>());
             ServiceLocator.AddService(_playerSpawner);
+            _playerLocation = ServiceLocator.GetService<PlayerLocation>();
+            _playerLocation.Init(playerController.transform, sceneLoader, progressManager);
+            _playerSpawner.SetSpawnPoint(_playerLocation.SpawnPointId);
 
             // For case when run from gameplay scene.
             if (IsGameplayScene())
             {
-                _playerSpawner.PositionPlayer(0);
+                _playerSpawner.PositionPlayer(_playerLocation.SpawnPointId);
             }
         }
 
@@ -376,8 +380,10 @@ namespace BigProject.Initializers
                 questSwitch.Dispose();
             }
 
+            _inventory.Dispose();
             _questsTracker?.Dispose();
             _playerSpawner?.Dispose();
+            _playerLocation?.Dispose();
             _cutsceneManager?.Dispose();
             _runesSystem?.Dispose();
             Destroy(transform.parent.gameObject);
@@ -386,7 +392,8 @@ namespace BigProject.Initializers
         private bool IsGameplayScene()
         {
             string actualSceneName = SceneManager.GetActiveScene().name;
-            return !(string.Equals(Scenes.MainMenu.ToString(), actualSceneName) || string.Equals(Scenes.Intro.ToString(), actualSceneName));
+            return !(string.Equals(Scenes.MainMenu.ToString(), actualSceneName) || string.Equals(Scenes.Intro.ToString(), actualSceneName) || 
+                string.Equals(Scenes.Outro.ToString(), actualSceneName));
         }
     }
 }

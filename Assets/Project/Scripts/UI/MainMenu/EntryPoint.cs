@@ -1,6 +1,7 @@
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
+using BigProject.Player;
 using BigProject.Systems;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -21,7 +22,8 @@ namespace BigProject.UI.MainMenu
             musicManager.PlayMusic(_audioClip);
             Assert.IsNotNull(_menuPanel, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Menu EntryPoint", "MenuPanelUI"));
             _menuPanel.Init(ServiceLocator.GetService<ProgressManager>(), ServiceLocator.GetService<SceneLoadManager>(),
-                ServiceLocator.GetService<SavesManager>(), ServiceLocator.GetService<SoundsManager>(), ServiceLocator.GetService<SettingsManager>());
+                ServiceLocator.GetService<SavesManager>(), ServiceLocator.GetService<SoundsManager>(),
+                ServiceLocator.GetService<SettingsManager>(), ServiceLocator.GetService<PlayerLocation>());
         }
     }
 }
