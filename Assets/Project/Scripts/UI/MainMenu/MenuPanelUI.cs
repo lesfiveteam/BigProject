@@ -102,9 +102,8 @@ namespace BigProject.UI
                     return;
                 }
 
-                _progressManager.LoadProgress();
-                _progressManager.LoadAdditionalData(_playerLocation);
                 PlayAnimations();
+                _progressManager.LoadAdditionalData(_playerLocation);
                 _sceneLoader.SceneLoadingStarted += OnGameLoadingStarted;
                 _sceneLoader.LoadScene(_playerLocation.Scene);
             });
@@ -131,6 +130,7 @@ namespace BigProject.UI
             _sceneLoader.SceneLoadingStarted -= OnGameLoadingStarted;
             _audioListener.enabled = false;
             Bootstrapper.SetStage(GameExecutionStage.Gameplay);
+            _progressManager.LoadProgress();
         }
 
         private void OnDisable()
