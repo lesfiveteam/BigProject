@@ -1,4 +1,5 @@
 using Assets.Project.Scripts.Managers.SceneLoader;
+using BigProject.Initializers;
 using BigProject.Intercatable.HighlightedObjects;
 using BigProject.Managers;
 using BigProject.Managers.CursorManager;
@@ -101,7 +102,7 @@ namespace BigProject.Gameplay.Final
 
         public void EndGame()
         {
-            _sceneLoader.LoadScene(Scenes.Outro);
+            StartCoroutine(EndGameRoutine());
         }
 
         private IEnumerator FrescoBlinkRoutine()
@@ -172,6 +173,14 @@ namespace BigProject.Gameplay.Final
             {
                 dialogue.Init(_dialogueManager);
             }
+        }
+
+        private IEnumerator EndGameRoutine()
+        {
+            yield return new WaitUntil(() => _gameplayManager.State != GameplayState.Dialogue);
+            _gameplayManager.ChangeState(GameplayState.Cutscene);
+            GameplayStopper gameStopper = new(_sceneLoader);
+            gameStopper.Run(Scenes.Outro);
         }
 
         private void OnEnable()

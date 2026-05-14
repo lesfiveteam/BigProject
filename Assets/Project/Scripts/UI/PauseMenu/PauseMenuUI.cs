@@ -47,23 +47,10 @@ namespace BigProject.UI
 
         private void GoToMainMenu()
         {
-            _sceneLoader.SceneLoadingStarted += OnMainMenuLoadingStarted;
-            _sceneLoader.LoadScene(Scenes.MainMenu);
+            GameplayStopper gameStopper = new(_sceneLoader);
+            gameStopper.Run(Scenes.MainMenu);
             _pauseMenuManager.UnpauseGame();
             Destroy(_pauseMenuManager);
-        }
-
-        private void OnMainMenuLoadingStarted()
-        {
-            _sceneLoader.SceneLoadingStarted -= OnMainMenuLoadingStarted;
-            GameplaySceneEntryPoint sceneEntryPoint = FindFirstObjectByType<GameplaySceneEntryPoint>();
-
-            if (sceneEntryPoint != null)
-            {
-                Destroy(sceneEntryPoint);
-            }
-
-            Bootstrapper.SetStage(GameExecutionStage.Launch);
         }
     }
 }
