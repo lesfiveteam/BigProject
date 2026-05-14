@@ -5,6 +5,7 @@ using BigProject.Systems;
 using BigProject.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Assertions;
@@ -13,6 +14,8 @@ namespace BigProject.NPC
 {
     public class NPCController : MonoBehaviour, ISavable
     {
+        private const float NAVMESH_OBSTACLE_WAIT_TIME = 0.1f;
+
         [SerializeField]
         private NPCWalkController _walkController;
         [SerializeField]
@@ -55,8 +58,8 @@ namespace BigProject.NPC
 
         private void Awake()
         {
-            Assert.IsNotNull(_walkController, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, $"{name}", "NPCBehaviourController"));
-            Assert.IsNotNull(_obstacle, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, $"{name}", "NavMeshObstacle"));
+            Assert.IsNotNull(_walkController, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, name, _walkController.GetType()));
+            Assert.IsNotNull(_obstacle, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, name, _obstacle.GetType()));
             CreateHashedStates();
             StateBeforeDistracted = _initialState;
             ChangeState(_initialState);
@@ -83,7 +86,7 @@ namespace BigProject.NPC
         public void Init(ProgressManager progressManager)
         {
             _progressManager = progressManager;
-            ExceptionUtilities.ThrowIfNull(_progressManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "ProgressManager"));
+            ExceptionUtilities.ThrowIfNull(_progressManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, name, _progressManager.GetType()));
         }
 
         public void ChangeState(NPCState state)
@@ -99,7 +102,7 @@ namespace BigProject.NPC
             }
             else
             {
-                Debug.LogWarning(string.Format(LogStr.WARNING_SYSTEM, $"NPCController {name}", $"unable create new state {state}"));
+                Debug.LogWarning(string.Format(LogStr.WARNING_UNABLE_CREATE_STATE, name, state));
             }
         }
 
@@ -107,7 +110,7 @@ namespace BigProject.NPC
 
         public void ChangeState(INPCState state)
         {
-            ExceptionUtilities.ThrowIfNull(state, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"{name}", "INPCState"));
+            ExceptionUtilities.ThrowIfNull(state, string.Format(LogStr.CRITICAL_NULL_REFERENCE, name, "INPCState"));
             _state?.Stop();
 
             if (_state != null)
@@ -126,7 +129,7 @@ namespace BigProject.NPC
             _state = state;
             StateChanged?.Invoke(_state);
             _state.Start();
-            GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, $"NPCController {name}", $"change state to {_state.State}"));
+            GameLogManager.Info(string.Format(LogStr.INFO_CONTROLLER_CHANGE_STATE, name, _state.State));
         }
 
         public void OnLoad()
@@ -134,9 +137,15 @@ namespace BigProject.NPC
             Agent.Warp(_agentDTO.position);
         }
 
-        public void AgentOn()
+        public async Task AgentOn()
         {
             _obstacle.enabled = false;
+
+            await Awaitable.WaitForSecondsAsync(NAVMESH_OBSTACLE_WAIT_TIME);
+
+            if (!NavMesh.SamplePosition(transform.position, out _, Agent.radius, NavMesh.AllAreas))
+                Debug.LogWarning(string.Format(LogStr.WARNING_TOO_SMALL_VALUE, name, "NAVMESH_OBSTACLE_WAIT_TIME", NAVMESH_OBSTACLE_WAIT_TIME));
+
             Agent.enabled = true;
         }
 

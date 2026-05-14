@@ -17,6 +17,7 @@ namespace BigProject.Systems
         public const string INFO_INITIALIZING_SCENE_SERVICES_COMPLETED = "Scene services initialized.";
         public const string INFO_REMOVING_GAMEPLAY_SERVICES = "Removing gameplay services...";
         public const string INFO_QUEST = "Quest progress: {0}.";
+        public const string INFO_CONTROLLER_CHANGE_STATE = "NPCController {0} change state to {1}";
 
         public const string WARNING_UNHANDLED_SYSTEM_MESSAGE_TYPE = "Unhandled sysytem message type!\nMessage:\n{0}.";
         public const string WARNING_SCENE_NOT_FOUND = "Scene {0} not found in build settings!";
@@ -28,6 +29,8 @@ namespace BigProject.Systems
         public const string WARNING_CANT_FIND_PATH = "The: {0} can't find path in {1}.";
         public const string WARNING_EMPTY_COLLECTION = "Collection is empty";
         public const string WARNING_NO_CINEMATIC_CAMERA = "No cinematic camera in Scene: {0}";
+        public const string WARNING_UNABLE_CREATE_STATE = "NPCController {0} unable create new state {1}";
+        public const string WARNING_TOO_SMALL_VALUE = "{0}: too small value {1} = {2}";
 
         public const string ERROR_WRITE_FAILED = "Logger write failed: {0}.";
         public const string ERROR_FILE_DELETE_FAILED = "Failed to delete {0}: {1}.";
@@ -45,6 +48,7 @@ namespace BigProject.Systems
         public const string CRITICAL_WRONG_ARGUMENT = "{0}: wrong argument [{1}].";
         public const string CRITICAL_REQUIRED_VALUES_MISSING = "{0}: required values in [{1}] are missing.";
 
+        // FOR SYSTEM LOG ONLY, DON'T USE IT IN CODE
         public const string INFO_SYSTEM = "System \"{0}\" info: {1}.";
         public const string WARNING_SYSTEM = "System \"{0}\" warning: {1}.";
         public const string ERROR_SYSTEM = "System \"{0}\" error: {1}.";

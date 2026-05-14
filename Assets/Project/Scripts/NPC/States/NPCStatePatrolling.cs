@@ -1,5 +1,4 @@
 using Assets.Project.Scripts.NPC.NPCWalkSystem;
-using BigProject.Systems;
 using BigProject.Utilities;
 using UnityEngine;
 
@@ -16,13 +15,18 @@ namespace BigProject.NPC.States
         {
             _controller = controller;
             _walkController = walkController;
-            ExceptionUtilities.ThrowIfNull(_controller, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStatePatrolling", "NPCController"));
-            ExceptionUtilities.ThrowIfNull(_walkController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStatePatrolling", "NPCWalkController"));
+
+            ExceptionUtilities.ThrowIfNullFormat(_controller);
+            ExceptionUtilities.ThrowIfNullFormat(_walkController);
         }
 
-        public void Start()
+        public async void Start()
         {
-            _controller.AgentOn();
+            await _controller.AgentOn();
+
+            if (_controller == null || _controller.gameObject == null)
+                return;
+
             _walkController.StartWalk();
         }
 
@@ -37,8 +41,9 @@ namespace BigProject.NPC.States
 
             if (companion != null && IsSuitableStateForChat(companion.State) && WantToChat() && ComanionWantToChat(companion))
             {
-                NPCStateChase chaser = new(_controller, companion, other.transform, _walkController);
-                companion.ChangeState(new NPCStateWait(companion, chaser, _controller.transform, _walkController));
+                NPCStateChase chaser = new(_controller, companion, other.transform);
+
+                companion.ChangeState(new NPCStateWait(companion, chaser, _controller.transform));
                 _controller.ChangeState(chaser);
             }
         }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BigProject.Systems;
+using BigProject.Utilities;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,6 +21,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
             {
                 if (_cachedDistance < 0)
                     CalculateDistance();
+
                 return _cachedDistance;
             }
         }
@@ -45,10 +48,8 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         public IEnumerable<NPCRootPoint> GetAllPoints()
         {
-            if (From == null || To == null)
-            {
-                throw new NullReferenceException("!!!");
-            }
+            ExceptionUtilities.ThrowIfNull(From, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCWay", "From"));
+            ExceptionUtilities.ThrowIfNull(To, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCWay", "To"));
 
             yield return From;
 

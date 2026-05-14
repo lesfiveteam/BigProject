@@ -23,7 +23,7 @@ namespace BigProject.NPC.States
 
         public void GoTo(Action onComplete = null)
         {
-            Vector3 offset = _target.transform.forward * CHAT_DISTANCE;
+            Vector3 offset = (_walkController.transform.position - _target.transform.position).normalized * CHAT_DISTANCE;
             Vector3 target = _target.transform.position + offset;
 
             _walkController.GoTo(target, onComplete);

@@ -14,30 +14,36 @@ namespace BigProject.NPC.States
         private NPCController _target;
         private NPCAgentTransition _transition;
         private CancellationTokenSource _ctSource;
-        private NPCWalkController _walkController;
 
         public Action<NPCStateChat> CameUp;
 
         public NPCState State => NPCState.Chase;
 
-        public NPCStateChase(NPCController controller, NPCController target, Transform targetTransform, NPCWalkController walkController)
+        public NPCStateChase(NPCController controller, NPCController target, Transform targetTransform)
         {
             _controller = controller;
             _target = target;
-            _walkController = walkController;
+            NPCWalkController walkController = controller.GetComponent<NPCWalkController>();
+
             ExceptionUtilities.ThrowIfNull(_controller, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateChase", "NPCController"));
             ExceptionUtilities.ThrowIfNull(_target, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateChase", "Target NPCController"));
-            ExceptionUtilities.ThrowIfNull(_walkController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWait", "NPCWalkController"));
-            _transition = new(targetTransform, _walkController);
+            ExceptionUtilities.ThrowIfNull(walkController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWait", "NPCWalkController"));
+
+            _transition = new(targetTransform, walkController);
             _ctSource = new();
         }
 
-        public void Start()
+        public async void Start()
         {
-            _controller.AgentOn();
+            await _controller.AgentOn();
+
+            if (_controller == null || _controller.gameObject == null)
+                return;
+
             NPCChatsDatabase chatsDb = NPCChatsDatabasesController.ActualChatsDatabase;
             ExceptionUtilities.ThrowIfNull(chatsDb, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "NPCStateChase", "NPCChatsDatabase"));
             NPCChat chat = new(_controller, out NPCStateChat speaker1, _target, out NPCStateChat speaker2, chatsDb.GetRandomChat());
+
             _transition.GoToAndLookAt(() => _ = StartChat(chat, speaker1, speaker2));
         }
 
