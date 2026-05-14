@@ -11,20 +11,21 @@ namespace BigProject.NPC.States
         private NPCController _controller;
         private NPCStateChase _chaser;
         private NPCAgentTransition _transition;
-        private NPCWalkController _walkController;
 
         public NPCState State => NPCState.Wait;
 
-        public NPCStateWait(NPCController controller, NPCStateChase chaser, Transform chaserTransform, NPCWalkController walkController)
+        public NPCStateWait(NPCController controller, NPCStateChase chaser, Transform chaserTransform)
         {
             _controller = controller;
             _chaser = chaser;
-            _walkController = walkController;
+            NPCWalkController walkController = controller.GetComponent<NPCWalkController>();
+
             ExceptionUtilities.ThrowIfNull(_controller, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWait", "NPCController"));
             ExceptionUtilities.ThrowIfNull(_chaser, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWait", "NPCStateChase"));
-            ExceptionUtilities.ThrowIfNull(_walkController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWait", "NPCWalkController"));
+            ExceptionUtilities.ThrowIfNull(walkController, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCStateWait", "NPCWalkController"));
+
             _chaser.CameUp += OnCameUp;
-            _transition = new(chaserTransform, _walkController);
+            _transition = new(chaserTransform, walkController);
         }
 
         public void Start()
