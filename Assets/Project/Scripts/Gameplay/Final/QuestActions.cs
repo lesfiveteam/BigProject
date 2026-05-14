@@ -41,6 +41,7 @@ namespace BigProject.Gameplay.Final
         private CutsceneManager _cutsceneManager;
         private GameplayManager _gameplayManager;
         private CursorManager _cursorManager;
+        private DialogueManager _dialogueManager;
         private SkinnedMeshRenderer _playerRenderer;
 
         private const float FRESCO_BLINK_TIME = 2f;
@@ -58,18 +59,20 @@ namespace BigProject.Gameplay.Final
         }
 
         public void Init(ProgressManager progressManager, RunePanelUI runePanel, CutsceneManager cutsceneManager, 
-            GameplayManager gameplayManager, CursorManager cursorManager, SkinnedMeshRenderer playerRenderer)
+            GameplayManager gameplayManager, CursorManager cursorManager, DialogueManager dialogueManager, SkinnedMeshRenderer playerRenderer)
         {
             _runePanel = runePanel;
             _cutsceneManager = cutsceneManager;
             _gameplayManager = gameplayManager;
             _cursorManager = cursorManager;
+            _dialogueManager = dialogueManager;
             _playerRenderer = playerRenderer;
             ExceptionUtilities.ThrowIfNull(progressManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "ProgressManager"));
             ExceptionUtilities.ThrowIfNull(_runePanel, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "RunePanelUI"));
             ExceptionUtilities.ThrowIfNull(_cutsceneManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "CutsceneManager"));
             ExceptionUtilities.ThrowIfNull(_gameplayManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "GameplayManager"));
             ExceptionUtilities.ThrowIfNull(_cursorManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "CursorManager"));
+            ExceptionUtilities.ThrowIfNull(_dialogueManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "DialogueManager"));
             ExceptionUtilities.ThrowIfNull(_playerRenderer, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player SkinnedMeshRenderer"));
             progressManager.TryGetQuestActionHandler(_questId, _runesAssembleActionId, out _runesAssembleHandler);
         }
@@ -90,6 +93,16 @@ namespace BigProject.Gameplay.Final
         public void FrescoBlink()
         {
             StartCoroutine(FrescoBlinkRoutine());
+        }
+
+        public void BadEnd()
+        {
+            Debug.Log("BadEnd");
+        }
+
+        public void GoodEnd()
+        {
+            Debug.Log("GoodEnd");
         }
 
         private IEnumerator FrescoBlinkRoutine()
@@ -141,18 +154,24 @@ namespace BigProject.Gameplay.Final
             actor.transform.position = target.position;
             actor.transform.rotation = target.rotation;
 
-            if (hasTalk && actor.TryGetComponent(out Collider collider))
+            if (!hasTalk)
+            {
+                return;
+            }
+
+            if (actor.TryGetComponent(out Collider collider))
             {
                 collider.enabled = talkActive;
-
-                if (talkActive && actor.TryGetComponent(out CursorChangingEffect cursorEffect))
-                {
-                    cursorEffect.Init(_cursorManager);
-                }
             }
-            else
+
+            if (actor.TryGetComponent(out CursorChangingEffect cursorEffect))
             {
-                Debug.LogError(string.Format(LogStr.ERROR_SYSTEM, gameObject.name, "unable to get Elder collider"));
+                cursorEffect.Init(_cursorManager);
+            }
+
+            if (actor.TryGetComponent(out DialogNPC dialogue))
+            {
+                dialogue.Init(_dialogueManager);
             }
         }
 
