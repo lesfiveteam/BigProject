@@ -196,7 +196,12 @@
         },
         {
             "state": 2,
-            "actionId": 2,
+            "actionId": 4,
+            "actionState": 3
+        },
+        {
+            "state": 3,
+            "actionId": 3,
             "actionState": 3
         }
     ]

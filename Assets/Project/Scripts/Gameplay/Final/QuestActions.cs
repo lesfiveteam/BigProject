@@ -1,3 +1,4 @@
+using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Intercatable.HighlightedObjects;
 using BigProject.Managers;
 using BigProject.Managers.CursorManager;
@@ -42,6 +43,7 @@ namespace BigProject.Gameplay.Final
         private GameplayManager _gameplayManager;
         private CursorManager _cursorManager;
         private DialogueManager _dialogueManager;
+        private SceneLoadManager _sceneLoader;
         private SkinnedMeshRenderer _playerRenderer;
 
         private const float FRESCO_BLINK_TIME = 2f;
@@ -58,14 +60,15 @@ namespace BigProject.Gameplay.Final
             Assert.IsNotNull(_blacksmithFinalPosition, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Blacksmith Final Position"));
         }
 
-        public void Init(ProgressManager progressManager, RunePanelUI runePanel, CutsceneManager cutsceneManager, 
-            GameplayManager gameplayManager, CursorManager cursorManager, DialogueManager dialogueManager, SkinnedMeshRenderer playerRenderer)
+        public void Init(ProgressManager progressManager, RunePanelUI runePanel, CutsceneManager cutsceneManager, GameplayManager gameplayManager,
+            CursorManager cursorManager, DialogueManager dialogueManager, SceneLoadManager sceneLoader, SkinnedMeshRenderer playerRenderer)
         {
             _runePanel = runePanel;
             _cutsceneManager = cutsceneManager;
             _gameplayManager = gameplayManager;
             _cursorManager = cursorManager;
             _dialogueManager = dialogueManager;
+            _sceneLoader = sceneLoader;
             _playerRenderer = playerRenderer;
             ExceptionUtilities.ThrowIfNull(progressManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "ProgressManager"));
             ExceptionUtilities.ThrowIfNull(_runePanel, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "RunePanelUI"));
@@ -73,6 +76,7 @@ namespace BigProject.Gameplay.Final
             ExceptionUtilities.ThrowIfNull(_gameplayManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "GameplayManager"));
             ExceptionUtilities.ThrowIfNull(_cursorManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "CursorManager"));
             ExceptionUtilities.ThrowIfNull(_dialogueManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "DialogueManager"));
+            ExceptionUtilities.ThrowIfNull(_sceneLoader, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SceneLoadManager"));
             ExceptionUtilities.ThrowIfNull(_playerRenderer, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player SkinnedMeshRenderer"));
             progressManager.TryGetQuestActionHandler(_questId, _runesAssembleActionId, out _runesAssembleHandler);
         }
@@ -95,14 +99,9 @@ namespace BigProject.Gameplay.Final
             StartCoroutine(FrescoBlinkRoutine());
         }
 
-        public void BadEnd()
+        public void EndGame()
         {
-            Debug.Log("BadEnd");
-        }
-
-        public void GoodEnd()
-        {
-            Debug.Log("GoodEnd");
+            _sceneLoader.LoadScene(Scenes.Outro);
         }
 
         private IEnumerator FrescoBlinkRoutine()
