@@ -33,6 +33,8 @@ namespace BigProject.Initializers
 
         public static GameExecutionStage Stage { get; private set; }
 
+        public static bool IsFirstPlay { get; private set; }
+
         [RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Init()
         {
@@ -41,6 +43,7 @@ namespace BigProject.Initializers
             GlobalEntryPoint.Init();
 
             Stage = GameExecutionStage.Launch;
+            IsFirstPlay = true;
             MoveToStage(GameExecutionStage.Launch);
         }
 
@@ -68,9 +71,9 @@ namespace BigProject.Initializers
                         Remover.SafeRelease(_gameplayEntryPoint);
 
                         // Temporary solution.
-                        ServiceLocator.GetService<ProgressManager>().Dispose();
-                        ServiceLocator.ReleaseService<ProgressManager>();
-                        ServiceLocator.AddService(new ProgressManager("Player", new QuestJsonLoader("Data/Quests"), ServiceLocator.GetService<SavesManager>()));
+                        //ServiceLocator.GetService<ProgressManager>().Dispose();
+                        //ServiceLocator.ReleaseService<ProgressManager>();
+                        //ServiceLocator.AddService(new ProgressManager("Player", new QuestJsonLoader("Data/Quests"), ServiceLocator.GetService<SavesManager>()));
                     }
                     else
                     {
@@ -81,6 +84,7 @@ namespace BigProject.Initializers
                 case GameExecutionStage.Gameplay:
                     GameplayEntryPoint.Init();
                     _gameplayEntryPoint =  GameObject.Instantiate(Resources.Load<GameplayEntryPoint>($"{INITIALIZERS_DIR}{GAMEPLAY_EP_PREFAB_NAME}"));
+                    IsFirstPlay = false;
                     break;
                 default:
                     Debug.LogWarning(String.Format(LogStr.WARNING_GAME_EXECUTION_INCORRECT_STAGE, stage));

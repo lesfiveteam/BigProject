@@ -4,6 +4,7 @@ using BigProject.Managers;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Settings;
 using BigProject.Systems;
+using BigProject.Systems.QuestSystem;
 using BigProject.Utilities;
 using System;
 using UnityEngine;
@@ -45,7 +46,6 @@ namespace BigProject.UI
             ExceptionUtilities.ThrowIfNull(_savesManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SavesManager"));
             ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
             ExceptionUtilities.ThrowIfNull(_settingsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SettingsManager"));
-            ExceptionUtilities.ThrowIfNull(_audioListener, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "AudioListener"));
 
             _mainMenuPanelManager.GetSettingsPanel().Init(_settingsManager);
         }
@@ -57,6 +57,7 @@ namespace BigProject.UI
             Assert.IsNotNull(_settingsButton, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Settings Button"));
             Assert.IsNotNull(_quitButton, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Exit Button"));
             Assert.IsNotNull(_globalConfig, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "GlobalConfig"));
+            Assert.IsNotNull(_audioListener, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "AudioListener"));
         }
 
         private void Start()
@@ -69,8 +70,20 @@ namespace BigProject.UI
             _newGameButton.onClick.AddListener(() =>
             {
                 _soundsManager.PlaySound(_clickSound, is2D: true);
+
+                if (_sceneLoader.IsLoading)
+                {
+                    return;
+                }
+
                 _savesManager.DeleteSave(_globalConfig.PlayerProfileName);
                 _savesManager.DeleteSave($"{_globalConfig.PlayerProfileName}_{ProgressManager.ADDITIONAL_DATA_NAME}");
+
+                if (!Bootstrapper.IsFirstPlay)
+                {
+                    _progressManager.Reload(new QuestJsonLoader(_globalConfig.QuestsFolder));
+                }
+
                 PlayAnimations();
                 _sceneLoader.LoadScene(Scenes.Intro);
             });
@@ -78,14 +91,15 @@ namespace BigProject.UI
             _continueButton.onClick.AddListener(() =>
             {
                 _soundsManager.PlaySound(_clickSound, is2D: true);
-                _progressManager.LoadProgress();
-                PlayAnimations();
 
-                if (!_sceneLoader.IsLoading)
+                if (_sceneLoader.IsLoading)
                 {
-                    _sceneLoader.SceneLoadingStarted += OnGameLoadingStarted;
+                    return;
                 }
 
+                _progressManager.LoadProgress();
+                PlayAnimations();
+                _sceneLoader.SceneLoadingStarted += OnGameLoadingStarted;
                 _sceneLoader.LoadScene(Scenes.Village);
             });
 

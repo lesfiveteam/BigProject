@@ -40,11 +40,21 @@ namespace BigProject.Managers
         {
             _profileName = profileName;
             _additionalDataFullName = $"{_profileName}_{ADDITIONAL_DATA_NAME}";
-
-            // Record general data from Progress Manager.
-            _savable = new() { this }; 
-
             _savesManager = savesManager;
+            Load(questLoader);
+        }
+
+        public void Reload(IQuestLoader questLoader)
+        {
+            Dispose();
+            _additionalRelevance = new();
+            Load(questLoader);
+        }
+
+        private void Load(IQuestLoader questLoader)
+        {
+            // Record general data from Progress Manager.
+            _savable = new() { this };
 
             try
             {
