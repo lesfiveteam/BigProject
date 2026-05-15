@@ -26,6 +26,7 @@ using Assets.Project.Scripts.Managers.SceneLoader;
 using TMPro;
 using BigProject.Managers.SoundsMusicManagers;
 using BigProject.UI.Map;
+using BigProject.UI.TutorialSystem;
 
 namespace BigProject.Initializers
 {
@@ -68,6 +69,10 @@ namespace BigProject.Initializers
         private RuneSegmentsDatabaseSO _runeSegmentsDatabase;
         [SerializeField]
         private RunesConfig _runesConfig;
+        [SerializeField]
+        private Tutorial _tutorial;
+        [SerializeField]
+        private TutorialManager _tutorialManager;
 
         [field: SerializeField]
         public Scenes _sceneToLoad; // For feature load progress
@@ -173,7 +178,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(_replicaManager);
             InitPauseMenu(sceneLoader);
             InitMap(gameplayManager);
-
+            InitTutorial(gameplayManager);
             _questJournal.Init();
             _progressManager.LoadAdditionalData(_runesShardsSystem, silent: true);
             AddQuestsSwitches(_progressManager);
@@ -211,6 +216,15 @@ namespace BigProject.Initializers
             MapManager mapManager = new MapManager(mapUI, _playerInput, gameplayManager, _hud, _hudConfig);
             mapManager.Init();
             DontDestroyOnLoad(_mapViewObj);
+        }
+
+        private void InitTutorial(GameplayManager gameplayManager)
+        {
+            Tutorial tutorial = Instantiate(_tutorial);
+            TutorialManager tutorialManager = Instantiate(_tutorialManager, transform.parent);
+            tutorialManager.Init(_dialogueManager, tutorial, _playerInput, gameplayManager);
+            DontDestroyOnLoad(tutorialManager);
+            DontDestroyOnLoad(tutorial);
         }
 
         private void InitHUD(Transform player)

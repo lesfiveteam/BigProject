@@ -12,6 +12,7 @@ namespace BigProject.Player
         public event Action ClickRelease;
         public event Action Click;
         public event Action OpenMap;
+        public event Action ToggleTutorial;
         public event Action PressPause;
         public event Action Cancel;
         public event Action Reset;
@@ -37,6 +38,7 @@ namespace BigProject.Player
             _inputActions.Player.Click.performed += OnClick;
             _inputActions.Player.OpenMap.performed += OnOpenedMap;
             _inputActions.Player.OpenMenu.performed += OnPressedPause;
+            _inputActions.Player.ToggleTutorial.performed += OnToggledTutorial;
 
             _inputActions.MiniGame.Click.performed += OnMiniGameClick;
             _inputActions.MiniGame.RightClick.performed += OnMiniGameRightClick;
@@ -62,6 +64,12 @@ namespace BigProject.Player
         { 
             OpenMap?.Invoke();
         }
+
+        private void OnToggledTutorial(InputAction.CallbackContext obj)
+        {
+            ToggleTutorial?.Invoke();
+        }
+
         private void OnMiniGameClick(InputAction.CallbackContext obj)
         {
             MiniGameClick?.Invoke();
@@ -124,6 +132,7 @@ namespace BigProject.Player
             _inputActions.Player.Click.performed -= OnClick;
             _inputActions.Player.OpenMap.performed -= OnOpenedMap;
             _inputActions.Player.OpenMenu.performed -= OnPressedPause;
+            _inputActions.Player.ToggleTutorial.performed -= OnToggledTutorial;
 
             _inputActions.MiniGame.Click.performed -= OnMiniGameClick;
             _inputActions.MiniGame.RightClick.performed -= OnMiniGameRightClick;

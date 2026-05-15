@@ -12,6 +12,9 @@ namespace BigProject.Managers
     {
         // Событие срабатывает во время фразы NPC, если указан Id
         public static event Action<int> OnDialoguePhrase;
+
+        // Action to determine which dialogue has ended
+        public Action<DialogueLine> OnDialogueEnded;
         public bool IsDialogue => _currentDialogueLine != null;
 
 
@@ -123,13 +126,15 @@ namespace BigProject.Managers
         {
             _dialogueView.HideAnswerOptions();
             _dialogueView.HideDialogueWindow();
-            _currentDialogueLine = null;
-            _currentDialoguePhraseIndex = 0;
 
             if (ServiceLocator.TryGetService(out GameplayManager gameplayManager))
             {
                 gameplayManager.ChangeState(GameplayState.Play);
             }
+
+            OnDialogueEnded?.Invoke(_currentDialogueLine);
+            _currentDialogueLine = null;
+            _currentDialoguePhraseIndex = 0;
         }
 
         // return true, if already was chosen - exist in hashSet
