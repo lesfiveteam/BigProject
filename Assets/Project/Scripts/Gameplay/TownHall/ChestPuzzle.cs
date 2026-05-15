@@ -246,7 +246,7 @@ namespace BigProject.Gameplay.TownHall
             //MoveElement(partTwo, BROKEN_KEY_PART_2_MOVING_OFFSET, BROKEN_KEY_PART_2_ROTATION_OFFSET, _brokenKeyMovingTime);
             _actionHandlers[_actionTryBrokenKeyName].MakeTransition(0);
             yield return new WaitForSeconds(_brokenKeyMovingTime + 0.1f);
-            Destroy(key.gameObject);
+            //Destroy(key.gameObject);
             _activator.DeactivateMiniGame();
         }
 
