@@ -82,6 +82,8 @@ namespace BigProject.Initializers
         private GameObject _dialogueViewObj;
         private GameObject _pauseMenuViewObj;
         private GameObject _mapViewObj;
+        private GameObject _tutorialObj;
+        private GameObject _tutorialManagerObj;
         private QuestJournal _questJournal;
         private InventorySystem _inventory;
         private RunesSystem _runesSystem;
@@ -225,6 +227,8 @@ namespace BigProject.Initializers
             tutorialManager.Init(_dialogueManager, tutorial, _playerInput, gameplayManager);
             DontDestroyOnLoad(tutorialManager);
             DontDestroyOnLoad(tutorial);
+            _tutorialObj = tutorial.gameObject;
+            _tutorialManagerObj = tutorialManager.gameObject;
         }
 
         private void InitHUD(Transform player)
@@ -370,6 +374,8 @@ namespace BigProject.Initializers
             Destroy(_dialogueViewObj);
             Destroy(_pauseMenuViewObj);
             Destroy(_mapViewObj);
+            Destroy(_tutorialObj);
+            Destroy(_tutorialManagerObj);
 
             ServiceLocator.ReleaseService<QuestJournal>();
             ServiceLocator.ReleaseService<RunesSystem>();
