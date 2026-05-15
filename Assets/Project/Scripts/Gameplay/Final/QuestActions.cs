@@ -45,6 +45,8 @@ namespace BigProject.Gameplay.Final
         private GameObject _peoplePrefab;
         [SerializeField]
         private AudioClip _finalMusicClip;
+        [SerializeField]
+        private Collider _fresco;
 
         private RunePanelUI _runePanel;
         private IQuestActionHandler _runesAssembleHandler;
@@ -71,6 +73,7 @@ namespace BigProject.Gameplay.Final
             Assert.IsNotNull(_churchActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Church QuestActions"));
             Assert.IsNotNull(_peoplePrefab, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "People Prefab"));
             Assert.IsNotNull(_finalMusicClip, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Final Music Clip"));
+            Assert.IsNotNull(_fresco, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Fresco Collider"));
 
             if (!_churchActions.transform.parent.gameObject.activeSelf)
             {
@@ -116,6 +119,7 @@ namespace BigProject.Gameplay.Final
             if (_runePanel.IsCompleted)
             {
                 _runesAssembleHandler.MakeTransition(0);
+                _fresco.enabled = true;
             }
         }
 

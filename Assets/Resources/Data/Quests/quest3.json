@@ -245,6 +245,38 @@
                     "toState":3
                 }
             ]
+        },
+        {
+            "id":9,
+            "name":"GetRunes",
+            "currentState":1,
+            "conditions":
+            [
+                {
+                    "fromState":1,
+                    "toState":2,
+                    "dependencyPacks":
+                    [
+                        {
+                            "dependencies":
+                            [
+                                {
+                                    "id":8,
+                                    "state":3
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "manualTransitions":
+            [
+                {
+                    "id":0,
+                    "fromState":2,
+                    "toState":3
+                }
+            ]
         }
     ],
     "questStates": 
@@ -256,7 +288,7 @@
         },
         {
             "state": 2,
-            "actionId": 8,
+            "actionId": 9,
             "actionState": 3
         }
     ]

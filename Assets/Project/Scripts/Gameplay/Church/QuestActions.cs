@@ -3,6 +3,7 @@ using BigProject.Settings;
 using BigProject.Systems;
 using BigProject.Systems.HUD;
 using BigProject.Systems.Inventory;
+using BigProject.Systems.QuestSystem;
 using BigProject.UI;
 using BigProject.Utilities;
 using System.Collections;
@@ -39,6 +40,8 @@ namespace BigProject.Gameplay.Church
         private HUDConfig _hudConfig;
         [SerializeField]
         private GameObject _exit;
+        [SerializeField]
+        private QuestActionHandlerMono _getRunesAction;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -110,6 +113,7 @@ namespace BigProject.Gameplay.Church
         {
             _inventory.RemoveItemByName(_noteFour);
             StartCoroutine(GetRunesRoutine());
+            _getRunesAction.MakeTransition(0);
         }
 
         private IEnumerator GetRunesRoutine()
