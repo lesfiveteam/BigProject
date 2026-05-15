@@ -63,6 +63,18 @@ namespace BigProject.UI
             _slotImage.sprite = _defaultSprite;
         }
 
+        public void Hide()
+        {
+            if (_inventoryItemUI == null || !_inventoryItemUI.IsPlayingAnimation)
+            {
+                return;
+            }
+
+            StopAllCoroutines();
+            _inventoryItemUI.Hide();
+            _inventoryItemUI.transform.position = transform.position;
+        }
+
         private void SlotSelected(bool slotSelected)
         {
             if (slotSelected)
@@ -87,7 +99,7 @@ namespace BigProject.UI
 
         public IEnumerator PlayAddToSlotAnimation(Vector2 startPosition, Vector2 targetPosition, float animStepTime)
         {
-            _inventoryItemUI.SetIsPlayingAnimation(true);
+            _inventoryItemUI.IsPlayingAnimation  = true;
             Image spriteImage = _inventoryItemUI.GetImage();
             spriteImage.gameObject.SetActive(true);
             _inventoryItemUI.SetImageTransformPosition(startPosition);
@@ -103,7 +115,7 @@ namespace BigProject.UI
                 t += 0.05f;
                 yield return new WaitForSeconds(animStepTime * 0.01f);
             }
-            _inventoryItemUI.SetIsPlayingAnimation(false);
+            _inventoryItemUI.IsPlayingAnimation = false;
         }
     }
 }

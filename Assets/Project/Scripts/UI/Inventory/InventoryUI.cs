@@ -149,6 +149,11 @@ namespace BigProject.UI
 
         public void Hide()
         {
+            foreach (InventorySlotUI slot in _inventorySlots)
+            {
+                slot.Hide();
+            }
+
             gameObject.SetActive(false);
             SetNoteVisibility(false);
         }

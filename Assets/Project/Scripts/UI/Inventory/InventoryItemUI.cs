@@ -28,14 +28,14 @@ namespace BigProject.UI
 
         public event Action<bool> OnStartDrag;
 
-        private bool isPlayingAnimation = false;
+        public bool IsPlayingAnimation { get; set; } = false;
 
         private Material _currentMaterial;
         private Vector3 _currentPosition;
 
         private void Update()
         {
-            if (!isPlayingAnimation)
+            if (!IsPlayingAnimation)
                 return;
 
             _image.transform.position = _currentPosition;
@@ -51,11 +51,6 @@ namespace BigProject.UI
             return _image;
         }
 
-        public void SetIsPlayingAnimation(bool val)
-        { 
-            isPlayingAnimation = val;
-        }
-
         public void SetImageTransformPosition(Vector3 currentPos)
         {
             _currentPosition = currentPos;
@@ -69,6 +64,18 @@ namespace BigProject.UI
             yield return new WaitForSeconds(_shineTime);
             _currentMaterial.SetInt("_ShouldPlay", 0);
             yield return new WaitForSeconds(_shineTime);
+        }
+
+        public void Hide()
+        {
+            if (IsPlayingAnimation)
+            {
+                StopAllCoroutines();
+                _itemAnimator.ResetTrigger(ITEM_POP_TRIGGER);
+                _currentMaterial.SetInt("_ShouldPlay", 0);
+                transform.localScale = new(1f, 1f, 1f);
+                IsPlayingAnimation = false;
+            }
         }
 
         public void SetItem(Item item, Camera camera, Image noteImage, IReadOnlyList<ItemModifier> modifiers)
@@ -93,7 +100,7 @@ namespace BigProject.UI
 
         public void OnBeginDrag(PointerEventData eventData)
         {
-            if (isPlayingAnimation)
+            if (IsPlayingAnimation)
                 return;
             transform.SetParent(transform.root); //, false); - leads to change of scale
             transform.SetAsLastSibling();
@@ -103,7 +110,7 @@ namespace BigProject.UI
 
         public void OnDrag(PointerEventData eventData)
         {
-            if (isPlayingAnimation)
+            if (IsPlayingAnimation)
                 return;
 
             transform.position = Mouse.current.position.ReadValue();
@@ -111,7 +118,7 @@ namespace BigProject.UI
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            if (isPlayingAnimation)
+            if (IsPlayingAnimation)
                 return;
 
             Vector2 mousePosition = Mouse.current.position.ReadValue();
@@ -139,7 +146,7 @@ namespace BigProject.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (isPlayingAnimation)
+            if (IsPlayingAnimation)
                 return;
 
             if (_noteObject == null)
