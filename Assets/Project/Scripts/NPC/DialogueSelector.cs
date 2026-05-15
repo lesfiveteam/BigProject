@@ -22,7 +22,7 @@ namespace BigProject.NPC
         [SerializeField]
         private List<DialogueCondition> _conditions;
 
-        private DialogueLine _defaultLine;
+        private ProgressManager _progressManager;
 
         [Serializable]
         private class DialogueCondition
@@ -43,15 +43,15 @@ namespace BigProject.NPC
         private void Awake()
         {
             // TODO: remove ServiceLocator from here
-            ServiceLocator.TryGetService(out ProgressManager pm);
+            _progressManager = ServiceLocator.GetService<ProgressManager>();
             Assert.IsNotNull(_dialogue, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "NPC dialogue"));
-            ExceptionUtilities.ThrowIfNull(pm, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Progress manager"));
+            ExceptionUtilities.ThrowIfNull(_progressManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Progress manager"));
 
             List<DialogueCondition> conditionsToRemove = new();
 
             foreach (DialogueCondition condition in _conditions)
             {
-                if (pm.TryGetQuestActionHandler(_questId, condition.id, out condition.actionHandler))
+                if (_progressManager.TryGetQuestActionHandler(_questId, condition.id, out condition.actionHandler))
                 {
                     continue;
                 }
@@ -61,9 +61,8 @@ namespace BigProject.NPC
             }
 
             _conditions.RemoveAll(x => conditionsToRemove.Contains(x));
-            _defaultLine = _dialogue.StartDialogLine;
 
-            if (pm.GetQuestState(_questId) > QuestState.Active)
+            if (_progressManager.GetQuestState(_questId) > QuestState.Active)
             {
                 Destroy(this);
             }
@@ -71,11 +70,7 @@ namespace BigProject.NPC
 
         private void Start()
         {
-            // TODO: remove ServiceLocator from here
-            if (ServiceLocator.GetService<ProgressManager>().GetQuestState(_questId) == QuestState.Active)
-            {
-                StateChanged();
-            }
+            StateChanged();
         }
 
         private void OnEnable()
@@ -100,17 +95,25 @@ namespace BigProject.NPC
 
         private void StateChanged()
         {
-            foreach (DialogueCondition condition in _conditions)
+            if (_progressManager.GetQuestState(_questId) != QuestState.Active)
             {
-                if (condition.actionHandler.CurrentState == condition.state)
-                {
-                    _dialogue.StartDialogLine = condition.dialogue;
-                    _defaultLine = condition.defaultDialogue;
-                    return;
-                }
+                return;
             }
 
-            _dialogue.StartDialogLine = _defaultLine;
+            foreach (DialogueCondition condition in _conditions)
+            {
+                IQuestActionHandler handler = condition.actionHandler;
+
+                if (handler.CurrentState == condition.state)
+                {
+                    _dialogue.StartDialogLine = condition.dialogue;
+                    return;
+                }
+                else if (handler.CurrentState >= QuestActionState.Active)
+                {
+                    _dialogue.StartDialogLine = condition.defaultDialogue;
+                }
+            }
         }
 
         private void OnDialoguePhrase(int phraseId)
