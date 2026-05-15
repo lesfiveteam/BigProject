@@ -241,6 +241,7 @@ namespace BigProject.Initializers
             CancelUI cancelUI = _hudObj.GetComponentInChildren<CancelUI>();
             ResetUI resetUI = _hudObj.GetComponentInChildren<ResetUI>();
             RunesJigsawUI runesJigsawUI = _hudObj.GetComponentInChildren<RunesJigsawUI>(true);
+            SaveNotification saveNotification = _hudObj.GetComponentInChildren<SaveNotification>(true);
             ServiceLocator.AddService(_inventoryUI);
             ServiceLocator.AddService(_runeUI);
 
@@ -250,6 +251,8 @@ namespace BigProject.Initializers
             _inventoryUI.Init(_inventory, player);
             GameplayManager gameplayManager = ServiceLocator.GetService<GameplayManager>();
             _runeUI.Init(_runesSystem, gameplayManager);
+            saveNotification.Init(_progressManager, gameplayManager);
+            saveNotification.gameObject.SetActive(true);
             runesJigsawUI.Init(_runesShardsSystem, gameplayManager);
             _hud = ServiceLocator.GetService<HUD>();
             _hud.AddWidget(_hudConfig.HUDInventoryWidgetId, _inventoryUI);
