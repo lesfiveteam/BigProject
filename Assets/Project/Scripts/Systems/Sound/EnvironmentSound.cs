@@ -14,6 +14,7 @@ namespace BigProject.Systems.Sound
         [SerializeField] private float _soundInterval = DEFAULT_SOUND_INTERVAL;
         [Range(0, 1)][SerializeField] private float _playSoundChance;
         [SerializeField] private float _volume = 1f;
+        [SerializeField] private float _maxDistance = 17f;
 
         private Coroutine _playSoundRoutine;
         private SoundsManager _soundsManager;
@@ -60,7 +61,7 @@ namespace BigProject.Systems.Sound
         /// </summary>
         public void PlaySound()
         {
-            _soundsManager.PlaySound(_audioClip, volume: _volume, spawnPosition: transform, isLooped: _shouldPlayLooped);
+            _soundsManager.PlaySound(_audioClip, volume: _volume, maxDistance: _maxDistance, spawnPosition: transform, isLooped: _shouldPlayLooped);
         }
 
         /// <summary>

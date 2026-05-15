@@ -61,7 +61,8 @@ namespace BigProject.Managers.SoundsMusicManagers
             float lowestPitch = 1f, 
             float highestPitch = 1f, 
             Transform spawnPosition = null, 
-            float volume = 1f, 
+            float volume = 1f,
+            float maxDistance = 17f,
             Transform owner = null, 
             bool is2D = false, 
             bool isLooped = false)
@@ -76,6 +77,7 @@ namespace BigProject.Managers.SoundsMusicManagers
             AudioSource audioSource = Instantiate(is2D ? _audioSource2D : _audioSource3D, spawnPos, Quaternion.identity, parent);
             audioSource.clip = clip;
             audioSource.volume = volume;
+            audioSource.maxDistance = maxDistance;
             audioSource.loop = isLooped;
 
             if (_mixerDictionary.TryGetValue(mixerType, out AudioMixerGroup mixerGroup) && mixerGroup != null)
