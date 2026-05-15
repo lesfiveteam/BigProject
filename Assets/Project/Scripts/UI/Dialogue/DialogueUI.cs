@@ -207,8 +207,9 @@ namespace BigProject.UI.Dialogue
             if (!_isFirstLine)
             {
                 _dialogueBackgroundAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER);
-                _dialogueAnswersAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER + "Top");
             }
+            _dialogueAnswersAnimator.SetTrigger(DIALOGUE_ANIM_TRIGGER + "Top");
+
             _isFirstLine = false;
         }
 
