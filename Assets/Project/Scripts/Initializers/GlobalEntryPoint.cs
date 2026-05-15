@@ -71,8 +71,9 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(soundsManager);
 
             SettingsManager settingsManager = new();
-            settingsManager.Init(soundsManager, musicManager);
+            settingsManager.Init(soundsManager, musicManager, savesManager, _config);
             ServiceLocator.AddService(settingsManager);
+            savesManager.LoadFromSave(_config.GameSettingsName, settingsManager, false, false);
 
             ServiceLocator.AddService(new PlayerLocation());
         }

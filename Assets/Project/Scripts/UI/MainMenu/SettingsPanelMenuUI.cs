@@ -110,9 +110,9 @@ namespace BigProject.UI
         {
             _screenModeDropdown.ClearOptions();
             _screenModeDropdown.AddOptions(new List<string> { "Полный экран", "Окно" });
-            _screenModeDropdown.value = 0;
+            _screenModeDropdown.value = Screen.fullScreen ? 0 : 1;
             _screenModeDropdown.RefreshShownValue();
-            SetScreenMode(0);
+            //SetScreenMode(0);
         }
 
         protected void SetSoundVolumeSlider()

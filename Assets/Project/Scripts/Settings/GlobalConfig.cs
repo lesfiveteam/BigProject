@@ -12,5 +12,7 @@ namespace BigProject.Settings
         public string PlayerProfileName { get; private set; }
         [field: SerializeField]
         public string QuestsFolder { get; private set; }
+        [field: SerializeField]
+        public string GameSettingsName { get; private set; }
     }
 }

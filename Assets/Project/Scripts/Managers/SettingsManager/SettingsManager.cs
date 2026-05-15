@@ -1,5 +1,7 @@
 ﻿using BigProject.Managers.SoundsMusicManagers;
+using BigProject.Settings;
 using BigProject.Systems;
+using BigProject.Utilities;
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -8,10 +10,12 @@ using UnityEngine.Assertions;
 
 namespace BigProject.Managers
 {
-    public class SettingsManager
+    public class SettingsManager : ISavable, IDisposable
     {
         private SoundsManager _soundsManager;
         private MusicManager _musicManager;
+        private SavesManager _savesManager;
+        private GlobalConfig _config;
 
         //Settings
         private Resolution[] resolutions;
@@ -20,13 +24,60 @@ namespace BigProject.Managers
         private bool _isFullscreen = true;
         private float _soundVolume;
         private float _musicVolume;
+        private DataToSave _dataToSave;
 
-        public void Init(SoundsManager soundsManager, MusicManager musicManager)
+        [Serializable]
+        private class DataToSave
+        {
+            public float musicVolume;
+            public float soundVolume;
+        }
+
+        public string Key => "GameSettings";
+
+        public object SavingData
+        {
+            get
+            {
+                CreateDTO();
+                return _dataToSave;
+            }
+        }
+
+        public void OnSaved(bool _) => _dataToSave = null;
+
+        public void OnLoad()
+        {
+            if (_dataToSave == null)
+            {
+                return;
+            }
+
+            SetSoundVolume(_dataToSave.soundVolume);
+            SetMusicVolume(_dataToSave.musicVolume);
+            _dataToSave = null;
+        }
+
+        public SettingsManager()
+        {
+            Application.quitting += OnQuitting;
+        }
+
+        public void Dispose()
+        {
+            Application.quitting -= OnQuitting;
+        }
+
+        public void Init(SoundsManager soundsManager, MusicManager musicManager, SavesManager savesManager, GlobalConfig config)
         {
             _soundsManager = soundsManager;
             _musicManager = musicManager;
-            Assert.IsNotNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "Settings Manager", "Sounds Manager"));
-            Assert.IsNotNull(_musicManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, "Settings Manager", "Music Manager"));
+            _savesManager = savesManager;
+            _config = config;
+            ExceptionUtilities.ThrowIfNull(_soundsManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "SoundsManager"));
+            ExceptionUtilities.ThrowIfNull(_musicManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "MusicManager"));
+            ExceptionUtilities.ThrowIfNull(_savesManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "SavesManager"));
+            ExceptionUtilities.ThrowIfNull(_config, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "GlobalConfig"));
 
             resolutions = Screen.resolutions;
             _filteredResolutions = new List<Resolution>();
@@ -96,6 +147,27 @@ namespace BigProject.Managers
         public float GetMusicVolume()
         {
             return _musicVolume;
+        }
+
+        private void CreateDTO()
+        {
+            if (_dataToSave == null)
+            {
+                _dataToSave = new();
+            }
+
+            _dataToSave.musicVolume = GetMusicVolume();
+            _dataToSave.soundVolume = GetSoundVolume();
+        }
+
+        private void OnQuitting()
+        {
+            Application.quitting -= OnQuitting;
+
+            if (_savesManager != null)
+            {
+                _savesManager.AddToSave(_config.GameSettingsName, this);
+            }
         }
     }
 }
