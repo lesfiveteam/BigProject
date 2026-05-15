@@ -21,6 +21,7 @@ namespace BigProject.Player
         private const float MIN_WALK_SPEED_COEFF = 0.1f;
         private const float MIN_ANIM_SPEED_COEFF = 0.5f;
         private const float MAX_TARGET_ANGLE_OFFSET = 3f;
+        private const float JUMP_VOLUME = 0.2f;
 
         private const float LINK_SPEED = 4f;
         private const float JUMP_SPEED = 7f;
@@ -37,6 +38,7 @@ namespace BigProject.Player
         [SerializeField] private NavMeshAgent _navMeshAgent;
         [SerializeField] private Animator _animatorController;
         [SerializeField] private GameObject _clickEffectSplash;
+        [SerializeField] private AudioClip _jumpDone;
 
         [SerializeField] private float _navMeshHitPointDistance = 5f;
         [SerializeField] private float _rotationSpeed = 10f;
@@ -75,6 +77,7 @@ namespace BigProject.Player
         private float _animSpeed;
         private int _layerMask;
         private float _boredTimer;
+        private WaitWhile _cachedWaitWhilePause = new(() => Time.timeScale == 0);
 
         public bool IsAutopilot { private set; get;}
 
@@ -342,7 +345,7 @@ namespace BigProject.Player
             float height = 1.3f;
             float progress = 0;
 
-            Vector3 midPosition = (startPosition + endPosition) / 2 + Vector3.up * height;
+            Vector3 midPosition = (startPosition + endPosition) / 2 + (Vector3.up * height);
             float curvedDistance = Vector3.Distance(startPosition, midPosition) + Vector3.Distance(midPosition, endPosition);
             float linkDuration = curvedDistance / JUMP_SPEED;
 
@@ -358,8 +361,10 @@ namespace BigProject.Player
             _animatorController.SetTrigger(JumpTrigger);
 
             float adjustedStartDuration = timeForStartJumpFrames / speedMultiplier;
-
             yield return new WaitForSeconds(adjustedStartDuration);
+
+            bool isJumpSoundPlayed = false;
+            float jumpSoundDelay = 0.05f;
 
             while (progress < linkDuration)
             {
@@ -368,10 +373,17 @@ namespace BigProject.Player
                 float t = Mathf.Clamp01(progress / linkDuration);
                 Vector3 pos = GetBezierPoint(startPosition, midPosition, endPosition, t);
                 _navMeshAgent.transform.position = pos;
+                float step = _rotationSpeed * Time.deltaTime;
 
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, step);
 
-                yield return new WaitWhile(() => Time.timeScale == 0);
+                if (!isJumpSoundPlayed && t > jumpSoundDelay)
+                {
+                    _soundsManager.PlaySound(_jumpDone, volume: JUMP_VOLUME, is2D: true);
+                    isJumpSoundPlayed = true;
+                }
+
+                yield return _cachedWaitWhilePause;
             }
 
             float adjustedEndDuration = timeForStopJumpFrames / speedMultiplier;
@@ -401,11 +413,12 @@ namespace BigProject.Player
             while (progress < linkDuration)
             {
                 progress += Time.deltaTime;
+                float step = _rotationSpeed * Time.deltaTime;
 
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, step);
                 _navMeshAgent.transform.position = Vector3.Lerp(startPosition, endPosition, progress / linkDuration);
 
-                yield return new WaitWhile(() => Time.timeScale == 0);
+                yield return _cachedWaitWhilePause;
             }
 
             _navMeshAgent.CompleteOffMeshLink();
@@ -415,7 +428,7 @@ namespace BigProject.Player
         private Vector3 GetBezierPoint(Vector3 a, Vector3 b, Vector3 c, float t)
         {
             float u = 1 - t;
-            return u * u * a + 2 * u * t * b + t * t * c;
+            return (u * u * a) + (2 * u * t * b) + (t * t * c);
         }
 
         private bool TryInteract()
@@ -441,7 +454,7 @@ namespace BigProject.Player
                 while (Quaternion.Angle(transform.rotation, targetRotation) > MAX_TARGET_ANGLE_OFFSET)
                 {
                     transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
-                    yield return null;
+                    yield return _cachedWaitWhilePause;
                 }
             }
 
