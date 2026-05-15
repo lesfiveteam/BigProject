@@ -5,7 +5,9 @@ using BigProject.UI;
 using BigProject.Utilities;
 using Managers.Gameplay;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Localization;
@@ -30,6 +32,8 @@ namespace BigProject.Gameplay.VillageElderQuest
         private GameObject _inspectMillTrigger;
         [SerializeField]
         private GameObject _enterVillageTrigger;
+        [SerializeField]
+        private float _timeToFathgerRemark = 2.5f;
 
         [Header("Player remarks")]
         [SerializeField]
@@ -78,8 +82,13 @@ namespace BigProject.Gameplay.VillageElderQuest
         {
             //RemoveAmbassador();
             _inventory.RemoveItemByName(_bagItemName);
-            GameplayUtilities.DoAfterConditionRoutine(() => _gameplayManager.State == GameplayState.Play, () =>
-            ReplicaManager.ShowReplica(_needFatherRemark, 1f));
+            StartCoroutine(GoToFatherRoutine());
+        }
+
+        public IEnumerator GoToFatherRoutine()
+        {
+            yield return new WaitUntil(() => _gameplayManager.State == GameplayState.Play);
+            ReplicaManager.ShowReplica(_needFatherRemark, _timeToFathgerRemark);
         }
 
         public void AmbassadorAppearance()
