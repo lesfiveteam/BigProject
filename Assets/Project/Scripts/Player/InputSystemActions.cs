@@ -120,6 +120,15 @@ namespace BigProject.Player
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleTutorial"",
+                    ""type"": ""Button"",
+                    ""id"": ""148a961b-0211-48fd-a164-6718b35848c2"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -153,6 +162,17 @@ namespace BigProject.Player
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""OpenMenu"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0dba7ac9-4a92-4daa-932f-da77b24b53f1"",
+                    ""path"": ""<Keyboard>/f1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""ToggleTutorial"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -853,6 +873,7 @@ namespace BigProject.Player
             m_Player_Click = m_Player.FindAction("Click", throwIfNotFound: true);
             m_Player_OpenMap = m_Player.FindAction("OpenMap", throwIfNotFound: true);
             m_Player_OpenMenu = m_Player.FindAction("OpenMenu", throwIfNotFound: true);
+            m_Player_ToggleTutorial = m_Player.FindAction("ToggleTutorial", throwIfNotFound: true);
             // MiniGame
             m_MiniGame = asset.FindActionMap("MiniGame", throwIfNotFound: true);
             m_MiniGame_Click = m_MiniGame.FindAction("Click", throwIfNotFound: true);
@@ -956,6 +977,7 @@ namespace BigProject.Player
         private readonly InputAction m_Player_Click;
         private readonly InputAction m_Player_OpenMap;
         private readonly InputAction m_Player_OpenMenu;
+        private readonly InputAction m_Player_ToggleTutorial;
         /// <summary>
         /// Provides access to input actions defined in input action map "Player".
         /// </summary>
@@ -979,6 +1001,10 @@ namespace BigProject.Player
             /// Provides access to the underlying input action "Player/OpenMenu".
             /// </summary>
             public InputAction @OpenMenu => m_Wrapper.m_Player_OpenMenu;
+            /// <summary>
+            /// Provides access to the underlying input action "Player/ToggleTutorial".
+            /// </summary>
+            public InputAction @ToggleTutorial => m_Wrapper.m_Player_ToggleTutorial;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1014,6 +1040,9 @@ namespace BigProject.Player
                 @OpenMenu.started += instance.OnOpenMenu;
                 @OpenMenu.performed += instance.OnOpenMenu;
                 @OpenMenu.canceled += instance.OnOpenMenu;
+                @ToggleTutorial.started += instance.OnToggleTutorial;
+                @ToggleTutorial.performed += instance.OnToggleTutorial;
+                @ToggleTutorial.canceled += instance.OnToggleTutorial;
             }
 
             /// <summary>
@@ -1034,6 +1063,9 @@ namespace BigProject.Player
                 @OpenMenu.started -= instance.OnOpenMenu;
                 @OpenMenu.performed -= instance.OnOpenMenu;
                 @OpenMenu.canceled -= instance.OnOpenMenu;
+                @ToggleTutorial.started -= instance.OnToggleTutorial;
+                @ToggleTutorial.performed -= instance.OnToggleTutorial;
+                @ToggleTutorial.canceled -= instance.OnToggleTutorial;
             }
 
             /// <summary>
@@ -1484,6 +1516,13 @@ namespace BigProject.Player
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnOpenMenu(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "ToggleTutorial" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnToggleTutorial(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "MiniGame" which allows adding and removing callbacks.

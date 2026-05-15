@@ -1,7 +1,5 @@
-using UnityEngine;
 using BigProject.Systems;
 using System.Collections.Generic;
-using UnityEngine.Assertions;
 using System;
 using BigProject.Utilities;
 
@@ -14,6 +12,7 @@ namespace BigProject.Managers
         MiniGame,
         RunesJagsaw,
         Map,
+        Tutorial,
         Inventory,
         Pause,
         Cutscene,
