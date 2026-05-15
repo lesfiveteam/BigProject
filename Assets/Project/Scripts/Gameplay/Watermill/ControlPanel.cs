@@ -73,7 +73,7 @@ namespace BigProject.Gameplay.Watermill
         [SerializeField]
         private List<Transform> _leversPoints;
         [SerializeField]
-        private AudioClip _fixedMillMusic;
+        private AudioClip _millFixedSound;
         [SerializeField]
         private float _musicFadeInTime = 0.1f;
         [SerializeField]
@@ -98,25 +98,22 @@ namespace BigProject.Gameplay.Watermill
         private bool _isLeverMoving;
         private Vector2 _deltaInversion = new(-1f, 1f);
         private GameplayManager _gameplayManager;
-        private MusicManager _musicManager;
         private SoundsManager _soundsManager;
         private HUD _hud;
 
         public ControlPanelState CurrentPanelState => _currentPanelState;
 
         public void Init(GameplayManager gameplayManager, PlayerInputHandler inputHandler, InventorySystem inventory,
-            MusicManager musicManager, HUD hud, SoundsManager soundsManager)
+            HUD hud, SoundsManager soundsManager)
         {
             _gameplayManager = gameplayManager;
             _inputHandler = inputHandler;
             _inventory = inventory;
-            _musicManager = musicManager;
             _hud = hud;
             _soundsManager = soundsManager;
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Gameplay Manager"));
             ExceptionUtilities.ThrowIfNull(_inputHandler, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Player Input Handler"));
             ExceptionUtilities.ThrowIfNull(_inventory, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Inventory System"));
-            ExceptionUtilities.ThrowIfNull(_musicManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Music Manager"));
             ExceptionUtilities.ThrowIfNull(_hud, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "HUD"));
             ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
             ChangeState(ControlPanelState.Broken);
@@ -158,7 +155,7 @@ namespace BigProject.Gameplay.Watermill
 
         public void PlayFixedMusic()
         {
-            _musicManager.PlayMusic(_fixedMillMusic, _musicFadeOutTime, _musicFadeInTime, true);
+            _soundsManager.PlaySound(_millFixedSound, volume: 0.1f, isLooped: true);
         }
 
         public async Awaitable MoveLever(Transform lever, Vector3 targetPosition, float time, CancellationToken ct)
