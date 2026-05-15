@@ -64,7 +64,7 @@ namespace BigProject.UI.Dialogue
         [SerializeField]
         private float _speakerImageTone = 0.5f;
 
-        private List<string> _itemsToIgnoreWhenAdding = new List<string>{"church_note_1", "church_note_2", "church_note_3", "church_note_4" };  //needed for the third quest 
+        private List<string> _itemsToIgnoreWhenAdding = new List<string> { };//"church_note_1", "church_note_2", "church_note_3", "church_note_4" };  //needed for the third quest 
 
         [SerializeField]
         private List<Button> _answerOptionButtons = new List<Button>();
