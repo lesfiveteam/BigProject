@@ -375,7 +375,7 @@ namespace BigProject.Player
                 _navMeshAgent.transform.position = pos;
                 float step = _rotationSpeed * Time.deltaTime;
 
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, step);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, step);
 
                 if (!isJumpSoundPlayed && t > jumpSoundDelay)
                 {
@@ -415,7 +415,7 @@ namespace BigProject.Player
                 progress += Time.deltaTime;
                 float step = _rotationSpeed * Time.deltaTime;
 
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, step);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, step);
                 _navMeshAgent.transform.position = Vector3.Lerp(startPosition, endPosition, progress / linkDuration);
 
                 yield return _cachedWaitWhilePause;
