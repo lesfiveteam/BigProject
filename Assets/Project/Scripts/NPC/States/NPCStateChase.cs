@@ -35,7 +35,14 @@ namespace BigProject.NPC.States
 
         public async void Start()
         {
-            await _controller.AgentOn(_ctSource.Token);
+            try
+            {
+                await _controller.AgentOn(_ctSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
 
             if (_controller == null || _controller.gameObject == null)
                 return;

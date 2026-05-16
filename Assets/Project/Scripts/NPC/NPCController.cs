@@ -151,6 +151,7 @@ namespace BigProject.NPC
                 catch (OperationCanceledException)
                 {
                     GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, gameObject.name, "was destroyed while AgentOn"));
+                    throw;
                 }
 
                 if (!NavMesh.SamplePosition(transform.position, out _, Agent.radius, NavMesh.AllAreas))

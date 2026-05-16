@@ -1,5 +1,6 @@
 using Assets.Project.Scripts.NPC.NPCWalkSystem;
 using BigProject.Utilities;
+using System;
 using UnityEngine;
 
 namespace BigProject.NPC.States
@@ -22,7 +23,14 @@ namespace BigProject.NPC.States
 
         public async void Start()
         {
-            await _controller.AgentOn();
+            try
+            {
+                await _controller.AgentOn();
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
 
             if (_controller == null || _controller.gameObject == null)
                 return;
@@ -48,7 +56,7 @@ namespace BigProject.NPC.States
             }
         }
 
-        private bool WantToChat() => Random.Range(0f, 1f) < _controller.Talkativeness;
+        private bool WantToChat() => UnityEngine.Random.Range(0f, 1f) < _controller.Talkativeness;
 
         private bool ComanionWantToChat(NPCController companion) => !Mathf.Approximately(companion.Talkativeness, 0f);
 
