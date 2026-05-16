@@ -75,9 +75,7 @@ namespace BigProject.Gameplay.Watermill
         [SerializeField]
         private AudioClip _millFixedSound;
         [SerializeField]
-        private float _musicFadeInTime = 0.1f;
-        [SerializeField]
-        private float _musicFadeOutTime = 0.1f;
+        private float _millFixedVolume = 0.1f;
         [SerializeField]
         private UnityEvent _incompleteClue;
         [SerializeField]
@@ -155,7 +153,7 @@ namespace BigProject.Gameplay.Watermill
 
         public void PlayFixedMusic()
         {
-            _soundsManager.PlaySound(_millFixedSound, volume: 0.1f, isLooped: true);
+            _soundsManager.PlaySound(_millFixedSound, volume: _millFixedVolume, isLooped: true);
         }
 
         public async Awaitable MoveLever(Transform lever, Vector3 targetPosition, float time, CancellationToken ct)
