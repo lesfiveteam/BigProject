@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BigProject.NPC;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         [SerializeField] private NPCRouteService _routeService;
         [SerializeField] private NavMeshAgent _agent;
         [SerializeField] private Animator _animator;
+        [SerializeField] private NPCController _NPCController;
 
         [SerializeField] private NPCAnimationMovement _movementAnimation;
 
@@ -167,8 +169,10 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
             yield return OnAttractionPointReachedRoutine();
         }
 
-        private void GoToNextAttractionPoint()
+        private async void GoToNextAttractionPoint()
         {
+            await _NPCController.AgentOn();
+
             ClearCoroutine(ref _walkCoroutine);
 
             _walkCoroutine = StartCoroutine(GoToNextAttractionPointRoutine());
@@ -200,6 +204,8 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
             if (_lastAttractionPoint != null)
                 _animator.SetTrigger(_lastAttractionPoint.TargetAnimation.ToString());
+
+            _NPCController.ObstacleOn();
 
             yield return new WaitForSeconds(Random.Range(_minDelayTimeInPoint, _maxDelayTimeInPoint) * _lastAttractionPoint.DelayModificator);
 
