@@ -247,7 +247,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
         private void SetMoveSpeed(MoveSpeed speed)
         {
-            float modifier = speed switch
+            float agentModifier = speed switch
             {
                 MoveSpeed.Walk => 1f,
                 MoveSpeed.Run => 3f,
@@ -255,8 +255,17 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
                 _ => 1f
             };
 
-            _animator.SetFloat(_speedFloat, modifier);
-            _agent.acceleration = modifier;
+            _agent.acceleration = agentModifier;
+
+            float animatorModifier = speed switch
+            {
+                MoveSpeed.Walk => 1f,
+                MoveSpeed.Run => 1.5f,
+                MoveSpeed.Rush => 2f,
+                _ => 1f
+            };
+
+            _animator.SetFloat(_speedFloat, animatorModifier);
         }
 
         private IEnumerator ReturnToPeckPointRoutine()
