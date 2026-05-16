@@ -11,9 +11,15 @@ namespace BigProject.Systems.Sound
         private AudioClip[] _stepSounds;
         [SerializeField]
         private float _stepVolume = 1f;
+        [SerializeField]
+        private float _lowestPitch = 1f;
+        [SerializeField]
+        private float _highestPitch = 1f;
 
         public AudioClip GetStepSound() => _stepSounds[Random.Range(0, _stepSounds.Length)];
         public float StepVolume => _stepVolume;
+        public float LowestPitch => _lowestPitch;
+        public float HighestPitch => _highestPitch;
 
         private void Awake()
         {
