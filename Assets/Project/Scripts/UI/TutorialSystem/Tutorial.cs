@@ -22,6 +22,7 @@ namespace BigProject.UI.TutorialSystem
             }
 
             _canvasGroup.DOKill();
+            _canvasGroup.blocksRaycasts = _isActive;
             float transparencyTime = _isActive ? _transparencyTime - _canvasGroup.alpha * _transparencyTime :
                 _canvasGroup.alpha * _transparencyTime;
             _canvasGroup.DOFade(_isActive ? 1f : 0, transparencyTime).OnComplete(() => { if (!_isActive) { gameObject.SetActive(false); } });
