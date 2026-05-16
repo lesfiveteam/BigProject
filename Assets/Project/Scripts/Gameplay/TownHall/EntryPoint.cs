@@ -18,7 +18,7 @@ namespace BigProject.Gameplay.TownHall
     {
         private const float FADE_OUT_MUSIC_DURATION = 0.1f;
         private const float FADE_IN_MUSIC_DURATION = 0.1f;
-        private const float IN_BUILD_MUSIC_VOLUME = 0.2f;
+        private const float IN_BUILD_MUSIC_VOLUME = 0.1f;
 
         [SerializeField]
         private QuestActions _questActions;
