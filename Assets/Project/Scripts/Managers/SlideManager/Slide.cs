@@ -11,7 +11,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         public CanvasGroup Group { get; private set; }
 
-        private void Start()
+        private void Awake()
         {
             Group = GetComponent<CanvasGroup>();
             Group.alpha = INVISIBLE;

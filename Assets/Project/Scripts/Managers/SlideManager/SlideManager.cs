@@ -15,6 +15,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         private const float INVISIBLE = 0f;
         private const float VISIBLE = 1f;
 
+        private const float DEFAULT_SLIDE_DURATION = 22f;
         private const float SKIPED_DURATION = 0.1f;
 
         private const float FADE_IN_DURATION = 1f;
@@ -39,7 +40,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         private bool _inFadeOutProcess = false;
         private bool _isButtonPressed = false;
 
-        private float _currentSlideDuration;
+        private float _currentSlideDuration = DEFAULT_SLIDE_DURATION;
         private float _currentFadeDuration;
         private float _currentSkipHintDuration;
 
@@ -52,9 +53,10 @@ namespace Assets.Project.Scripts.Managers.SlideManager
 
         private void Start()
         {
-            ExceptionUtilities.ThrowIfEmptyCollection(_slidesGroups, nameof(_slidesGroups));
             ExceptionUtilities.ThrowIfNullFormat(_fader);
             ExceptionUtilities.ThrowIfNullFormat(_skipHint);
+            ExceptionUtilities.ThrowIfNullFormat(_filler);
+            ExceptionUtilities.ThrowIfEmptyCollection(_slidesGroups, nameof(_slidesGroups));
 
             _coroutines.Add(_slideShowCoroutine);
             _coroutines.Add(_workCoroutine);
@@ -120,8 +122,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
                 slides[i].Group.alpha = VISIBLE;
 
                 // waiting on fade
-                yield return _workCoroutine = StartCoroutine(DynamicWaitRoutine(() => ON_FADE_DURATION));
-                _workCoroutine = null;
+                yield return new WaitForSeconds(ON_FADE_DURATION);
 
                 // go out fade
                 _currentFadeDuration = FADE_OUT_DURATION;
