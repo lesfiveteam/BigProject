@@ -56,6 +56,12 @@ namespace BigProject.Managers
 
         private void OpenMap()
         {
+            if (!_isAvailable)
+            {
+                _mapUI.StopAllCoroutines();
+                _isAvailable = true;
+            }
+
             _hud.HideWidget(_hudConfig.HUDInventoryWidgetId);
             _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
             _hud.HideWidget(_hudConfig.HUDRunesWidgetId);

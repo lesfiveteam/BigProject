@@ -63,6 +63,12 @@ namespace BigProject.Managers.CutsceneManager
 
             IsPlaying = true;
             _previousState = stateAfterPlay;
+
+            if (IsDangerStateToTransit(_previousState))
+            {
+                _previousState = GameplayState.Play;
+            }
+
             _cutsceneState = cutsceneState;
             _destroyPrefabAfterPlay = destroyPrefabAfterPlay;
             _loadingAssetRuntimeKey = timelineAssetRef.RuntimeKey;
@@ -306,5 +312,7 @@ namespace BigProject.Managers.CutsceneManager
             IsPlaying = false;
             IsReadyToPlay = false;
         }
+
+        private bool IsDangerStateToTransit(GameplayState state) => state == GameplayState.Map || state == GameplayState.Tutorial;
     }
 }
