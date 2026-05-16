@@ -171,7 +171,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         private async void GoToNextAttractionPoint()
         {
-            await _NPCController.AgentOn();
+            await _NPCController.AgentOn(destroyCancellationToken);
 
             ClearCoroutine(ref _walkCoroutine);
 

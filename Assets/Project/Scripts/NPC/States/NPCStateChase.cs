@@ -35,7 +35,7 @@ namespace BigProject.NPC.States
 
         public async void Start()
         {
-            await _controller.AgentOn();
+            await _controller.AgentOn(_ctSource.Token);
 
             if (_controller == null || _controller.gameObject == null)
                 return;
@@ -44,10 +44,10 @@ namespace BigProject.NPC.States
             ExceptionUtilities.ThrowIfNull(chatsDb, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "NPCStateChase", "NPCChatsDatabase"));
             NPCChat chat = new(_controller, out NPCStateChat speaker1, _target, out NPCStateChat speaker2, chatsDb.GetRandomChat());
 
-            _transition.GoToAndLookAt(() => _ = StartChat(chat, speaker1, speaker2));
+            _transition.GoToAndLookAt(() => _ = StartChat(chat, speaker1, speaker2, _ctSource.Token));
         }
 
-        private async Awaitable StartChat(NPCChat chat, NPCStateChat speaker1, NPCStateChat speaker2)
+        private async Awaitable StartChat(NPCChat chat, NPCStateChat speaker1, NPCStateChat speaker2, CancellationToken ct)
         {
             try
             {
@@ -55,7 +55,7 @@ namespace BigProject.NPC.States
 
                 while (!chat.IsPrepared)
                 {
-                    await Awaitable.NextFrameAsync(_ctSource.Token);
+                    await Awaitable.NextFrameAsync(ct);
                 }
 
                 chat.Start();

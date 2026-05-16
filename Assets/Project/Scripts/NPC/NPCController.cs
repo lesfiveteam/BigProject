@@ -5,6 +5,7 @@ using BigProject.Systems;
 using BigProject.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AI;
@@ -137,16 +138,26 @@ namespace BigProject.NPC
             Agent.Warp(_agentDTO.position);
         }
 
-        public async Task AgentOn()
+        public async Awaitable AgentOn(CancellationToken ct = default)
         {
-            _obstacle.enabled = false;
+            using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(this.destroyCancellationToken, ct))
+            {
+                _obstacle.enabled = false;
 
-            await Awaitable.WaitForSecondsAsync(NAVMESH_OBSTACLE_WAIT_TIME);
+                try
+                {
+                    await Awaitable.WaitForSecondsAsync(NAVMESH_OBSTACLE_WAIT_TIME, linkedCts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    GameLogManager.Info(string.Format(LogStr.INFO_SYSTEM, gameObject.name, "was destroyed while AgentOn"));
+                }
 
-            if (!NavMesh.SamplePosition(transform.position, out _, Agent.radius, NavMesh.AllAreas))
-                Debug.LogWarning(string.Format(LogStr.WARNING_TOO_SMALL_VALUE, name, "NAVMESH_OBSTACLE_WAIT_TIME", NAVMESH_OBSTACLE_WAIT_TIME));
+                if (!NavMesh.SamplePosition(transform.position, out _, Agent.radius, NavMesh.AllAreas))
+                    Debug.LogWarning(string.Format(LogStr.WARNING_TOO_SMALL_VALUE, name, "NAVMESH_OBSTACLE_WAIT_TIME", NAVMESH_OBSTACLE_WAIT_TIME));
 
-            Agent.enabled = true;
+                Agent.enabled = true;
+            }
         }
 
         public void ObstacleOn()
