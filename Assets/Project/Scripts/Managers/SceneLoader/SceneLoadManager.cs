@@ -1,4 +1,5 @@
 using BigProject.Managers;
+using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Systems;
 using BigProject.Utilities;
 using System;
@@ -31,8 +32,10 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
         private readonly MonoBehaviour _coroutineStarter;
         private readonly Fader _fader;
         private readonly Preloader _preloader;
+        private SoundsManager _soundsManager;
 
         private bool _isLoading;
+        private bool _isInited = false;
         private string _currentSceneName;
 
         public SceneLoadManager(MonoBehaviour coroutineStarter)
@@ -50,6 +53,16 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
 
             ExceptionUtilities.ThrowIfNullFormat(_fader);
             ExceptionUtilities.ThrowIfNullFormat(_preloader);
+
+            Init();
+        }
+
+        private void Init()
+        {
+            _soundsManager = ServiceLocator.GetService<SoundsManager>();
+
+            if (_soundsManager != null)
+                _isInited = true;
         }
 
         public bool IsLoading => _isLoading;
@@ -58,6 +71,9 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
         {
             if (_isLoading)
                 return;
+
+            if (!_isInited)
+                Init();
 
             string currentSceneName = SceneManager.GetActiveScene().name;
             string newSceneName = scene.ToString();
@@ -71,6 +87,8 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
             {
                 GameLogManager.Warning(LogStr.WARNING_SAME_SCENE);
             }
+
+            _soundsManager.StopAllSounds();
 
             _coroutineStarter.StartCoroutine(LoadSceneRoutine(scene, newSceneName));
         }

@@ -129,6 +129,14 @@ namespace BigProject.Managers.SoundsMusicManagers
             }
         }
 
+        public void StopAllSounds()
+        {
+            for (int i = _activeAudioSources.Count; i > 0; i--)
+            {
+                StopSound(_activeAudioSources[i - 1]);
+            }
+        }
+
         /// <summary>
         /// Destroys spawned sound object
         /// </summary>

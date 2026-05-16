@@ -56,8 +56,6 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(new GameLogManagerTicker(manualLoop));
             GameLogManager.Init(_currentLogLevel);
 
-            ServiceLocator.AddService(new SceneLoadManager(manualLoop));
-
             SavesManager savesManager = new();
             ServiceLocator.AddService(savesManager);
             ServiceLocator.AddService(new ProgressManager(_config.PlayerProfileName, new QuestJsonLoader(_config.QuestsFolder), savesManager));
@@ -76,6 +74,8 @@ namespace BigProject.Initializers
             savesManager.LoadFromSave(_config.GameSettingsName, settingsManager, false, false);
 
             ServiceLocator.AddService(new PlayerLocation());
+
+            ServiceLocator.AddService(new SceneLoadManager(manualLoop));
         }
     }
 }
