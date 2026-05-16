@@ -15,8 +15,33 @@ namespace BigProject.Managers.SoundsMusicManagers
         private bool _isSource1Active = true;
         private Coroutine _fadeCoroutine;
         private Coroutine _crossCoroutine;
+        private float _maxVolume = 1f;
 
-        public List<AudioSource> GetAudioSources() => new() { _musicSource1, _musicSource2 };
+        //public List<AudioSource> GetAudioSources() => new() { _musicSource1, _musicSource2 };
+
+        public void SetVolume(float volume)
+        {
+            if (_fadeCoroutine != null)
+            {
+                StopCoroutine(_fadeCoroutine);
+            }
+
+            if (_crossCoroutine != null)
+            {
+                StopCoroutine(_crossCoroutine);
+            }
+
+            _musicSource2.Stop();
+            _musicSource2.volume = SILENT_VOLUME;
+            _musicSource1.volume = volume;
+            _isSource1Active = true;
+            _maxVolume = volume;
+
+            if (!_musicSource1.isPlaying)
+            {
+                _musicSource1.Play();
+            }
+        }
 
         /// <summary>
         /// Plays music with smooth transition.
@@ -51,6 +76,8 @@ namespace BigProject.Managers.SoundsMusicManagers
                 next.Stop();
                 next.volume = SILENT_VOLUME;
             }
+
+            maxVolume = Mathf.Min(maxVolume, _maxVolume);
 
             if (current.isPlaying)
             {

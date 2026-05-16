@@ -4,9 +4,7 @@ using BigProject.Systems;
 using BigProject.Utilities;
 using System;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace BigProject.Managers
 {
@@ -22,9 +20,13 @@ namespace BigProject.Managers
         private List<Resolution> _filteredResolutions;
         private int _currentResolutionIndex;
         private bool _isFullscreen = true;
-        private float _soundVolume;
-        private float _musicVolume;
+        private float _soundVolume = 1f;
+        private float _musicVolume = 1f;
         private DataToSave _dataToSave;
+
+        private const float SFX_MASTER_MIN_MIN = -10f;
+        private const float SFX_MASTER_MIN_MAX_DELTA = 90f;
+        private const float SFX_MASTER_POW_FACTOR = 0.25f;
 
         [Serializable]
         private class DataToSave
@@ -94,10 +96,8 @@ namespace BigProject.Managers
                 }
             }
 
-            _soundsManager.GetMixer().audioMixer.GetFloat("MasterVolume", out _soundVolume);
-            _soundVolume = math.remap(-100, 0, 0, 1, _soundVolume);
-
-            _musicVolume = _musicManager.GetAudioSources()[0].volume;
+            SetMusicVolume(_musicVolume);
+            _ = SetMixerOnLoad();
         }
 
         public void SetIsFullscreen(bool isFullscreen)
@@ -127,9 +127,10 @@ namespace BigProject.Managers
 
         public void SetSoundVolume(float val)
         {
-            float _newVal = math.remap(0, 1, -100, 0, val);
-            _soundsManager.GetMixer().audioMixer.SetFloat("MasterVolume", _newVal);
             _soundVolume = val;
+            float minMasterVolume = SFX_MASTER_MIN_MIN - SFX_MASTER_MIN_MAX_DELTA * (1f - Mathf.Pow(_soundVolume, SFX_MASTER_POW_FACTOR));
+            float masterVolume = Mathf.Lerp(minMasterVolume, 0f, _soundVolume);
+            _soundsManager.GetMixer().audioMixer.SetFloat("MasterVolume", masterVolume);
         }
 
         public float GetSoundVolume()
@@ -139,14 +140,23 @@ namespace BigProject.Managers
 
         public void SetMusicVolume(float val)
         {
-            foreach (AudioSource audioSource in _musicManager.GetAudioSources())
-                audioSource.volume = val;
             _musicVolume = val;
+            _musicManager.SetVolume(val);
         }
 
         public float GetMusicVolume()
         {
             return _musicVolume;
+        }
+
+        private async Awaitable SetMixerOnLoad()
+        {
+            await Awaitable.NextFrameAsync();
+
+            if (_soundsManager != null)
+            {
+                SetSoundVolume(_soundVolume);
+            }
         }
 
         private void CreateDTO()
