@@ -26,7 +26,7 @@ namespace Assets.Project.Scripts.NPC.Animals.Seagull
         private const float MIN_BORED_TIME = 3f;
         private const float MAX_BORED_TIME = 7f;
 
-        private const int JUMP_FRAMES = 8;
+        private const int JUMP_FRAMES = 18;
         private const float HIGH_FLY_SPEED_MODIFIER = 3.0f;
         private const float LOW_FLY_SPEED_MODIFIER = 0.3f;
         private const string JUMP_CLIP_NAME = "Animation_Jump";
