@@ -19,6 +19,10 @@ namespace BigProject.Gameplay.Church
 {
     public class EntryPoint : MonoBehaviour
     {
+        private const float FADE_OUT_MUSIC_DURATION = 0.1f;
+        private const float FADE_IN_MUSIC_DURATION = 0.1f;
+        private const float IN_BUILD_MUSIC_VOLUME = 0.2f;
+
         [SerializeField]
         private MiniGameActivator _miniGameActivator;
         [SerializeField]
@@ -37,6 +41,8 @@ namespace BigProject.Gameplay.Church
         private QuestActions _questActions;
         [SerializeField]
         private Final.QuestActions _finalQuestActions;
+        [SerializeField]
+        private AudioClip _villageMusic;
 
         private ProgressManager _progressManager;
 
@@ -48,6 +54,7 @@ namespace BigProject.Gameplay.Church
             Assert.IsNotNull(_questObjects, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Game Objects"));
             Assert.IsNotNull(_questActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Quest Actions"));
             Assert.IsNotNull(_finalQuestActions, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Final Quest Actions"));
+            Assert.IsNotNull(_villageMusic, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "_villageMusic"));
         }
 
         public void Init()
@@ -57,7 +64,10 @@ namespace BigProject.Gameplay.Church
             InventoryUI inventoryUI = ServiceLocator.GetService<InventoryUI>();
             PlayerController player = ServiceLocator.GetService<PlayerController>();
             SoundsManager soundsManager = ServiceLocator.GetService<SoundsManager>();
+            MusicManager musicManager = ServiceLocator.GetService<MusicManager>();
             _progressManager = ServiceLocator.GetService<ProgressManager>();
+
+            musicManager.PlayMusic(_villageMusic, FADE_OUT_MUSIC_DURATION, FADE_IN_MUSIC_DURATION, IN_BUILD_MUSIC_VOLUME);
 
             if (_progressManager.GetQuestState(_questId) == Systems.QuestSystem.QuestState.Active)
             {

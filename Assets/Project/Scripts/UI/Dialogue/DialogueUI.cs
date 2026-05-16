@@ -48,10 +48,6 @@ namespace BigProject.UI.Dialogue
         [SerializeField]
         private GameObject _rightCharacterNameField;
         [SerializeField]
-        private float _defaultRectTransformHeight = 1400;
-        [SerializeField]
-        private float _boyRectTransformHeight = 1240;
-        [SerializeField]
         private Animator _itemBlobAnimator;
         [SerializeField]
         private TextMeshProUGUI _itemBlobText;
@@ -64,10 +60,21 @@ namespace BigProject.UI.Dialogue
         [SerializeField]
         private float _speakerImageTone = 0.5f;
 
-        private List<string> _itemsToIgnoreWhenAdding = new List<string> { };//"church_note_1", "church_note_2", "church_note_3", "church_note_4" };  //needed for the third quest 
-
         [SerializeField]
         private List<Button> _answerOptionButtons = new List<Button>();
+
+        [Header("Параметры картинки персонажа слева")]
+        [SerializeField]
+        private Vector2 _defaultRectTransformSize = new Vector2(1000, 1400);
+        [SerializeField]
+        private Vector2 _defaultRectTransformPosition = new Vector2(865, -337);
+        [SerializeField]
+        private Vector2 _boyRectTransformSize = new Vector2(1000, 1280);
+        [SerializeField]
+        private Vector2 _boyRectTransformPosition = new Vector2(570, -337);
+
+        private List<string> _itemsToIgnoreWhenAdding = new List<string> { };//"church_note_1", "church_note_2", "church_note_3", "church_note_4" };  //needed for the third quest 
+
 
         private DialogueManager _dialogueManager;
 
@@ -185,7 +192,7 @@ namespace BigProject.UI.Dialogue
 
             // Answer options only for Boy
             _leftNameTMPro.text = BOY_NAME;
-            ResizeBoyRectTtransform(_boyRectTransformHeight);
+            ResizeLeftImageRectTransform(true);
 
             // Количество кнопок, которые нужно показать
             int buttonCount = Mathf.Min(
@@ -258,10 +265,8 @@ namespace BigProject.UI.Dialogue
                 // Show new sprite
                 _leftCharacterImage.sprite = dialogueNPCPhrase.LeftCharacterSprite;
                 _leftCharacterImage.enabled = true;
-                float rectTransformHeight = dialogueNPCPhrase.LeftCharacterSprite.name.Contains(BASE_BOY_SPRITE_NAME)
-                    ? _boyRectTransformHeight
-                    : _defaultRectTransformHeight;
-                ResizeBoyRectTtransform(rectTransformHeight);
+                bool isBoy = dialogueNPCPhrase.LeftCharacterSprite.name.Contains(BASE_BOY_SPRITE_NAME);
+                ResizeLeftImageRectTransform(isBoy);
             }
             else
             {
@@ -322,9 +327,18 @@ namespace BigProject.UI.Dialogue
             characterImage.color = color;
         }
 
-        private void ResizeBoyRectTtransform(float height)
+        private void ResizeLeftImageRectTransform(bool isBoy)
         {
-            _rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+            if (isBoy)
+            {
+                _rectTransform.sizeDelta = _boyRectTransformSize;
+                _rectTransform.anchoredPosition = _boyRectTransformPosition;
+            }
+            else
+            {
+                _rectTransform.sizeDelta = _defaultRectTransformSize;
+                _rectTransform.anchoredPosition = _defaultRectTransformPosition;
+            }
         }
     }
 }
