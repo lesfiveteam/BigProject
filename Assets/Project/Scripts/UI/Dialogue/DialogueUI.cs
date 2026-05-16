@@ -3,6 +3,7 @@ using BigProject.Systems.DialogueSystem;
 using BigProject.Systems.Inventory;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -133,15 +134,15 @@ namespace BigProject.UI.Dialogue
                     if (!_itemsToIgnoreWhenAdding.Contains(addedItem._name))
                     {
                         _itemImage.sprite = addedItem._itemSprite;
-                        _itemBlobText.text = $"{addedItem._verbToUseInDialogueText} <color=#{_colorForRecievingItem.ToHexString()}>{addedItem._nameLocalized}</color>";
+                        _itemBlobText.text = $"{addedItem.VerbToGet} <color=#{_colorForRecievingItem.ToHexString()}>{addedItem._nameLocalized}</color>";
                         _itemBlobAnimator.SetTrigger(ITEM_ANIM_TRIGGER);
                     }
                 }
                 else if (_previouslyheldItems.Count > heldItems.Count) //Removed something
                 {
-                    Item removedItem = _previouslyheldItems[_previouslyheldItems.Count - 1];
+                    Item removedItem = _previouslyheldItems.Where(x => !heldItems.Contains(x)).First();
                     _itemImage.sprite = removedItem._itemSprite;
-                    _itemBlobText.text = $"{removedItem._verbToUseInDialogueText} <color=#{_colorForGivingItem.ToHexString()}>{removedItem._nameLocalized}</color>";
+                    _itemBlobText.text = $"{removedItem.VerbToGive} <color=#{_colorForGivingItem.ToHexString()}>{removedItem._nameLocalized}</color>";
                     _itemBlobAnimator.SetTrigger(ITEM_ANIM_TRIGGER);
                 }
             }

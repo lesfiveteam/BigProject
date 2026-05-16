@@ -24,7 +24,7 @@ namespace BigProject.Gameplay.Church
         private InventoryUI _inventoryUI;
 
         [SerializeField]
-        private string _noteOne, _noteThree, _noteFour, _noteToGive;
+        private string _noteOne, _noteThree, _noteFour;
 
         [SerializeField]
         private int _questId;
@@ -112,8 +112,6 @@ namespace BigProject.Gameplay.Church
         public void GetRunes()
         {
             _inventory.RemoveItemByName(_noteFour);
-            _inventory.AddItemByName(_noteToGive);
-            _inventory.RemoveItemByName(_noteToGive);
             StartCoroutine(GetRunesRoutine());
             _getRunesAction.MakeTransition(0);
         }

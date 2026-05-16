@@ -15,7 +15,13 @@ namespace BigProject.Systems.Inventory
         /// name in Russian to be displayed in UI elements
         /// </summary>
         public string _nameLocalized;
-        public string _verbToUseInDialogueText;
+
+        [field: SerializeField]
+        public string VerbToGet { private set; get; }
+
+        [field: SerializeField]
+        public string VerbToGive { private set; get; }
+
         public Sprite _itemSprite;
         public Sprite _noteSprite;
         public bool _isAddedAtMiniGame;
