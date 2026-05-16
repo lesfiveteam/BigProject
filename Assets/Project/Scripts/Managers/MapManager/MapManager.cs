@@ -2,22 +2,22 @@ using BigProject.Player;
 using BigProject.Settings;
 using BigProject.Systems.HUD;
 using BigProject.UI.Map;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace BigProject.Managers
 {
-    public class MapManager
+    public class MapManager : IDisposable
     {
         private const float MAP_OPENING_AND_CLOSING_TIME = 0.4f;
         private PlayerInputHandler _playerInputHandler;
-        private GameplayState _previousState;
-        private bool _isOpenMap;
         private MapUI _mapUI;
         private GameplayManager _gameplayManager;
         private HUD _hud;
         private HUDConfig _hudConfig;
+        private bool _isAvailable;
 
         public MapManager(MapUI mapUI, PlayerInputHandler playerInputHandler, GameplayManager gameplayManager, HUD hud, HUDConfig hudConfig)
         {
@@ -26,63 +26,76 @@ namespace BigProject.Managers
             _gameplayManager = gameplayManager;
             _hud = hud;
             _hudConfig = hudConfig;
+            _isAvailable = true;
             _playerInputHandler.OpenMap += ToggleMap;
+            _gameplayManager.StateChanged += OnGameStateChanged;
         }
 
         public void Init()
         {
             _mapUI.Init();
             _mapUI.gameObject.SetActive(false);
-            _isOpenMap = false;
         }
 
         private void ToggleMap()
         {
-            if (!_isOpenMap)
+            if (!_isAvailable)
             {
-                if (_gameplayManager.State == GameplayState.Play)
-                {
-                    // Can open only in Play State
-                    OpenMap();
-                }
+                return;
             }
-            else
-            {
-                if (_gameplayManager.State == GameplayState.Map)
-                {
-                    _mapUI.StartCoroutine(WaitAndCloseMap());
-                }
-            }
-        }
 
-        private List<int> GetWidgetIds()
-        {
-            return new List<int> { 
-                _hudConfig.HUDInventoryWidgetId, 
-                _hudConfig.HUDJournalWidgetId, 
-                _hudConfig.HUDRunesWidgetId 
-            };
+            if (_gameplayManager.State == GameplayState.Map)
+            {
+                _mapUI.StartCoroutine(WaitAndCloseMap(true));
+            }
+            else if (_gameplayManager.State == GameplayState.Play)
+            {
+                _gameplayManager.ChangeState(GameplayState.Map);
+            }
         }
 
         private void OpenMap()
         {
-            _gameplayManager.ChangeState(GameplayState.Map);
-            List<int> ids = new List<int>();
-            ids.Add(_hudConfig.HUDInventoryWidgetId);
-            _hud.HideWidgets(GetWidgetIds());
+            _hud.HideWidget(_hudConfig.HUDInventoryWidgetId);
+            _hud.HideWidget(_hudConfig.HUDJournalWidgetId);
+            _hud.HideWidget(_hudConfig.HUDRunesWidgetId);
             _mapUI.gameObject.SetActive(true);
             _mapUI.OpenMap();
-            _isOpenMap = true;
         }
 
-        private IEnumerator WaitAndCloseMap()
+        private IEnumerator WaitAndCloseMap(bool goToPlay)
         {
+            _isAvailable = false;
             _mapUI.CloseMap();
             yield return new WaitForSeconds(MAP_OPENING_AND_CLOSING_TIME);
-            _gameplayManager.ChangeState(GameplayState.Play);
             _mapUI.gameObject.SetActive(false);
-            _isOpenMap = false;
-            _hud.ShowWidgets(GetWidgetIds());
+            _hud.ShowWidget(_hudConfig.HUDInventoryWidgetId);
+            _hud.ShowWidget(_hudConfig.HUDJournalWidgetId);
+            _hud.ShowWidget(_hudConfig.HUDRunesWidgetId);
+            _isAvailable = true;
+
+            if (goToPlay)
+            {
+                _gameplayManager.ChangeState(GameplayState.Play);
+            }
+        }
+
+        private void OnGameStateChanged(GameplayState state)
+        {
+            if (_gameplayManager.State == GameplayState.Map)
+            {
+                OpenMap();
+            }
+            else if (_mapUI.gameObject.activeSelf && _isAvailable)
+            {
+                _mapUI.StartCoroutine(WaitAndCloseMap(false));
+            }
+        }
+
+        public void Dispose()
+        {
+            _playerInputHandler.OpenMap -= ToggleMap;
+            _gameplayManager.StateChanged -= OnGameStateChanged;
         }
     }
 }

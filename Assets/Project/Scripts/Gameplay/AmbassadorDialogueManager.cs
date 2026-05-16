@@ -81,12 +81,14 @@ namespace Managers.Gameplay
         private IEnumerator AmbassadorDialogueRoutine()
         {
             _player.AutoTarget(_ambassador);
+            _gameplayManager.ChangeState(GameplayState.Cutscene);
 
             while (_dialogueManager.IsDialogue || _player.IsAutopilot)
             {
                 yield return null;
             }
-            
+
+            _gameplayManager.ChangeState(GameplayState.Cutscene);
             Fader fader = Instantiate(_faderPrefab);
             bool isWaiting = true;
             fader.FadeIn(() => isWaiting = false);

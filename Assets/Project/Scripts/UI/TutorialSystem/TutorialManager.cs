@@ -26,17 +26,11 @@ namespace BigProject.UI.TutorialSystem
             _gameplayManager = gameplayManager;
             _dialogueManager.OnDialogueEnded += OnDialogueEnded;
             _playerInputHandler.ToggleTutorial += OnToggleTutorial;
-            _isInitialized = true;
+            _gameplayManager.StateChanged += OnGameStateChanged;
             ExceptionUtilities.ThrowIfNull(_dialogueManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Tutorial manager"));
             ExceptionUtilities.ThrowIfNull(_tutorial, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Tutorial manager"));
             ExceptionUtilities.ThrowIfNull(_playerInputHandler, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Tutorial manager"));
             ExceptionUtilities.ThrowIfNull(_gameplayManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "Tutorial manager"));
-        }
-
-        private void ActivateTutorial(bool isActive)
-        {
-            _gameplayManager.ChangeState(isActive ? GameplayState.Tutorial : GameplayState.Play);
-            _tutorial.Activate(isActive);
         }
 
         private void OnDialogueEnded(DialogueLine dialogueLine)
@@ -46,34 +40,38 @@ namespace BigProject.UI.TutorialSystem
                 return;
             }
 
-            ActivateTutorial(true);
+            _gameplayManager.ChangeState(GameplayState.Tutorial);
         }
 
         private void OnToggleTutorial()
         {
             if (_tutorial.IsActive)
             {
-                ActivateTutorial(false);
+                _gameplayManager.ChangeState(GameplayState.Play);
             }
             else if(_gameplayManager.State == GameplayState.Play)
             {
-                ActivateTutorial(true);
+                _gameplayManager.ChangeState(GameplayState.Tutorial);
             }
         }
 
-        private void OnEnable()
+        private void OnGameStateChanged(GameplayState state)
         {
-            if (_isInitialized)
+            if (_gameplayManager.State == GameplayState.Tutorial)
             {
-                _dialogueManager.OnDialogueEnded += OnDialogueEnded;
-                _playerInputHandler.ToggleTutorial += OnToggleTutorial;
+                _tutorial.Activate(true);
+            }
+            else if (_tutorial.IsActive)
+            {
+                _tutorial.Activate(false);
             }
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             _dialogueManager.OnDialogueEnded -= OnDialogueEnded;
             _playerInputHandler.ToggleTutorial -= OnToggleTutorial;
+            _gameplayManager.StateChanged -= OnGameStateChanged;
         }
     }
 }

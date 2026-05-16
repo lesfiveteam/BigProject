@@ -102,6 +102,7 @@ namespace BigProject.Initializers
         private CutsceneManager _cutsceneManager;
         private SettingsManager _settingsManager;
         private ProgressManager _progressManager;
+        private MapManager _mapManager;
 
         private static bool _isInstantiated;
 
@@ -215,8 +216,8 @@ namespace BigProject.Initializers
         {
             _mapViewObj = Instantiate(_mapView);
             MapUI mapUI = _mapViewObj.GetComponent<MapUI>();
-            MapManager mapManager = new MapManager(mapUI, _playerInput, gameplayManager, _hud, _hudConfig);
-            mapManager.Init();
+            _mapManager = new(mapUI, _playerInput, gameplayManager, _hud, _hudConfig);
+            _mapManager.Init();
             DontDestroyOnLoad(_mapViewObj);
         }
 
@@ -411,6 +412,7 @@ namespace BigProject.Initializers
             _playerLocation?.Dispose();
             _cutsceneManager?.Dispose();
             _runesSystem?.Dispose();
+            _mapManager?.Dispose();
             Destroy(transform.parent.gameObject);
         }
 
