@@ -179,12 +179,13 @@ namespace BigProject.Managers
         public const string LOG_STRING_FORMAT = "[{0}] [{1}] {2}";
         public const string LOG_SYSTEM_STRING_INFO_FORMAT = "[Sys] {0}";
         public const string LOG_SYSTEM_STRING_ERROR_FORMAT = "[Sys] {0} \n {1}";
-        public const string TIMESTAMP_FORMAT = "yyyy-MM-dd_HH-mm-ss";
+        public const string TIMESTAMP_FORMAT = "yyyy-MM-dd_HH-mm-ss-fff";
 
-        // настройка частоты записи логов
+        // setting the frequency of logging
         private const int BUFFER_LOGS_COUNT = 1;
         private const float WRITE_INTERVAL = 1f;
-        // максимальное количество файлов логов
+
+        // maximum number of log files
         private const int MAX_LOG_FILES_COUNT = 10;
 
         private static readonly List<string> _logBuffer = new();
