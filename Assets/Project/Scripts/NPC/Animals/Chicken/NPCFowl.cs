@@ -148,6 +148,12 @@ namespace Assets.Project.Scripts.NPC.Animals.Chicken
 
                 if (isFounded)
                 {
+                    // Добавил для избежания ошибки
+                    if (path.corners.Length == 0)
+                    {
+                        continue;
+                    }
+
                     currentPeckRadius = PECK_RADIUS;
                     Vector3 newPeckTarget = path.corners.Last();
 
