@@ -8,6 +8,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEditorInternal.ReorderableList;
 
 namespace BigProject.UI.Dialogue
 {
@@ -18,6 +19,16 @@ namespace BigProject.UI.Dialogue
         private const string ITEM_ANIM_TRIGGER = "Appear";
         // Hack - determine that this is a boy sprite and reduce it if so
         private const string BASE_BOY_SPRITE_NAME = "эмоции_мальчик";
+        private const string BASE_BLACKSMITH_SPRITE_NAME_3 = "кузнец_эмоции_3";
+        private const string BASE_BLACKSMITH_SPRITE_NAME_7 = "кузнец_эмоции_7";
+        private const string BASE_ELDER_SPRITE_NAME = "староста";
+        private enum CharacterNames
+        {
+            Boy,
+            Blacksmith,
+            Elder,
+            Default
+        }
         [SerializeField]
         public GameObject _dialogueWindow;
         [SerializeField]
@@ -66,13 +77,21 @@ namespace BigProject.UI.Dialogue
 
         [Header("Параметры картинки персонажа слева")]
         [SerializeField]
-        private Vector2 _defaultRectTransformSize = new Vector2(1000, 1400);
+        private Vector2 _defaultLeftRectTransformSize = new Vector2(1000, 1400);
         [SerializeField]
-        private Vector2 _defaultRectTransformPosition = new Vector2(865, -337);
+        private Vector2 _defaultLeftRectTransformPosition = new Vector2(865, -337);
         [SerializeField]
         private Vector2 _boyRectTransformSize = new Vector2(1000, 1280);
         [SerializeField]
         private Vector2 _boyRectTransformPosition = new Vector2(570, -337);
+
+        [Header("Параметры картинки персонажа справа")]
+        [SerializeField]
+        private Vector2 _defaultRightRectTransformSize = new Vector2(1000, 1425);
+        [SerializeField]
+        private Vector2 _defaultRightRectTransformPosition = new Vector2(103, -374);
+        [SerializeField]
+        private Vector2 _elderRightRectTransformPosition = new Vector2(260, -374);
 
         private List<string> _itemsToIgnoreWhenAdding = new List<string> { };//"church_note_1", "church_note_2", "church_note_3", "church_note_4" };  //needed for the third quest 
 
@@ -83,7 +102,8 @@ namespace BigProject.UI.Dialogue
         private TextMeshProUGUI _leftNameTMPro;
         private TextMeshProUGUI _rightNameTMPro;
 
-        private RectTransform _rectTransform;
+        private RectTransform _rectLeftTransform;
+        private RectTransform _rectRightTransform;
 
         private bool _answerWasShownPreviousFrame = false;
         private bool _isFirstLine;
@@ -108,7 +128,8 @@ namespace BigProject.UI.Dialogue
                 }
             }
 
-            _rectTransform = _leftCharacterImage.GetComponent<RectTransform>();
+            _rectLeftTransform = _leftCharacterImage.GetComponent<RectTransform>();
+            _rectRightTransform = _rightCharacterImage.GetComponent<RectTransform>();
 
             // Name fields
             _leftNameTMPro = _leftCharacterNameField.GetComponentInChildren<TextMeshProUGUI>();
@@ -185,15 +206,16 @@ namespace BigProject.UI.Dialogue
             if (dialogueLine.StartLeftCharacterSprite)
             {
                 _leftCharacterImage.sprite = dialogueLine.StartLeftCharacterSprite;
+                ResizeLeftImageRectTransform(BASE_BOY_SPRITE_NAME);
             }
             if (dialogueLine.StartRightCharacterSprite)
             {
                 _rightCharacterImage.sprite = dialogueLine.StartRightCharacterSprite;
+                ResizeRightImageRectTransform(dialogueLine.StartRightCharacterSprite.name);
             }
 
             // Answer options only for Boy
             _leftNameTMPro.text = BOY_NAME;
-            ResizeLeftImageRectTransform(true);
 
             // Количество кнопок, которые нужно показать
             int buttonCount = Mathf.Min(
@@ -266,12 +288,16 @@ namespace BigProject.UI.Dialogue
                 // Show new sprite
                 _leftCharacterImage.sprite = dialogueNPCPhrase.LeftCharacterSprite;
                 _leftCharacterImage.enabled = true;
-                bool isBoy = dialogueNPCPhrase.LeftCharacterSprite.name.Contains(BASE_BOY_SPRITE_NAME);
-                ResizeLeftImageRectTransform(isBoy);
+                ResizeLeftImageRectTransform(dialogueNPCPhrase.LeftCharacterSprite.name);
             }
             else
             {
                 _leftCharacterImage.enabled = false;
+            }
+
+            if (dialogueNPCPhrase.RightCharacterSprite)
+            {
+                ResizeRightImageRectTransform(dialogueNPCPhrase.RightCharacterSprite.name);
             }
 
             _leftCharacterNameField.SetActive(!dialogueNPCPhrase.IsRightSpeaker);
@@ -328,18 +354,55 @@ namespace BigProject.UI.Dialogue
             characterImage.color = color;
         }
 
-        private void ResizeLeftImageRectTransform(bool isBoy)
+        private void ResizeLeftImageRectTransform(string spriteName)
         {
-            if (isBoy)
+            CharacterNames characterName = GetCharacterNameBySpriteName(spriteName);
+            if (characterName == CharacterNames.Boy)
             {
-                _rectTransform.sizeDelta = _boyRectTransformSize;
-                _rectTransform.anchoredPosition = _boyRectTransformPosition;
+                _rectLeftTransform.sizeDelta = _boyRectTransformSize;
+                _rectLeftTransform.anchoredPosition = _boyRectTransformPosition;
+            }
+            else if (characterName == CharacterNames.Blacksmith)
+            {
+                _rectLeftTransform.sizeDelta = _defaultLeftRectTransformSize;
+                _rectLeftTransform.anchoredPosition = _boyRectTransformPosition;
             }
             else
             {
-                _rectTransform.sizeDelta = _defaultRectTransformSize;
-                _rectTransform.anchoredPosition = _defaultRectTransformPosition;
+                _rectLeftTransform.sizeDelta = _defaultLeftRectTransformSize;
+                _rectLeftTransform.anchoredPosition = _defaultLeftRectTransformPosition;
             }
+        }
+        private void ResizeRightImageRectTransform(string spriteName)
+        {
+            CharacterNames characterName = GetCharacterNameBySpriteName(spriteName);
+            if (characterName == CharacterNames.Elder)
+            {
+                _rectRightTransform.sizeDelta = _defaultRightRectTransformSize;
+                _rectRightTransform.anchoredPosition = _elderRightRectTransformPosition;
+            }
+            else
+            {
+                _rectRightTransform.sizeDelta = _defaultRightRectTransformSize;
+                _rectRightTransform.anchoredPosition = _defaultRightRectTransformPosition;
+            }
+        }
+
+        private CharacterNames GetCharacterNameBySpriteName(string spriteName)
+        {
+            if (spriteName.Contains(BASE_BLACKSMITH_SPRITE_NAME_3) || spriteName.Contains(BASE_BLACKSMITH_SPRITE_NAME_7))
+            {
+                return CharacterNames.Blacksmith;
+            }
+            else if (spriteName.Contains(BASE_BOY_SPRITE_NAME))
+            {
+                return CharacterNames.Boy;
+            }
+            else if (spriteName.Contains(BASE_ELDER_SPRITE_NAME))
+            {
+                return CharacterNames.Elder;
+            }
+            return CharacterNames.Default;
         }
     }
 }
