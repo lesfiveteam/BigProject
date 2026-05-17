@@ -19,6 +19,8 @@ namespace BigProject.Initializers
         [SerializeField]
         private GlobalConfig _config;
         [SerializeField]
+        private ScreenFreqConfig _screenFreqConfig;
+        [SerializeField]
         private MusicManager _musicManagerPrefab;
         [SerializeField]
         private SoundsManager _soundsManagerPrefab;
@@ -42,6 +44,7 @@ namespace BigProject.Initializers
             }
             
             Assert.IsNotNull(_config, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Global Entry Point", "Global Config"));
+            Assert.IsNotNull(_screenFreqConfig, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Global Entry Point", "Screen Freq Config"));
             Assert.IsNotNull(_musicManagerPrefab, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Global Entry Point", "Music Manager Prefab"));
             Assert.IsNotNull(_soundsManagerPrefab, String.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Global Entry Point", "Sounds Manager Prefab"));
             _isInstantiated = true;
@@ -69,7 +72,7 @@ namespace BigProject.Initializers
             ServiceLocator.AddService(soundsManager);
 
             SettingsManager settingsManager = new();
-            settingsManager.Init(soundsManager, musicManager, savesManager, _config);
+            settingsManager.Init(soundsManager, musicManager, savesManager, _config, _screenFreqConfig);
             ServiceLocator.AddService(settingsManager);
             savesManager.LoadFromSave(_config.GameSettingsName, settingsManager, false, false);
 

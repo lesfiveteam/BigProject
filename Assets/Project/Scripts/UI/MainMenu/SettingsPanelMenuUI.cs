@@ -1,5 +1,6 @@
 ﻿using BigProject.Managers;
 using BigProject.Utilities;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -124,8 +125,8 @@ namespace BigProject.UI
         protected void SetScreenFreqDropdown()
         {
             _screenFreqDropdown.ClearOptions();
-            _screenFreqDropdown.AddOptions(new List<string> { "60", "120", "VSync"});
-            _screenFreqDropdown.value = _settingsManager.VSync == 1 ? 2 : _settingsManager.TargetFPS == 60 ? 0 : 1;
+            _screenFreqDropdown.AddOptions(_settingsManager.GetPossibleScreenFreqs());
+            _screenFreqDropdown.value = _screenFreqDropdown.options.FindIndex(x => x.text.Equals(_settingsManager.CurrentFreqMode));
             _screenFreqDropdown.RefreshShownValue();
         }
 
@@ -155,17 +156,9 @@ namespace BigProject.UI
 
         private void SetScreenFreq(int id)
         {
-            switch (id)
+            if (id >= 0 && id < _screenFreqDropdown.options.Count)
             {
-                case 0:
-                    _settingsManager.SetScreenFreq(60, 0);
-                    break;
-                case 1:
-                    _settingsManager.SetScreenFreq(120, 0);
-                    break;
-                case 2:
-                    _settingsManager.SetScreenFreq(0, 1);
-                    break;
+                _settingsManager.SetScreenFreq(_screenFreqDropdown.options[id].text);
             }
         }
 

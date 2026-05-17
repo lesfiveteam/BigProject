@@ -8,12 +8,23 @@ using UnityEngine;
 
 namespace BigProject.Managers
 {
+    public enum ScreenFreq
+    {
+        VSync,
+        Limit_60 = 60,
+        Limit_120 = 120,
+        Limit_144 = 144,
+        Auto,
+        Infinity
+    }
+
     public class SettingsManager : ISavable, IDisposable
     {
         private SoundsManager _soundsManager;
         private MusicManager _musicManager;
         private SavesManager _savesManager;
         private GlobalConfig _config;
+        private ScreenFreqConfig _freqConfig;
 
         //Settings
         private Resolution[] resolutions;
@@ -27,17 +38,14 @@ namespace BigProject.Managers
         private const float SFX_MASTER_MIN_MIN = -10f;
         private const float SFX_MASTER_MIN_MAX_DELTA = 90f;
         private const float SFX_MASTER_POW_FACTOR = 0.25f;
-        private const int STD_FPS_RATE = 60;
-        private const int STD_VSYNC = 0;
+        private const string STD_FREQ_MODE = "VSync";
 
-        public int TargetFPS { get; private set; }
-        public int VSync { get; private set; }
+        public string CurrentFreqMode { get; private set; } = STD_FREQ_MODE;
 
         [Serializable]
         private class DataToSave
         {
-            public int targetFPS;
-            public int vsync;
+            public string freqMode;
             public float musicVolume;
             public float soundVolume;
         }
@@ -64,7 +72,7 @@ namespace BigProject.Managers
 
             SetSoundVolume(_dataToSave.soundVolume);
             SetMusicVolume(_dataToSave.musicVolume);
-            SetScreenFreq(_dataToSave.targetFPS, _dataToSave.vsync);
+            SetScreenFreq(_dataToSave.freqMode);
             _dataToSave = null;
         }
 
@@ -78,16 +86,18 @@ namespace BigProject.Managers
             Application.quitting -= OnQuitting;
         }
 
-        public void Init(SoundsManager soundsManager, MusicManager musicManager, SavesManager savesManager, GlobalConfig config)
+        public void Init(SoundsManager soundsManager, MusicManager musicManager, SavesManager savesManager, GlobalConfig config, ScreenFreqConfig freqConfig)
         {
             _soundsManager = soundsManager;
             _musicManager = musicManager;
             _savesManager = savesManager;
             _config = config;
+            _freqConfig = freqConfig;
             ExceptionUtilities.ThrowIfNull(_soundsManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "SoundsManager"));
             ExceptionUtilities.ThrowIfNull(_musicManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "MusicManager"));
             ExceptionUtilities.ThrowIfNull(_savesManager, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "SavesManager"));
             ExceptionUtilities.ThrowIfNull(_config, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "GlobalConfig"));
+            ExceptionUtilities.ThrowIfNull(_freqConfig, string.Format(LogStr.CRITICAL_NULL_REFERENCE, "SettingsManager", "ScreenConfig"));
 
             resolutions = Screen.resolutions;
             _filteredResolutions = new List<Resolution>();
@@ -106,7 +116,7 @@ namespace BigProject.Managers
 
             SetMusicVolume(_musicVolume);
             _ = SetMixerOnLoad();
-            SetScreenFreq(STD_FPS_RATE, STD_VSYNC);
+            SetScreenFreq(STD_FREQ_MODE);
         }
 
         public void SetIsFullscreen(bool isFullscreen)
@@ -124,35 +134,48 @@ namespace BigProject.Managers
             _currentResolutionIndex = id;    
         }
 
-        public void SetScreenFreq(int targetFPS, int vsync)
+        public void SetScreenFreq(string freqModeName)
         {
-            if (targetFPS == 0 && vsync == 0)
+            int targetFPS = -1;
+            int vSync = 1;
+
+            ScreenFreqConfig.Mode mode = _freqConfig.GetMode(freqModeName);
+
+            if (mode != null)
             {
-                targetFPS = STD_FPS_RATE;
-                vsync = STD_VSYNC;
-            }
-
-            TargetFPS = targetFPS;
-            VSync = vsync;
-
-            QualitySettings.vSyncCount = VSync;
-
-            if (VSync == 0)
-            {
-                Application.targetFrameRate = TargetFPS;
-                RefreshRate newRefreshRate = new() { numerator = (uint)TargetFPS, denominator = 1 };
-                Resolution currentRes = Screen.currentResolution;
-                Screen.SetResolution(currentRes.width, currentRes.height, Screen.fullScreenMode, newRefreshRate);
+                CurrentFreqMode = mode.Name;
+                targetFPS = mode.Freq;
+                vSync = mode.VSync;
             }
             else
             {
-                Application.targetFrameRate = -1;
+                CurrentFreqMode = STD_FREQ_MODE;
             }
+
+            if (targetFPS == 0 && vSync == 0)
+            {
+                targetFPS = (int)Screen.currentResolution.refreshRateRatio.value;
+            }
+
+            QualitySettings.vSyncCount = vSync;
+            Application.targetFrameRate = targetFPS;
         }
 
         public List<Resolution> GetPossibleResolutions()
         { 
             return _filteredResolutions;
+        }
+
+        public List<string> GetPossibleScreenFreqs()
+        {
+            List<string> freqs = new();
+
+            foreach (ScreenFreqConfig.Mode mode in _freqConfig)
+            {
+                freqs.Add(mode.Name);
+            }
+
+            return freqs;
         }
 
         public int GetChosenResolutionIndex()
@@ -203,8 +226,7 @@ namespace BigProject.Managers
 
             _dataToSave.musicVolume = GetMusicVolume();
             _dataToSave.soundVolume = GetSoundVolume();
-            _dataToSave.targetFPS = TargetFPS;
-            _dataToSave.vsync = VSync;
+            _dataToSave.freqMode = CurrentFreqMode;
         }
 
         private void OnQuitting()
