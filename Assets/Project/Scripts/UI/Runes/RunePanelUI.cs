@@ -251,6 +251,11 @@ namespace BigProject.UI
                 img.rectTransform.DOScale(RUNE_SCALE, RUNES_SCALE_TIME).OnComplete(() =>
                     img.rectTransform.DOMove(GetRuneTarget(), RUNES_FLY_TIME).SetEase(Ease.InQuad).OnComplete(() =>
                         {
+                            if (img.material != null)
+                            {
+                                Destroy(img.material);
+                            }
+
                             Destroy(go);
                             _flyingRunes.Remove(img.rectTransform);
 
@@ -299,6 +304,13 @@ namespace BigProject.UI
                 foreach (Transform rune in _flyingRunes)
                 {
                     rune.DOKill();
+                    Image img = rune.GetComponent<Image>();
+
+                    if (img != null && img.material != null)
+                    {
+                        Destroy(img.material);
+                    }
+
                     Destroy(rune.gameObject);
                 }
 
