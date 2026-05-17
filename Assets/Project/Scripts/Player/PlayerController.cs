@@ -125,6 +125,11 @@ namespace BigProject.Player
         /// </summary>
         public void PlayGroundSound()
         {
+            if(!_isMoving)
+            {
+                return;
+            }    
+
             Ray ray = new Ray(transform.position, Vector3.down);
 
             if (Physics.Raycast(ray, out RaycastHit hit))
