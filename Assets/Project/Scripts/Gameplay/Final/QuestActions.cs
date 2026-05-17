@@ -181,6 +181,7 @@ namespace BigProject.Gameplay.Final
             yield return new WaitForSeconds(GameplayUtilities.CurrentCameraTransitionTime * 0.2f);
             _playerRenderer.enabled = true;
             _musicManager.PlayMusic(_finalMusicClip);
+            _fresco.enabled = false;
         }
 
         private void SetActor(Transform actor, Transform target, bool hasTalk, bool talkActive = false)
