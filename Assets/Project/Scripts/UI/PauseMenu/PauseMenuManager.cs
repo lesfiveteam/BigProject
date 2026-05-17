@@ -1,8 +1,10 @@
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Managers;
 using BigProject.Player;
+using BigProject.Systems;
 using BigProject.Utilities;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace BigProject.UI
 {
@@ -13,6 +15,7 @@ namespace BigProject.UI
         private PlayerInputHandler _playerInputHandler;
         private GameplayState _previousState;
         private bool _isPaused = false;
+        private SceneLoadManager _sceneLoader;
 
         private void Awake()
         {
@@ -22,19 +25,34 @@ namespace BigProject.UI
         private void OnDestroy()
         {
             if (_playerInputHandler != null)
+            {
                 _playerInputHandler.PressPause -= PressPause;
+            }
+
+            _sceneLoader.SceneLoaded -= OnSceneLoaded;
         }
 
         public void Init(PlayerInputHandler playerInputHandler, SettingsManager settingsManager, SceneLoadManager sceneLoader)
         {
             _playerInputHandler = playerInputHandler;
-            ExceptionUtilities.ThrowIfNull(_playerInputHandler, gameObject.name, "Player input handler is null!");
+            _sceneLoader = sceneLoader;
+            ExceptionUtilities.ThrowIfNull(_playerInputHandler, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "PlayerInputHandler"));
+            ExceptionUtilities.ThrowIfNull(_sceneLoader, string.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SceneLoadManager"));
 
             _settingsPanel.Init(settingsManager, this);
             _pausePanel.Init(this, sceneLoader);
 
-            if (_playerInputHandler != null)
+
+
+            if (SceneManager.GetActiveScene().name.Equals(Scenes.Intro.ToString()))
+            {
+                _sceneLoader.SceneLoaded += OnSceneLoaded;
+            }
+            else
+            {
                 _playerInputHandler.PressPause += PressPause;
+            }
+
         }
 
         private void PressPause()
@@ -47,6 +65,12 @@ namespace BigProject.UI
             {
                 UnpauseGame();
             }
+        }
+
+        private void OnSceneLoaded(Scenes _)
+        {
+            _playerInputHandler.PressPause += PressPause;
+            _sceneLoader.SceneLoaded -= OnSceneLoaded;
         }
 
         public void PauseGame()
