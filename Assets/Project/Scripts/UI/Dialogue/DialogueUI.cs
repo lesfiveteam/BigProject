@@ -8,7 +8,6 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEditorInternal.ReorderableList;
 
 namespace BigProject.UI.Dialogue
 {
