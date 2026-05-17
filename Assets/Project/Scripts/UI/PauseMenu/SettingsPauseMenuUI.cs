@@ -19,6 +19,7 @@ namespace BigProject.UI
 
             SetResolutionDropdown();
             SetScreenModeDropdown();
+            SetScreenFreqDropdown();
             SetSoundVolumeSlider();
             SetMusicVolumeSlider();
         }

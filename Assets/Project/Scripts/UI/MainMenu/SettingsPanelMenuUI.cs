@@ -18,6 +18,7 @@ namespace BigProject.UI
 
             SetResolutionDropdown();
             SetScreenModeDropdown();
+            SetScreenFreqDropdown();
             SetSoundVolumeSlider();
             SetMusicVolumeSlider();
         }
@@ -53,6 +54,7 @@ namespace BigProject.UI
         [SerializeField] protected Button _backButton;
         [SerializeField] private TMP_Dropdown _resolutionDropdown;
         [SerializeField] private TMP_Dropdown _screenModeDropdown;
+        [SerializeField] private TMP_Dropdown _screenFreqDropdown;
         [SerializeField] private Slider _soundVolumeSlider;
         [SerializeField] private Slider _musicVolumeSlider;
 
@@ -62,6 +64,7 @@ namespace BigProject.UI
         {
             _resolutionDropdown.onValueChanged.AddListener(SetResolution);
             _screenModeDropdown.onValueChanged.AddListener(SetScreenMode);
+            _screenFreqDropdown.onValueChanged.AddListener(SetScreenFreq);
             _soundVolumeSlider.onValueChanged.AddListener(SoundVolumeChanged);
             _musicVolumeSlider.onValueChanged.AddListener(MusicVolumeChanged);
         }
@@ -70,7 +73,10 @@ namespace BigProject.UI
         {
             _backButton.onClick.RemoveAllListeners();
             _soundVolumeSlider.onValueChanged.RemoveListener(SoundVolumeChanged);
+            _musicVolumeSlider.onValueChanged.RemoveListener(MusicVolumeChanged);
             _resolutionDropdown.onValueChanged.RemoveListener(SetResolution);
+            _screenModeDropdown.onValueChanged.RemoveListener(SetScreenMode);
+            _screenFreqDropdown.onValueChanged.RemoveListener(SetScreenFreq);
         }
 
         protected void SetResolutionDropdown()
@@ -115,6 +121,14 @@ namespace BigProject.UI
             //SetScreenMode(0);
         }
 
+        protected void SetScreenFreqDropdown()
+        {
+            _screenFreqDropdown.ClearOptions();
+            _screenFreqDropdown.AddOptions(new List<string> { "60", "120", "VSync"});
+            _screenFreqDropdown.value = _settingsManager.VSync == 1 ? 2 : _settingsManager.TargetFPS == 60 ? 0 : 1;
+            _screenFreqDropdown.RefreshShownValue();
+        }
+
         protected void SetSoundVolumeSlider()
         {
             _soundVolumeSlider.value = _settingsManager.GetSoundVolume();
@@ -137,6 +151,22 @@ namespace BigProject.UI
             Resolution resolution = _settingsManager.GetPossibleResolutions()[_settingsManager.GetChosenResolutionIndex()];
             _settingsManager.SetIsFullscreen(id == 0);
             Screen.SetResolution(resolution.width, resolution.height, _settingsManager.IsFullscreen());
+        }
+
+        private void SetScreenFreq(int id)
+        {
+            switch (id)
+            {
+                case 0:
+                    _settingsManager.SetScreenFreq(60, 0);
+                    break;
+                case 1:
+                    _settingsManager.SetScreenFreq(120, 0);
+                    break;
+                case 2:
+                    _settingsManager.SetScreenFreq(0, 1);
+                    break;
+            }
         }
 
         private void SoundVolumeChanged(float val)

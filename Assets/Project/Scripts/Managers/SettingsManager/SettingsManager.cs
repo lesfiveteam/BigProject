@@ -27,10 +27,17 @@ namespace BigProject.Managers
         private const float SFX_MASTER_MIN_MIN = -10f;
         private const float SFX_MASTER_MIN_MAX_DELTA = 90f;
         private const float SFX_MASTER_POW_FACTOR = 0.25f;
+        private const int STD_FPS_RATE = 60;
+        private const int STD_VSYNC = 0;
+
+        public int TargetFPS { get; private set; }
+        public int VSync { get; private set; }
 
         [Serializable]
         private class DataToSave
         {
+            public int targetFPS;
+            public int vsync;
             public float musicVolume;
             public float soundVolume;
         }
@@ -57,6 +64,7 @@ namespace BigProject.Managers
 
             SetSoundVolume(_dataToSave.soundVolume);
             SetMusicVolume(_dataToSave.musicVolume);
+            SetScreenFreq(_dataToSave.targetFPS, _dataToSave.vsync);
             _dataToSave = null;
         }
 
@@ -98,6 +106,7 @@ namespace BigProject.Managers
 
             SetMusicVolume(_musicVolume);
             _ = SetMixerOnLoad();
+            SetScreenFreq(STD_FPS_RATE, STD_VSYNC);
         }
 
         public void SetIsFullscreen(bool isFullscreen)
@@ -113,6 +122,32 @@ namespace BigProject.Managers
         public void SetCurrentResolutionIndex(int id)
         {
             _currentResolutionIndex = id;    
+        }
+
+        public void SetScreenFreq(int targetFPS, int vsync)
+        {
+            if (targetFPS == 0 && vsync == 0)
+            {
+                targetFPS = STD_FPS_RATE;
+                vsync = STD_VSYNC;
+            }
+
+            TargetFPS = targetFPS;
+            VSync = vsync;
+
+            QualitySettings.vSyncCount = VSync;
+
+            if (VSync == 0)
+            {
+                Application.targetFrameRate = TargetFPS;
+                RefreshRate newRefreshRate = new() { numerator = (uint)TargetFPS, denominator = 1 };
+                Resolution currentRes = Screen.currentResolution;
+                Screen.SetResolution(currentRes.width, currentRes.height, Screen.fullScreenMode, newRefreshRate);
+            }
+            else
+            {
+                Application.targetFrameRate = -1;
+            }
         }
 
         public List<Resolution> GetPossibleResolutions()
@@ -168,6 +203,8 @@ namespace BigProject.Managers
 
             _dataToSave.musicVolume = GetMusicVolume();
             _dataToSave.soundVolume = GetSoundVolume();
+            _dataToSave.targetFPS = TargetFPS;
+            _dataToSave.vsync = VSync;
         }
 
         private void OnQuitting()
