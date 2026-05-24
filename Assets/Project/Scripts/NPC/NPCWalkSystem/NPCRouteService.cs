@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,85 +9,34 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 {
     public class NPCRouteService : MonoBehaviour
     {
-        [SerializeField] private bool _isWaysVisible;
-        [SerializeField] private bool _isAttractionPointsVisible;
-        [SerializeField] private bool _isRootPointsVisible;
-
-        [SerializeField] private List<NPCWay> _activeWays = new();
-
-        // AttractionPoint.Id, ways 
-        private Dictionary<string, List<NPCWay>> _confirmedWays = new();
-        private List<NPCAttractionPoint> _allAttractionPoints = new();
-        private List<NPCAttractionPoint> AllAttractionPoints
+        public enum AlgorithmType
         {
-            get
-            {
-                if (!_isInited)
-                    BuildIndex();
-
-                return _allAttractionPoints;
-            }
+            BFS,
+            DFS,
+            Dijkstra,
+            AStar,
+            BiAStar,
         }
 
-        private bool _isInited = false;
+        [SerializeField] private AlgorithmType _algorithmType = AlgorithmType.BFS;
+
+        [field: SerializeField] public List<NPCWay> ActiveWays { get; private set; } = new();
+        private NPCRouteGraph _graph;
 
         private void Awake()
         {
-            BuildIndex();
-        }
-
-        public Queue<NPCRootPoint> GetRoute(string startId, string endId)
-        {
-            List<NPCWay> ways = FindShortestRoute(startId, endId);
-
-            if (ways.Count == 0)
-                throw new ArgumentOutOfRangeException();
-
-            Queue<NPCRootPoint> queue = new();
-
-            foreach (NPCWay way in ways)
+            IAlgorithm currentAlgorithm = _algorithmType switch
             {
-                foreach (NPCRootPoint point in way.GetAllPoints())
-                {
-                    queue.Enqueue(point);
-                }
-            }
+                AlgorithmType.BFS => new BFS(),
+                AlgorithmType.DFS => new DFS(),
+                AlgorithmType.Dijkstra => new Dijkstra(),
+                AlgorithmType.AStar => new AStar(),
+                AlgorithmType.BiAStar => new BiAStar(),
+                _ => throw new ArgumentOutOfRangeException(nameof(_algorithmType), _algorithmType, null)
+            };
 
-            return queue;
-        }
-
-        public Queue<NPCRootPoint> GetRandomRouteFrom(string startId)
-        {
-            List<NPCAttractionPoint> availablePoints = AllAttractionPoints.Where(point => point.Id != startId).ToList();
-            string endId;
-
-            if (availablePoints.Count > 1)
-            {
-                int totalWeight = availablePoints.Sum(point => point.Weight);
-                float randomValue = Random.Range(0f, totalWeight);
-                float accumulated = 0f;
-
-                NPCAttractionPoint selectedPoint = null;
-
-                foreach (NPCAttractionPoint point in availablePoints)
-                {
-                    accumulated += point.Weight;
-
-                    if (randomValue <= accumulated)
-                    {
-                        selectedPoint = point;
-                        break;
-                    }
-                }
-
-                endId = selectedPoint.Id;
-            }
-            else
-            {
-                endId = availablePoints[0].Id;
-            }
-
-            return GetRoute(startId, endId);
+            _graph = new NPCRouteGraph();
+            _graph.Init(currentAlgorithm, ActiveWays);
         }
 
         public NPCAttractionPoint GetNearstAttractionPoint(Vector3 targetPosition)
@@ -94,7 +44,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
             NPCAttractionPoint nearestPoint = null;
             float nearestDistance = float.MaxValue;
 
-            foreach (NPCAttractionPoint point in AllAttractionPoints)
+            foreach (NPCAttractionPoint point in _graph.Vertices)
             {
                 float pointDistance = Vector3.Distance(targetPosition, point.Position);
 
@@ -108,132 +58,71 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
             return nearestPoint;
         }
 
-        private void BuildIndex()
+        public Queue<NPCRoutePoint> GetRandomRouteFrom(NPCAttractionPoint startPoint)
         {
-            _confirmedWays.Clear();
-            _allAttractionPoints.Clear();
+            HashSet<NPCAttractionPoint> availablePoints = new(_graph.Vertices.Where(point => point != startPoint));
+            NPCAttractionPoint endPoint;
 
-            foreach (NPCWay way in _activeWays)
+            if (availablePoints.Count == 0)
+                Debug.LogError("Empty collection: availablePoints");
+
+            if (availablePoints.Count == 1)
             {
-                if (way.From == null || way.To == null)
-                    continue;
-
-                if (!_allAttractionPoints.Contains(way.From))
-                    _allAttractionPoints.Add(way.From);
-
-                if (!_allAttractionPoints.Contains(way.To))
-                    _allAttractionPoints.Add(way.To);
-
-                AddWayToIndex(way);
-
-                NPCWay reverseWay = way.CreateReverse();
-                AddWayToIndex(reverseWay);
+                endPoint = availablePoints.First();
+            }
+            else
+            {
+                endPoint = GetRandomWithWeight(availablePoints, startPoint);
             }
 
-            _isInited = true;
+            return GetRoute(startPoint, endPoint);
         }
 
-        private void AddWayToIndex(NPCWay way)
+        private NPCAttractionPoint GetRandomWithWeight(HashSet<NPCAttractionPoint> targetPoints, NPCAttractionPoint startPoint)
         {
-            string fromId = way.From.Id;
-            string toId = way.To.Id;
+            int totalWeight = startPoint.GraphWeightWithoutThis;
 
-            if (!_confirmedWays.ContainsKey(fromId))
+            float random = Random.Range(0f, totalWeight);
+            float accumulate = 0f;
+
+            foreach (NPCAttractionPoint point in targetPoints)
             {
-                _confirmedWays[fromId] = new List<NPCWay>();
+                accumulate += point.Weight;
+
+                if (random <= accumulate) 
+                    return point;
             }
 
-            if (!_confirmedWays[fromId].Any(existingWay => existingWay.To.Id == toId))
-            {
-                _confirmedWays[fromId].Add(way);
-            }
+            return null;
         }
 
-        private List<NPCWay> FindShortestRoute(string startId, string endId)
+        private Queue<NPCRoutePoint> GetRoute(NPCAttractionPoint startPoint, NPCAttractionPoint endPoint)
         {
-            if (!_confirmedWays.ContainsKey(startId) || 
-                !_confirmedWays.ContainsKey(endId) || 
-                startId == endId)
-                return new List<NPCWay>();
+            List<NPCWay> ways;
 
-            Dictionary<string, float> distances = new();
-            Dictionary<string, NPCWay> previousWay = new();
-            Dictionary<string, string> previousNode = new();
-            HashSet<string> unvisited = new();
-
-            foreach (KeyValuePair<string, List<NPCWay>> kvp in _confirmedWays)
+            if (ActiveWays.Count == 1)
             {
-                distances[kvp.Key] = float.MaxValue;
-                unvisited.Add(kvp.Key);
+                ways = ActiveWays;
+            }
+            else
+            {
+                ways = _graph.GetShortestRoute(startPoint, endPoint);
             }
 
-            distances[startId] = 0;
+            if (ways.Count == 0)
+                throw new ArgumentOutOfRangeException();
 
-            while (unvisited.Count > 0)
+            Queue<NPCRoutePoint> queue = new();
+
+            foreach (NPCWay way in ways)
             {
-                string current = unvisited.OrderBy(id => distances[id]).First();
-
-                if (current == endId)
-                    break;
-
-                unvisited.Remove(current);
-
-                if (!_confirmedWays.ContainsKey(current))
-                    continue;
-
-                foreach (NPCWay way in _confirmedWays[current])
+                foreach (NPCRoutePoint point in way.GetAllPoints())
                 {
-                    string next = way.To.Id;
-
-                    if (!unvisited.Contains(next))
-                        continue;
-
-                    float newDist = distances[current] + way.Distance;
-
-                    if (newDist < distances[next])
-                    {
-                        distances[next] = newDist;
-                        previousWay[next] = way;
-                        previousNode[next] = current;
-                    }
+                    queue.Enqueue(point);
                 }
             }
 
-            List<NPCWay> route = new List<NPCWay>();
-            string node = endId;
-
-            while (previousWay.ContainsKey(node))
-            {
-                NPCWay way = previousWay[node];
-                route.Insert(0, way);
-                node = previousNode[node];
-            }
-
-            return route;
+            return queue;
         }
-
-#if UNITY_EDITOR
-        private void OnDrawGizmos()
-        {
-            foreach (NPCWay way in _activeWays)
-            {
-                if (way == null)
-                    continue;
-
-                if (_isWaysVisible)
-                    way.DrawGizmos();
-
-                if (way.From != null)
-                    way.From.IsVisible = _isAttractionPointsVisible;
-
-                if (way.To != null)
-                    way.To.IsVisible = _isAttractionPointsVisible;
-
-                foreach (NPCRootPoint rootPoint in way.Path)
-                    if (way != null & rootPoint != null)
-                        rootPoint.IsVisible = _isRootPointsVisible;
-            }
-        }
-#endif
     }
 }
