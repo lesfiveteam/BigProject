@@ -29,12 +29,12 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
             DrawSphere();
             AdditionalDraw();
+            PositionChangeChecker();
         }
 
         private void OnDrawGizmosSelected()
         {
             SnapToTerrain();
-            PositionChangeChecker();
         }
 
         private void PositionChangeChecker()
