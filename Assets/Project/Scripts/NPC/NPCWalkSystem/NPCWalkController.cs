@@ -24,7 +24,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         [SerializeField] private float _minDelayTimeInPoint = 1f;
         [SerializeField] private float _maxDelayTimeInPoint = 5f;
 
-        private Queue<NPCRootPoint> _currentRoute;
+        private Queue<NPCRoutePoint> _currentRoute;
         private NPCAttractionPoint _lastAttractionPoint;
         private NPCAttractionPoint _nextAttractionPoint;
 
@@ -186,7 +186,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         private IEnumerator GoToNextAttractionPointRoutine()
         {
-            NPCRootPoint nextPoint = null;
+            NPCRoutePoint nextPoint = null;
 
             while (_currentRoute.Count > 0)
             {
@@ -213,9 +213,9 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
             _NPCController.ObstacleOn();
 
-            yield return new WaitForSeconds(Random.Range(_minDelayTimeInPoint, _maxDelayTimeInPoint) * _lastAttractionPoint.DelayModificator);
+            yield return new WaitForSeconds(Random.Range(_minDelayTimeInPoint, _maxDelayTimeInPoint) * _lastAttractionPoint.Modificator);
 
-            _currentRoute = _routeService.GetRandomRouteFrom(_lastAttractionPoint.Id);
+            _currentRoute = _routeService.GetRandomRouteFrom(_lastAttractionPoint);
 
             GoToNextAttractionPoint();
         }

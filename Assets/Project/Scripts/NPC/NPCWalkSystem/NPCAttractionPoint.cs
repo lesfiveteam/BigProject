@@ -2,41 +2,74 @@
 
 namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 {
-    public class NPCAttractionPoint : NPCRootPoint
+    public class NPCAttractionPoint : NPCRoutePoint
     {
-        [field: SerializeField] public float DelayModificator { get; private set; } = 1f;
-        [field: SerializeField, Range(0, 10)] public int Weight { get; private set; } = 5;
-        [field: SerializeField] public NPCAnimationAction TargetAnimation { get; private set; } = NPCAnimationAction.Downtime;
+        private const int MINIMAL_POINT_WEIGHT = 0;
 
-        public string Id => $"{transform.position.x:F0}_{transform.position.y:F0}_{transform.position.z:F0}";
+        [field: SerializeField] public NPCAnimationAction TargetAnimation { get; private set; } = NPCAnimationAction.Downtime;
+        [field: SerializeField] public float Modificator { get; private set; } = 1f;
+        [field: SerializeField, Range(MINIMAL_POINT_WEIGHT, 10)] public int Weight { get; private set; } = 5;
+
+        private int _graphWeithWithoutThis;
+
+        public int GraphWeightWithoutThis
+        {
+            get
+            {
+                if (_graphWeithWithoutThis > 0)
+                    return _graphWeithWithoutThis;
+
+                Debug.LogError($"{gameObject.name}: Total weight without this point is not inited");
+                return 0;
+            }
+            private set
+            {
+                if (value < 0)
+                {
+                    Debug.LogError($"{gameObject.name}: Total weight without this point can't be: {value}");
+                    return;
+                }
+
+                _graphWeithWithoutThis = value;
+            }
+        }
+
+        public void Init(int totalWeightWithoutThis)
+        {
+            GraphWeightWithoutThis = totalWeightWithoutThis;
+        }
 
 #if UNITY_EDITOR
-        private readonly Color ATTRACTION_COLOR = Color.blue;
-        private readonly Color CROSSROAD_COLOR = Color.blueViolet;
-
-        private const float SPHERE_RADIUS = 1.0f;
-
+        private const float ATTRACTION_POINT_SPHERE_RADIUS = 0.3f;
+        private readonly Color ATTRACTION_POINT_COLOR = Color.blue;
+       
         private const float LABEL_OFFSET_Y = 3f;
         private const int LABEL_FONT_SIZE = 12;
 
+
+        private static GUIStyle _labelStyle;
+
         protected override void DrawSphere()
         {
-            Gizmos.color = Weight > 0 ? ATTRACTION_COLOR : CROSSROAD_COLOR;
-            Gizmos.DrawSphere(transform.position, SPHERE_RADIUS);
+            Gizmos.color = Weight > MINIMAL_POINT_WEIGHT ? ATTRACTION_POINT_COLOR : ROUTE_POINT_COLOR;
+            Gizmos.DrawSphere(transform.position, ATTRACTION_POINT_SPHERE_RADIUS);
         }
 
         protected override void AdditionalDraw() => DrawLabel();
 
         private void DrawLabel()
         {
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = Color.black;
-            style.fontSize = LABEL_FONT_SIZE;
-            style.fontStyle = FontStyle.Bold;
-            style.alignment = TextAnchor.MiddleCenter;
+            if (_labelStyle == null)
+            {
+                _labelStyle = new GUIStyle();
+                _labelStyle.normal.textColor = ATTRACTION_POINT_COLOR;
+                _labelStyle.fontSize = LABEL_FONT_SIZE;
+                _labelStyle.fontStyle = FontStyle.Bold;
+                _labelStyle.alignment = TextAnchor.MiddleCenter;
+            }
 
-            Vector3 labelPos = transform.position + Vector3.up * LABEL_OFFSET_Y;
-            UnityEditor.Handles.Label(labelPos, Id, style);
+            Vector3 labelPos = Position + (Vector3.up * LABEL_OFFSET_Y);
+            UnityEditor.Handles.Label(labelPos, gameObject.name, _labelStyle);
         }
 #endif
     }

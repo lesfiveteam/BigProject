@@ -9,51 +9,61 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
     [Serializable]
     public class NPCWay
     {
+        [field: SerializeField] public bool IsVisible {  get; set; }
+
         public NPCAttractionPoint From;
         public NPCAttractionPoint To;
-        public List<NPCRootPoint> Path = new();
+        public List<NPCRoutePoint> Path = new();
 
-        [NonSerialized] private float _cachedDistance = -1;
+        private Vector3 _cachedFromPosition;
+        private Vector3 _cachedToPosition;
+        private List<Vector3> _cachedPathPositions = new();
+        private float _cachedDistance = -1;
 
         public float Distance
         {
             get
             {
                 if (_cachedDistance < 0)
-                    CalculateDistance();
+                    UpdateCaches();
 
                 return _cachedDistance;
             }
         }
 
-        private void CalculateDistance()
+        public void UpdateCaches()
         {
-            _cachedDistance = 0;
-            Vector3 prev = From.Position;
+            if (From == null && To == null)
+            {
+                Debug.LogError("Main points of the route are unknown");
+                return;
+            }
 
-            foreach (NPCRootPoint point in Path)
+            _cachedFromPosition = From.Position;
+            _cachedToPosition = To.Position;
+
+            _cachedPathPositions.Clear();
+            _cachedPathPositions.Capacity = Path.Count;
+
+            foreach (NPCRoutePoint point in Path)
             {
                 if (point != null)
-                {
-                    _cachedDistance += Vector3.Distance(prev, point.Position);
-                    prev = point.Position;
-                }
+                    _cachedPathPositions.Add(point.Position);
+                else
+                    _cachedPathPositions.Add(Vector3.zero);
             }
 
-            if (To != null)
-            {
-                _cachedDistance += Vector3.Distance(prev, To.Position);
-            }
+            CacheDistance();
         }
 
-        public IEnumerable<NPCRootPoint> GetAllPoints()
+        public IEnumerable<NPCRoutePoint> GetAllPoints()
         {
             ExceptionUtilities.ThrowIfNull(From, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCWay", "From"));
             ExceptionUtilities.ThrowIfNull(To, string.Format(LogStr.CRITICAL_NULL_REFERENCE, $"NPCWay", "To"));
 
             yield return From;
 
-            foreach (NPCRootPoint point in Path)
+            foreach (NPCRoutePoint point in Path)
             {
                 if (point != null)
                 {
@@ -66,42 +76,57 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         public NPCWay CreateReverse()
         {
-            List<NPCRootPoint> reversedPath = new(Path);
+            List<NPCRoutePoint> reversedPath = new(Path);
             reversedPath.Reverse();
 
             return new NPCWay
             {
-                From = To,
-                To = From,
+                From = this.To,
+                To = this.From,
                 Path = reversedPath
             };
         }
 
-#if UNITY_EDITOR
-        private const float DRAW_YOFFSET = 0.5f;
-
-        public void DrawGizmos()
+        private void CacheDistance()
         {
-            if (From == null || To == null)
-            {
-                return;
-            }
+            _cachedDistance = 0;
+            Vector3 prev = _cachedFromPosition;
 
-            float lineWidth = 10f;
-            Vector3 prev = From.Position + Vector3.up * DRAW_YOFFSET;
-
-            foreach (NPCRootPoint point in Path)
+            foreach (Vector3 point in _cachedPathPositions)
             {
-                if (point != null)
+                if (point != null && point != Vector3.zero)
                 {
-                    Vector3 current = point.Position + Vector3.up * DRAW_YOFFSET;
-                    UnityEditor.Handles.DrawBezier(prev, current, prev, current, Color.blue, null, lineWidth);
-                    prev = current;
+                    _cachedDistance += Vector3.Distance(prev, point);
+                    prev = point;
                 }
             }
 
-            Vector3 finalPos = To.Position + Vector3.up * DRAW_YOFFSET;
-            UnityEditor.Handles.DrawBezier(prev, finalPos, prev, finalPos, Color.blue, null, lineWidth);
+            _cachedDistance += Vector3.Distance(prev, _cachedToPosition);
+        }
+
+#if UNITY_EDITOR
+        private const float LINE_WIDTH = 2f;
+        private readonly Color WAY_LINE_COLOR = Color.blue;
+
+        public void DrawGizmos()
+        {
+            if (!IsVisible || From == null || To == null)
+                return;
+
+            Vector3 prev = _cachedFromPosition;
+
+            foreach (Vector3 pointPos in _cachedPathPositions)
+            {
+                if (pointPos == Vector3.zero) 
+                    continue;
+
+                Vector3 current = pointPos;
+                UnityEditor.Handles.DrawBezier(prev, current, prev, current, WAY_LINE_COLOR, null, LINE_WIDTH);
+                prev = current;
+            }
+
+            Vector3 finalPos = _cachedToPosition;
+            UnityEditor.Handles.DrawBezier(prev, finalPos, prev, finalPos, WAY_LINE_COLOR, null, LINE_WIDTH);
         }
 #endif
     }

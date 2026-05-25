@@ -26,11 +26,11 @@ namespace Assets.Project.Scripts.NPC.Animals.Fish
             ExceptionUtilities.ThrowIfNullFormat(_routeService);
             ExceptionUtilities.ThrowIfNullFormat(_startPoint);
 
-            Queue<NPCRootPoint> currentRoute = _routeService.GetRandomRouteFrom(_startPoint.Id);
+            Queue<NPCRoutePoint> currentRoute = _routeService.GetRandomRouteFrom(_startPoint);
 
             ExceptionUtilities.ThrowIfEmptyCollection(currentRoute, $"{name}.{nameof(currentRoute)}");
 
-            List<NPCRootPoint> routeList = new(currentRoute);
+            List<NPCRoutePoint> routeList = new(currentRoute);
 
             Vector3[] positions = new Vector3[routeList.Count];
             for (int i = 0; i < routeList.Count; i++)
