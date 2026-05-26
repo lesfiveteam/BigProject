@@ -44,26 +44,26 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
             if (!_isInited)
                 Debug.LogError("NPCRouteGraph is not inited!");
 
-            // for perf test
-            //#if UNITY_EDITOR
-            //            System.Diagnostics.Stopwatch sw = new();
-            //            sw.Start();
-            //#endif
+            //for perf test
+#if UNITY_EDITOR
+                       System.Diagnostics.Stopwatch sw = new();
+            sw.Start();
+#endif
 
-            List<NPCWay> route = _algorithm.FindShortestWay(_adjList, startVertex, endVertex);
+            List < NPCWay> route = _algorithm.FindShortestWay(_adjList, startVertex, endVertex);
 
-            //#if UNITY_EDITOR
-            //            sw.Stop();
-            //            Debug.Log($"Выполнение заняло: {sw.ElapsedTicks} ticks");
-            //            Debug.Log($"В маршруте: {route.Count} точек");
-            //            float routeLenght = 0f;
-            //            foreach (NPCWay way in route)
-            //            {
-            //                routeLenght += Vector3.Distance(way.From.Position, way.To.Position);
-            //                Debug.Log($"точка: {way.From.name}");
-            //            }
-            //            Debug.Log($"Длинна маршрута: {routeLenght}");
-            //#endif
+#if UNITY_EDITOR
+            sw.Stop();
+            Debug.Log($"Выполнение заняло: {sw.ElapsedTicks} ticks");
+            Debug.Log($"В маршруте: {route.Count} точек");
+            float routeLenght = 0f;
+                        foreach (NPCWay way in route)
+                {
+                    routeLenght += Vector3.Distance(way.From.Position, way.To.Position);
+                    Debug.Log($"точка: {way.From.name}");
+                }
+            Debug.Log($"Длинна маршрута: {routeLenght}");
+#endif
 
             return route;
         }

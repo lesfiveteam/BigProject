@@ -18,6 +18,8 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
             BiAStar,
         }
 
+        [SerializeField] private NPCAttractionPoint _testPoint;
+
         [SerializeField] private AlgorithmType _algorithmType = AlgorithmType.BFS;
 
         [field: SerializeField] public List<NPCWay> ActiveWays { get; private set; } = new();
@@ -99,6 +101,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         private Queue<NPCRoutePoint> GetRoute(NPCAttractionPoint startPoint, NPCAttractionPoint endPoint)
         {
             List<NPCWay> ways;
+            endPoint = _testPoint;
 
             if (ActiveWays.Count == 1)
             {
