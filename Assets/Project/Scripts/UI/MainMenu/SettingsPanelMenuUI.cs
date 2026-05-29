@@ -1,6 +1,5 @@
 ﻿using BigProject.Managers;
 using BigProject.Utilities;
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -30,6 +29,7 @@ namespace BigProject.UI
             
             _backButton.onClick.AddListener(() =>
             {
+                _mainMenuPanelManager.OnButtonClickSound(_backButton);
                 _mainMenuPanelManager.GetMenuPanel().gameObject.SetActive(true);
                 _mainMenuPanelManager.GetStudioLogo().SetActive(true);
                 _mainMenuPanelManager.ToggleBlur(false);

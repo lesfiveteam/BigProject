@@ -11,6 +11,8 @@ namespace BigProject.UI.MainMenu
     public class EntryPoint : MonoBehaviour
     {
         [SerializeField]
+        private MainMenuPanelManager _mainMenuPanelManager;
+        [SerializeField]
         private MenuPanelUI _menuPanel;
         [SerializeField]
         private AudioClip _audioClip;
@@ -21,8 +23,9 @@ namespace BigProject.UI.MainMenu
             MusicManager musicManager = ServiceLocator.GetService<MusicManager>();
             musicManager.PlayMusic(_audioClip);
             Assert.IsNotNull(_menuPanel, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, "Menu EntryPoint", "MenuPanelUI"));
+            _mainMenuPanelManager.Init(ServiceLocator.GetService<SoundsManager>());
             _menuPanel.Init(ServiceLocator.GetService<ProgressManager>(), ServiceLocator.GetService<SceneLoadManager>(),
-                ServiceLocator.GetService<SavesManager>(), ServiceLocator.GetService<SoundsManager>(),
+                ServiceLocator.GetService<SavesManager>(),
                 ServiceLocator.GetService<SettingsManager>(), ServiceLocator.GetService<PlayerLocation>());
         }
     }

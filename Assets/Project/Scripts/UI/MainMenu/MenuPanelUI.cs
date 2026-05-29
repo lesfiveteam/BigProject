@@ -1,7 +1,6 @@
 using Assets.Project.Scripts.Managers.SceneLoader;
 using BigProject.Initializers;
 using BigProject.Managers;
-using BigProject.Managers.SoundsMusicManagers;
 using BigProject.Player;
 using BigProject.Settings;
 using BigProject.Systems;
@@ -21,7 +20,6 @@ namespace BigProject.UI
         [SerializeField] private Button _continueButton;
         [SerializeField] private Button _settingsButton;
         [SerializeField] private Button _quitButton;
-        [SerializeField] private AudioClip _clickSound;
         [SerializeField] private GlobalConfig _globalConfig;
         [SerializeField] private Animator _boyAnimator;
         [SerializeField] private Animator _backgroundAnimator;
@@ -32,23 +30,20 @@ namespace BigProject.UI
         private ProgressManager _progressManager;
         private SceneLoadManager _sceneLoader;
         private SavesManager _savesManager;
-        private SoundsManager _soundsManager;
         private SettingsManager _settingsManager;
         private PlayerLocation _playerLocation;
 
-        public void Init(ProgressManager progressManager, SceneLoadManager sceneLoader, SavesManager savesManager, SoundsManager soundsManager,
+        public void Init(ProgressManager progressManager, SceneLoadManager sceneLoader, SavesManager savesManager,
             SettingsManager settingsManager, PlayerLocation playerLocation)
         {
             _progressManager = progressManager;
             _sceneLoader = sceneLoader;
             _savesManager = savesManager;
-            _soundsManager = soundsManager;
             _settingsManager = settingsManager;
             _playerLocation = playerLocation;
             ExceptionUtilities.ThrowIfNull(_progressManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "ProgressManager"));
             ExceptionUtilities.ThrowIfNull(_sceneLoader, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SceneLoadManager"));
             ExceptionUtilities.ThrowIfNull(_savesManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SavesManager"));
-            ExceptionUtilities.ThrowIfNull(_soundsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SoundsManager"));
             ExceptionUtilities.ThrowIfNull(_settingsManager, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "SettingsManager"));
             ExceptionUtilities.ThrowIfNull(_playerLocation, String.Format(LogStr.CRITICAL_NULL_REFERENCE, gameObject.name, "PlayerLocation"));
 
@@ -74,7 +69,7 @@ namespace BigProject.UI
         {
             _newGameButton.onClick.AddListener(() =>
             {
-                _soundsManager.PlaySound(_clickSound, is2D: true);
+                _mainMenuPanelManager.OnButtonClickSound(_newGameButton);
 
                 if (_sceneLoader.IsLoading)
                 {
@@ -95,7 +90,7 @@ namespace BigProject.UI
 
             _continueButton.onClick.AddListener(() =>
             {
-                _soundsManager.PlaySound(_clickSound, is2D: true);
+                _mainMenuPanelManager.OnButtonClickSound(_continueButton);
 
                 if (_sceneLoader.IsLoading)
                 {
@@ -110,7 +105,7 @@ namespace BigProject.UI
 
             _settingsButton.onClick.AddListener(() =>
             {
-                _soundsManager.PlaySound(_clickSound, is2D: true);
+                _mainMenuPanelManager.OnButtonClickSound(_settingsButton);
                 _mainMenuPanelManager.GetSettingsPanel().gameObject.SetActive(true);
                 _mainMenuPanelManager.GetStudioLogo().SetActive(false);
                 _mainMenuPanelManager.ToggleBlur(true);
@@ -119,7 +114,7 @@ namespace BigProject.UI
 
             _quitButton.onClick.AddListener(() =>
             {
-                _soundsManager.PlaySound(_clickSound, is2D: true);
+                _mainMenuPanelManager.OnButtonClickSound(_quitButton);
                 Debug.Log(String.Format(LogStr.INFO_SYSTEM, "MainMenu", "clicked Quit Button"));
                 Application.Quit();
             });
