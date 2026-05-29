@@ -29,6 +29,7 @@ namespace BigProject.Gameplay.Watermill
         private UnityEvent _incompleteClue;
         private SoundsManager _soundsManager;
         private AudioClip _leverInsertSound;
+        private float _leverTakeVolume = 0.1f;
         private LocalizedString _moveLeversRemark;
         private HUD _hud;
         private HUDConfig _hudConfig;
@@ -108,7 +109,7 @@ namespace BigProject.Gameplay.Watermill
 
         private async Awaitable InstallLever(CancellationToken ct)
         {
-            _soundsManager.PlaySound(_leverInsertSound, is2D: true);
+            _soundsManager.PlaySound(_leverInsertSound, is2D: true, volume: _leverTakeVolume);
             _isSkipped = false;
             SetVisibility();
 

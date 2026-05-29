@@ -26,6 +26,7 @@ namespace BigProject.Gameplay.Watermill
         private InventorySystem _inventory;
         private SoundsManager _soundsManager;
         private AudioClip _leverTakeSound;
+        private float _leverTakeVolume = 0.1f;
         private LocalizedString _getBrokenLeverRemark;
 
         public ControlPanelStateBroken(ControlPanel controlPanel, PlayerInputHandler input, GameObject brokenLever, float brokenLeverOffset,
@@ -70,7 +71,7 @@ namespace BigProject.Gameplay.Watermill
 
         private async Awaitable RemoveLever(CancellationToken ct)
         {
-            _soundsManager.PlaySound(_leverTakeSound, is2D: true);
+            _soundsManager.PlaySound(_leverTakeSound, is2D: true, volume: _leverTakeVolume);
             ReplicaManager.ShowReplica(_getBrokenLeverRemark);
             _isRemovingLever = true;
             Vector3 _targetPosition = _brokenLever.transform.localPosition;

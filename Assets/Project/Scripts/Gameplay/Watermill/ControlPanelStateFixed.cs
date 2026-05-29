@@ -39,6 +39,7 @@ namespace BigProject.Gameplay.Watermill
         private const float MAX_SWIPE_ANGLE_DELTA = 30f;
         private SoundsManager _soundsManager;
         private AudioClip _leverMoveSound;
+        private float _leverMoveVolume = 0.1f;
 
         // Key points of lever route.
         private class LeverPoint
@@ -225,7 +226,7 @@ namespace BigProject.Gameplay.Watermill
 
         private async Awaitable MoveLever(Lever lever, LeverPoint currentPoint, LeverPoint target, CancellationToken ct)
         {
-            _soundsManager.PlaySound(_leverMoveSound, is2D:true);
+            _soundsManager.PlaySound(_leverMoveSound, is2D:true, volume: _leverMoveVolume);
             _isMoving = true;
             Vector3 startPosition = lever.Transform.localPosition;
             Vector3 newLeverPosition = startPosition;
