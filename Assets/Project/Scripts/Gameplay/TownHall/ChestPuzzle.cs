@@ -58,6 +58,10 @@ namespace BigProject.Gameplay.TownHall
         [SerializeField]
         private AudioClip _chestOpenSound;
         [SerializeField]
+        private AudioClip _keyBroken;
+        [SerializeField]
+        private AudioClip _keyUse;
+        [SerializeField]
         private float _chestOpenSoundVolume = 1f;
         [SerializeField]
         private Collider _maskCollider;
@@ -185,6 +189,8 @@ namespace BigProject.Gameplay.TownHall
                 return;
             }
 
+            _soundsManager.PlaySound(_keyUse);
+
             if (_inventory.HasItemByName(itemName))
             {
                 _inventory.RemoveItemByName(itemName);
@@ -245,7 +251,11 @@ namespace BigProject.Gameplay.TownHall
             //MoveElement(partOne, BROKEN_KEY_PART_1_MOVING_OFFSET, BROKEN_KEY_PART_1_ROTATION_OFFSET, _brokenKeyMovingTime);
             //MoveElement(partTwo, BROKEN_KEY_PART_2_MOVING_OFFSET, BROKEN_KEY_PART_2_ROTATION_OFFSET, _brokenKeyMovingTime);
             _actionHandlers[_actionTryBrokenKeyName].MakeTransition(0);
-            yield return new WaitForSeconds(_brokenKeyMovingTime + 0.1f);
+
+            yield return new WaitForSeconds(_brokenKeyMovingTime/2);
+            _soundsManager.PlaySound(_keyBroken);
+            yield return new WaitForSeconds((_brokenKeyMovingTime/2) + 0.1f);
+
             //Destroy(key.gameObject);
             _activator.DeactivateMiniGame();
         }
