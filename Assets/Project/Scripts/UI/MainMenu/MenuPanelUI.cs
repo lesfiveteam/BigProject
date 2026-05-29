@@ -7,8 +7,10 @@ using BigProject.Systems;
 using BigProject.Systems.QuestSystem;
 using BigProject.Utilities;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace BigProject.UI
@@ -32,6 +34,7 @@ namespace BigProject.UI
         private SavesManager _savesManager;
         private SettingsManager _settingsManager;
         private PlayerLocation _playerLocation;
+        private List<Button> _buttons = new();
 
         public void Init(ProgressManager progressManager, SceneLoadManager sceneLoader, SavesManager savesManager,
             SettingsManager settingsManager, PlayerLocation playerLocation)
@@ -58,6 +61,11 @@ namespace BigProject.UI
             Assert.IsNotNull(_quitButton, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "Exit Button"));
             Assert.IsNotNull(_globalConfig, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "GlobalConfig"));
             Assert.IsNotNull(_audioListener, string.Format(LogStr.CRITICAL_NOT_SERIALIZED_FIELD, gameObject.name, "AudioListener"));
+
+            _buttons.Add(_newGameButton);
+            _buttons.Add(_continueButton);
+            _buttons.Add(_settingsButton);
+            _buttons.Add(_quitButton);
         }
 
         private void Start()
@@ -69,7 +77,7 @@ namespace BigProject.UI
         {
             _newGameButton.onClick.AddListener(() =>
             {
-                _mainMenuPanelManager.OnButtonClickSound(_newGameButton);
+                _mainMenuPanelManager.OnButtonClickSound();
 
                 if (_sceneLoader.IsLoading)
                 {
@@ -84,19 +92,21 @@ namespace BigProject.UI
                     _progressManager.Reload(new QuestJsonLoader(_globalConfig.QuestsFolder));
                 }
 
+                StopInteractButtons();
                 PlayAnimations();
                 _sceneLoader.LoadScene(Scenes.Intro);
             });
 
             _continueButton.onClick.AddListener(() =>
             {
-                _mainMenuPanelManager.OnButtonClickSound(_continueButton);
+                _mainMenuPanelManager.OnButtonClickSound();
 
                 if (_sceneLoader.IsLoading)
                 {
                     return;
                 }
 
+                StopInteractButtons();
                 PlayAnimations();
                 _progressManager.LoadAdditionalData(_playerLocation);
                 _sceneLoader.SceneLoadingStarted += OnGameLoadingStarted;
@@ -105,7 +115,7 @@ namespace BigProject.UI
 
             _settingsButton.onClick.AddListener(() =>
             {
-                _mainMenuPanelManager.OnButtonClickSound(_settingsButton);
+                _mainMenuPanelManager.OnButtonClickSound();
                 _mainMenuPanelManager.GetSettingsPanel().gameObject.SetActive(true);
                 _mainMenuPanelManager.GetStudioLogo().SetActive(false);
                 _mainMenuPanelManager.ToggleBlur(true);
@@ -114,7 +124,7 @@ namespace BigProject.UI
 
             _quitButton.onClick.AddListener(() =>
             {
-                _mainMenuPanelManager.OnButtonClickSound(_quitButton);
+                _mainMenuPanelManager.OnButtonClickSound();
                 Debug.Log(String.Format(LogStr.INFO_SYSTEM, "MainMenu", "clicked Quit Button"));
                 Application.Quit();
             });
@@ -130,10 +140,19 @@ namespace BigProject.UI
 
         private void OnDisable()
         {
-            _newGameButton.onClick.RemoveAllListeners();
-            _continueButton.onClick.RemoveAllListeners();
-            _settingsButton.onClick.RemoveAllListeners();
-            _quitButton.onClick.RemoveAllListeners();
+            foreach (Button button in _buttons)
+            {
+                button.onClick.RemoveAllListeners();
+            }
+        }
+
+        private void StopInteractButtons()
+        {
+            foreach (Button button in _buttons)
+            {
+                button.GetComponent<EventTrigger>().enabled = false;
+                button.GetComponent<Animator>().enabled = false;
+            }
         }
 
         private void PlayAnimations()

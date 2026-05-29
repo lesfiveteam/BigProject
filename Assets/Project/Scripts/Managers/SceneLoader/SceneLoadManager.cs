@@ -88,8 +88,6 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
                 GameLogManager.Warning(LogStr.WARNING_SAME_SCENE);
             }
 
-            _soundsManager.StopAllSounds();
-
             _coroutineStarter.StartCoroutine(LoadSceneRoutine(scene, newSceneName));
         }
 
@@ -119,6 +117,8 @@ namespace Assets.Project.Scripts.Managers.SceneLoader
 
             while (waitFading)
                 yield return null;
+
+            _soundsManager.StopAllSounds();
 
             // Show preloader
             bool waitPreloader = true;

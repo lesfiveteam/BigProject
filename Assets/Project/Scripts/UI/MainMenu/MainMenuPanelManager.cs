@@ -18,7 +18,9 @@ namespace BigProject.UI
         [SerializeField] private Camera _sceneCamera;
         [SerializeField] private Volume _blurVolume;
         [SerializeField] private AudioClip _clickSound;
+        [SerializeField] private float _clickVolume = 0.1f;
         [SerializeField] private AudioClip _focusedSound;
+        [SerializeField] private float _focusedVolume = 0.3f;
         private DepthOfField _blurDepthOfField;
         private UniversalAdditionalCameraData _cameraData;
         private SoundsManager _soundsManager;
@@ -56,16 +58,15 @@ namespace BigProject.UI
         public GameObject GetStudioLogo() { return _studioLogo; }
         public GameObject GetBlurScreen() { return _blurScreen; }
 
-        public void OnButtonClickSound(Button button)
+        public void OnButtonClickSound()
         {
-            if (button.interactable)
-                _soundsManager.PlaySound(_clickSound, is2D: true);
+            _soundsManager.PlaySound(_clickSound, is2D: true, volume: _clickVolume);
         }
 
         public void OnButtonFocusedSound(Button button)
         {
             if (button.interactable)
-                _soundsManager.PlaySound(_focusedSound, is2D: true);
+                _soundsManager.PlaySound(_focusedSound, is2D: true, volume: _focusedVolume);
         }
 
         public void ToggleBlur(bool isBlurOn)

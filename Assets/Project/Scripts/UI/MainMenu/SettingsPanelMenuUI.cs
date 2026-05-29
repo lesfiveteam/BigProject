@@ -29,7 +29,7 @@ namespace BigProject.UI
             
             _backButton.onClick.AddListener(() =>
             {
-                _mainMenuPanelManager.OnButtonClickSound(_backButton);
+                _mainMenuPanelManager.OnButtonClickSound();
                 _mainMenuPanelManager.GetMenuPanel().gameObject.SetActive(true);
                 _mainMenuPanelManager.GetStudioLogo().SetActive(true);
                 _mainMenuPanelManager.ToggleBlur(false);
