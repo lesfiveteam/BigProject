@@ -7,6 +7,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
     public class SlidesGroup : MonoBehaviour
     {
         [field: SerializeField] public AudioClip Music { get; private set; }
+        [field: SerializeField] public float MusicVolume { get; private set; } = 0.2f;
         [field: SerializeField] public List<Slide> Slides { get; private set; }
 
         private void Start()

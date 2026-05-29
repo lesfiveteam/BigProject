@@ -113,7 +113,7 @@ namespace Assets.Project.Scripts.Managers.SlideManager
         {
             List<Slide> slides = _currentSlides.Slides;
 
-            _musicManager.PlayMusic(_currentSlides.Music);
+            _musicManager.PlayMusic(_currentSlides.Music, maxVolume: _currentSlides.MusicVolume);
 
             for (int i = 0; i < slides.Count; i++)
             {
