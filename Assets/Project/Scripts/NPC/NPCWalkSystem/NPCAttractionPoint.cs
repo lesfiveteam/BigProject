@@ -6,11 +6,27 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
     {
         private const int MINIMAL_POINT_WEIGHT = 0;
 
+        private int _graphWeithWithoutThis;
+        private int _cachedId;
+
         [field: SerializeField] public NPCAnimationAction TargetAnimation { get; private set; } = NPCAnimationAction.Downtime;
         [field: SerializeField] public float Modificator { get; private set; } = 1f;
         [field: SerializeField, Range(MINIMAL_POINT_WEIGHT, 10)] public int Weight { get; private set; } = 5;
 
-        private int _graphWeithWithoutThis;
+        public int Id
+        {
+            get
+            {
+                if (_cachedId != 0)
+                    return _cachedId;
+
+                int x = (int)transform.position.x;
+                int z = (int)transform.position.z;
+                _cachedId = (x << 16) | (z & 0xFFFF);
+
+                return _cachedId;
+            }
+        }
 
         public int GraphWeightWithoutThis
         {
@@ -36,6 +52,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         public void Init(int totalWeightWithoutThis)
         {
+            _ = Id;
             GraphWeightWithoutThis = totalWeightWithoutThis;
         }
 

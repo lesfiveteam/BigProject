@@ -2,29 +2,32 @@
 
 namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
 {
-    public class BFS : IAlgorithm
+    public class BFS : PathfindingAlgorithm
     {
-        public List<NPCWay> FindShortestWay(
+        public override List<NPCWay> FindShortestWay(
             Dictionary<NPCAttractionPoint, List<NPCWay>> adjList,
             NPCAttractionPoint startVertex,
             NPCAttractionPoint endVertex)
         {
-            if (!adjList.ContainsKey(startVertex) 
-                || !adjList.ContainsKey(endVertex) 
-                || startVertex == endVertex)
-                return new List<NPCWay>();
-
-            Queue<NPCAttractionPoint> queue = new();
-            Dictionary<NPCAttractionPoint, NPCWay> cameFromEdge = new();
-            Dictionary<NPCAttractionPoint, NPCAttractionPoint> cameFromVertex = new();
-            HashSet<NPCAttractionPoint> visited = new();
-
-            queue.Enqueue(startVertex);
-            visited.Add(startVertex);
-
-            while (queue.Count > 0)
+            if (!adjList.ContainsKey(startVertex) ||
+                !adjList.ContainsKey(endVertex) ||
+                startVertex == endVertex)
             {
-                NPCAttractionPoint current = queue.Dequeue();
+                return new();
+            }
+
+            int estimatedSize = adjList.Count;
+            Queue<NPCAttractionPoint> openSet = new(estimatedSize);
+            Dictionary<NPCAttractionPoint, NPCWay> cameFromEdge = new(estimatedSize)
+                {[startVertex] = null};
+            NPCAttractionPoint current;
+            NPCAttractionPoint next;
+
+            openSet.Enqueue(startVertex);
+
+            while (openSet.Count > 0)
+            {
+                current = openSet.Dequeue();
 
                 if (current == endVertex)
                     break;
@@ -34,35 +37,20 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
 
                 foreach (NPCWay way in adjList[current])
                 {
-                    NPCAttractionPoint next = way.To;
+                    next = way.To;
 
-                    if (visited.Contains(next))
+                    if (cameFromEdge.ContainsKey(next))
                         continue;
 
-                    visited.Add(next);
                     cameFromEdge[next] = way;
-                    cameFromVertex[next] = current;
-                    queue.Enqueue(next);
+                    openSet.Enqueue(next);
                 }
             }
 
-            return ReconstructPath(cameFromEdge, cameFromVertex, endVertex);
-        }
-        private List<NPCWay> ReconstructPath(
-            Dictionary<NPCAttractionPoint, NPCWay> cameFromEdge,
-            Dictionary<NPCAttractionPoint, NPCAttractionPoint> cameFromVertex,
-            NPCAttractionPoint endVertex)
-        {
-            List<NPCWay> route = new();
-            NPCAttractionPoint current = endVertex;
+            if (!cameFromEdge.ContainsKey(endVertex))
+                return new List<NPCWay>();
 
-            while (cameFromEdge.ContainsKey(current))
-            {
-                route.Insert(0, cameFromEdge[current]);
-                current = cameFromVertex[current];
-            }
-
-            return route;
+            return ReconstructPath(cameFromEdge, endVertex);
         }
     }
 }

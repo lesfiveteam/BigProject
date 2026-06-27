@@ -1,32 +1,40 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
 {
-    public class AStar : IAlgorithm
+    public class AStar : PathfindingAlgorithm
     {
-        public List<NPCWay> FindShortestWay(
+        public override List<NPCWay> FindShortestWay(
             Dictionary<NPCAttractionPoint, List<NPCWay>> adjList,
             NPCAttractionPoint startVertex,
             NPCAttractionPoint endVertex)
         {
-            if (!adjList.ContainsKey(startVertex) || !adjList.ContainsKey(endVertex) || startVertex == endVertex)
-                return new List<NPCWay>();
+            if (!adjList.ContainsKey(startVertex) ||
+                !adjList.ContainsKey(endVertex) ||
+                startVertex == endVertex)
+            {
+                return new();
+            }
 
-            Dictionary<NPCAttractionPoint, float> distances = new();
-            Dictionary<NPCAttractionPoint, NPCWay> cameFromEdge = new();
-            Dictionary<NPCAttractionPoint, NPCAttractionPoint> cameFromVertex = new();
-            PriorityQueue<NPCAttractionPoint> pq = new();
+            int estimatedSize = adjList.Count;
+            Dictionary<NPCAttractionPoint, float> gScore = new(estimatedSize);
+            Dictionary<NPCAttractionPoint, NPCWay> cameFromEdge = new(estimatedSize);
+            PriorityQueue<NPCAttractionPoint> openSet = new(estimatedSize);
+            NPCAttractionPoint current;
+            NPCAttractionPoint next;
 
             foreach (NPCAttractionPoint vertex in adjList.Keys)
-                distances[vertex] = float.MaxValue;
+                gScore[vertex] = float.MaxValue;
 
-            distances[startVertex] = 0f;
-            pq.Enqueue(startVertex, Heuristic(startVertex, endVertex));
+            gScore[startVertex] = 0f;
+            openSet.Enqueue(startVertex, Heuristic(startVertex, endVertex));
 
-            while (pq.Count > 0)
+            while (openSet.Count > 0)
             {
-                NPCAttractionPoint current = pq.Dequeue();
+                openSet.TryDequeue(out current, out float currentF);
+
+                if (currentF > gScore[current] + Heuristic(current, endVertex))
+                    continue;
 
                 if (current == endVertex)
                     break;
@@ -36,40 +44,23 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
 
                 foreach (NPCWay way in adjList[current])
                 {
-                    NPCAttractionPoint next = way.To;
-                    float newG = distances[current] + way.Distance;
+                    next = way.To;
+                    float newG = gScore[current] + way.Distance;
 
-                    if (newG < distances[next])
+                    if (newG < gScore[next])
                     {
-                        distances[next] = newG;
+                        gScore[next] = newG;
                         cameFromEdge[next] = way;
-                        cameFromVertex[next] = current;
                         float newF = newG + Heuristic(next, endVertex);
-                        pq.Enqueue(next, newF);
+                        openSet.Enqueue(next, newF);
                     }
                 }
             }
 
-            return ReconstructPath(cameFromEdge, cameFromVertex, endVertex);
-        }
+            if (!cameFromEdge.ContainsKey(endVertex))
+                return new List<NPCWay>();
 
-        private float Heuristic(NPCAttractionPoint a, NPCAttractionPoint b) => Vector3.Distance(a.Position, b.Position);
-
-        private List<NPCWay> ReconstructPath(
-            Dictionary<NPCAttractionPoint, NPCWay> cameFromEdge,
-            Dictionary<NPCAttractionPoint, NPCAttractionPoint> cameFromVertex,
-            NPCAttractionPoint endVertex)
-        {
-            List<NPCWay> route = new();
-            NPCAttractionPoint current = endVertex;
-
-            while (cameFromEdge.ContainsKey(current))
-            {
-                route.Insert(0, cameFromEdge[current]);
-                current = cameFromVertex[current];
-            }
-
-            return route;
+            return ReconstructPath(cameFromEdge, endVertex);
         }
     }
 }

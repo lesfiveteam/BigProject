@@ -22,16 +22,19 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
     {
         private Dictionary<NPCAttractionPoint, List<NPCWay>> _adjList = new();
 
-        private IAlgorithm _algorithm;
+        private PathfindingAlgorithm _algorithm;
 
         private int _totalWeight;
+        private bool _isDebug = false;
         private bool _isInited = false;
+
 
         public HashSet<NPCAttractionPoint> Vertices {  get; private set; } = new();
 
-        public void Init(IAlgorithm algorithm, List<NPCWay> edges)
+        public void Init(PathfindingAlgorithm algorithm, List<NPCWay> edges, bool isDebug)
         {
             _algorithm = algorithm;
+            _isDebug = isDebug;
 
             BuildIndex(edges);
             InitVertices();
@@ -44,26 +47,41 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
             if (!_isInited)
                 Debug.LogError("NPCRouteGraph is not inited!");
 
+            List<NPCWay> route = new();
+
             //for perf test
 #if UNITY_EDITOR
-                       System.Diagnostics.Stopwatch sw = new();
-            sw.Start();
-#endif
+            if (_isDebug)
+            {
+                System.Diagnostics.Stopwatch sw = new();
+                sw.Start();
 
-            List < NPCWay> route = _algorithm.FindShortestWay(_adjList, startVertex, endVertex);
+                route = _algorithm.FindShortestWay(_adjList, startVertex, endVertex);
 
-#if UNITY_EDITOR
-            sw.Stop();
-            Debug.Log($"Выполнение заняло: {sw.ElapsedTicks} ticks");
-            Debug.Log($"В маршруте: {route.Count} точек");
-            float routeLenght = 0f;
-                        foreach (NPCWay way in route)
+                sw.Stop();
+                Debug.Log($"Route calculation took: {sw.ElapsedTicks} ticks");
+                Debug.Log($"Route has: {route.Count} egdes");
+                float routeLenght = 0f;
+                string routePoints = "Route has points: ";
+
+                for (int i = 0; i < route.Count; i++)
                 {
-                    routeLenght += Vector3.Distance(way.From.Position, way.To.Position);
-                    Debug.Log($"точка: {way.From.name}");
+                    routeLenght += Vector3.Distance(route[i].From.Position, route[i].To.Position);
+                    routePoints += route[i].From.name + ", ";
+
+                    if (i == route.Count - 1)
+                    {
+                        routePoints += route[i].To.name;
+                    }
                 }
-            Debug.Log($"Длинна маршрута: {routeLenght}");
+
+                Debug.Log(routePoints);
+                Debug.Log($"Route length: {routeLenght}");
+            }
 #endif
+
+            if (route.Count == 0)
+                route = _algorithm.FindShortestWay(_adjList, startVertex, endVertex);
 
             return route;
         }

@@ -2,7 +2,7 @@
 
 namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
 {
-    public class BIAStar : PathfindingAlgorithm
+    public class BIDijkstra : PathfindingAlgorithm
     {
         public override List<NPCWay> FindShortestWay(
             Dictionary<NPCAttractionPoint, List<NPCWay>> adjList,
@@ -15,19 +15,15 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
             {
                 return new();
             }
-                
 
-            // Forward search (from start)
             Dictionary<NPCAttractionPoint, float> gScoreForward = new();
             Dictionary<NPCAttractionPoint, NPCWay> cameFromForward = new();
             PriorityQueue<NPCAttractionPoint> openSetForward = new();
 
-            // Backward search (from end)
             Dictionary<NPCAttractionPoint, float> gScoreBackward = new();
             Dictionary<NPCAttractionPoint, NPCWay> cameFromBackward = new();
             PriorityQueue<NPCAttractionPoint> openSetBackward = new();
 
-            // Initialize
             foreach (NPCAttractionPoint vertex in adjList.Keys)
             {
                 gScoreForward[vertex] = float.MaxValue;
@@ -36,43 +32,45 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
 
             gScoreForward[startVertex] = 0f;
             gScoreBackward[endVertex] = 0f;
-            openSetForward.Enqueue(startVertex, Heuristic(startVertex, endVertex));
-            openSetBackward.Enqueue(endVertex, Heuristic(endVertex, startVertex));
+            openSetForward.Enqueue(startVertex, 0f);
+            openSetBackward.Enqueue(endVertex, 0f);
 
             NPCAttractionPoint meetingPoint = null;
             float bestPathCost = float.MaxValue;
 
             while (openSetForward.Count > 0 && openSetBackward.Count > 0)
             {
-                // Forward step
-                if (ExpandBidirectional(adjList, openSetForward, gScoreForward, gScoreBackward,
-                                        cameFromForward, endVertex,
-                                        ref meetingPoint, ref bestPathCost))
-                    break;
+                ExpandBidirectional(adjList, openSetForward, gScoreForward, gScoreBackward,
+                                    cameFromForward, ref meetingPoint, ref bestPathCost);
 
-                // Backward step
-                if (ExpandBidirectional(adjList, openSetBackward, gScoreBackward, gScoreForward,
-                                        cameFromBackward, startVertex,
-                                        ref meetingPoint, ref bestPathCost))
+                ExpandBidirectional(adjList, openSetBackward, gScoreBackward, gScoreForward,
+                                    cameFromBackward, ref meetingPoint, ref bestPathCost);
+
+                float minForward = openSetForward.PeekPriority();
+                float minBackward = openSetBackward.PeekPriority();
+
+                if (minForward + minBackward >= bestPathCost)
                     break;
             }
+
+            if (meetingPoint == null)
+                return new List<NPCWay>();
 
             return ReconstructBidirectionalPath(cameFromForward, cameFromBackward,
                                                  meetingPoint, startVertex, endVertex);
         }
 
-        private bool ExpandBidirectional(
+        private void ExpandBidirectional(
             Dictionary<NPCAttractionPoint, List<NPCWay>> adjList,
             PriorityQueue<NPCAttractionPoint> openSet,
             Dictionary<NPCAttractionPoint, float> gScoreCurrent,
             Dictionary<NPCAttractionPoint, float> gScoreOther,
             Dictionary<NPCAttractionPoint, NPCWay> cameFrom,
-            NPCAttractionPoint targetVertex,
             ref NPCAttractionPoint meetingPoint,
             ref float bestPathCost)
         {
             if (openSet.Count == 0)
-                return false;
+                return;
 
             NPCAttractionPoint current = openSet.Dequeue();
             float currentG = gScoreCurrent[current];
@@ -85,12 +83,11 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
                 {
                     bestPathCost = totalCost;
                     meetingPoint = current;
-                    return true;
                 }
             }
 
             if (!adjList.ContainsKey(current))
-                return false;
+                return;
 
             foreach (NPCWay way in adjList[current])
             {
@@ -101,7 +98,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
                 {
                     gScoreCurrent[next] = newG;
                     cameFrom[next] = way;
-                    openSet.Enqueue(next, newG + Heuristic(next, targetVertex));
+                    openSet.Enqueue(next, newG);
                 }
 
                 if (gScoreOther[next] < float.MaxValue)
@@ -115,8 +112,6 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem.Algorithms
                     }
                 }
             }
-
-            return false;
         }
     }
 }
