@@ -11,12 +11,20 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
     {
         public enum AlgorithmType
         {
-            BFS,
             DFS,
+            IDDFS,
+            BIDDFS,
+            BFS,
+            BiBFS,
             Dijkstra,
+            BiDijkstra,
             AStar,
             BiAStar,
         }
+
+        [SerializeField] private bool _isDebug = false;
+
+        [SerializeField] private NPCAttractionPoint _testPoint;
 
         [SerializeField] private AlgorithmType _algorithmType = AlgorithmType.BFS;
 
@@ -25,18 +33,22 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
         private void Awake()
         {
-            IAlgorithm currentAlgorithm = _algorithmType switch
+            PathfindingAlgorithm currentAlgorithm = _algorithmType switch
             {
-                AlgorithmType.BFS => new BFS(),
                 AlgorithmType.DFS => new DFS(),
+                AlgorithmType.IDDFS => new IDDFS(),
+                AlgorithmType.BIDDFS => new BIDDFS(),
+                AlgorithmType.BFS => new BFS(),
+                AlgorithmType.BiBFS => new BIBFS(),
                 AlgorithmType.Dijkstra => new Dijkstra(),
+                AlgorithmType.BiDijkstra => new BIDijkstra(),
                 AlgorithmType.AStar => new AStar(),
-                AlgorithmType.BiAStar => new BiAStar(),
+                AlgorithmType.BiAStar => new BIAStar(),
                 _ => throw new ArgumentOutOfRangeException(nameof(_algorithmType), _algorithmType, null)
             };
 
             _graph = new NPCRouteGraph();
-            _graph.Init(currentAlgorithm, ActiveWays);
+            _graph.Init(currentAlgorithm, ActiveWays, _isDebug);
         }
 
         public NPCAttractionPoint GetNearstAttractionPoint(Vector3 targetPosition)
@@ -100,6 +112,11 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
         {
             List<NPCWay> ways;
 
+            if (_isDebug)
+            {
+                endPoint = _testPoint;
+            }
+            
             if (ActiveWays.Count == 1)
             {
                 ways = ActiveWays;

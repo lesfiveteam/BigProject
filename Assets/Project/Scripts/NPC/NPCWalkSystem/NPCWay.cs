@@ -94,7 +94,7 @@ namespace Assets.Project.Scripts.NPC.NPCWalkSystem
 
             foreach (Vector3 point in _cachedPathPositions)
             {
-                if (point != null && point != Vector3.zero)
+                if (point != Vector3.zero)
                 {
                     _cachedDistance += Vector3.Distance(prev, point);
                     prev = point;
